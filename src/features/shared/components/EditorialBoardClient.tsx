@@ -1,0 +1,123 @@
+'use client';
+
+import { motion, Variants } from 'framer-motion';
+import { GraduationCap, MapPin, UserPlus, Mail, Loader2, Globe } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { useMemo } from 'react';
+import { useEditorialBoard } from '@/hooks/queries/usePublic';
+import { staticEditorialBoardMembers, BoardMember } from '../data/editorial-board';
+
+interface EditorialBoardClientProps {
+    settings: Record<string, string>;
+    initialMembers: BoardMember[];
+}
+
+export default function EditorialBoardClient({ settings, initialMembers }: EditorialBoardClientProps) {
+    const { data: members = [], isLoading } = useEditorialBoard(initialMembers);
+    const supportEmail = settings.support_email || "editor@iitest.org";
+    const groupedBoard = useMemo(() => {
+        const board = [
+            {
+                role: "Editor-in-Chief",
+                members: members.filter((m: any) => m.role === 'admin')
+            },
+            {
+                role: "Editorial Board Members",
+                members: staticEditorialBoardMembers
+            },
+
+        ];
+        return board.filter(category => category.members.length > 0);
+    }, [members]);
+
+    const containerVariants: Variants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1] as const
+            }
+        }
+    };
+
+    if (isLoading && members.length === 0) {
+        return (
+            <div className="p-24 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary/10" />
+            </div>
+        );
+    }
+
+    return (
+        <section className=" space-y-12 max-w-5xl 2xl:container-responsive">
+            {/* Board Sections */}
+            {groupedBoard.map((category, idx) => (
+                <section key={idx} className="overflow-hidden rounded-xl border border-primary/10 shadow-sm">
+                    {/* Role Header */}
+                    <div className="bg-[#4a154b] p-3 px-6 2xl:p-8 2xl:px-14">
+                        <h2 className="text-white m-0 uppercase tracking-widest font-black">
+                            {category.role}
+                        </h2>
+                    </div>
+
+                    <div className="divide-y divide-primary/5">
+                        {category.members.map((member: BoardMember, mIdx: number) => (
+                            <article key={mIdx} className="group">
+                                {/* Name Row */}
+                                <header className="bg-[#f0f9ff] py-3 px-6 2xl:py-8 2xl:px-14 flex items-center gap-3">
+                                    <h3 className="text-[#2563eb] m-0 font-black uppercase tracking-wider">
+                                        {member.full_name}
+                                    </h3>
+                                </header>
+
+                                {/* Institution & Details Row */}
+                                <div className="bg-[#f8fafc] py-4 px-6 2xl:py-10 2xl:px-14 space-y-2 2xl:space-y-6">
+                                    <div className="flex gap-3 text-slate-700 font-medium text-xs sm:text-sm lg:text-base 2xl:text-lg">
+                                        <p className="m-0">{member.institute}, {member.designation}</p>
+                                    </div>
+                                    {member.email && (idx === 0 || member.role === 'admin') && (
+                                        <div className="flex gap-3 text-primary/60 font-medium text-sm">
+                                            <Mail className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
+                                            <a href={`mailto:${member.email}`} className="hover:text-secondary hover:underline transition-colors truncate">
+                                                {member.email}
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+            ))}
+
+            {/* Support/Contact Footer */}
+            <section className="pt-12 border-t border-primary/10">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-8 py-10">
+                    <div>
+                        <h3 className="text-primary mb-2 m-0 font-black uppercase tracking-widest">Editorial Support</h3>
+                        <p className="text-primary/50 font-medium m-0 text-sm">For inquiries related to editor roles or board selection.</p>
+                    </div>
+                    <a
+                        href={`mailto:${supportEmail}`}
+                        className="text-secondary hover:text-primary transition-colors border-b-2 border-secondary/20 hover:border-primary pb-1 font-black text-xl lg:text-3xl"
+                    >
+                        {supportEmail}
+                    </a>
+                </div>
+            </section>
+        </section>
+    );
+}

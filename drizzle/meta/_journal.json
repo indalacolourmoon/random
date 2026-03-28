@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1772554520069,
+      "tag": "0000_third_hobgoblin",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772555249974,
+      "tag": "0001_add_nationality_to_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772726659943,
+      "tag": "0002_add_nationality_to_applications",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1773681398486,
+      "tag": "0003_keen_ulik",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1774110834690,
+      "tag": "0004_blushing_vin_gonzales",
+      "breakpoints": true
+    }
+  ]
+}

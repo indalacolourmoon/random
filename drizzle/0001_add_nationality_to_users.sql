@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `nationality` varchar(100) DEFAULT 'India';
