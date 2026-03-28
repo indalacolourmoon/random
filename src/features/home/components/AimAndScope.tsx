@@ -98,7 +98,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
             {/* Publication Process */}
             <section className="bg-primary p-10 rounded-[3rem] text-white overflow-hidden relative shadow-vip border border-white/5 group/proc" aria-labelledby="publication-heading">
                 <div className="absolute top-0 right-0 w-80 h-80 bg-secondary opacity-20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 animate-blob pointer-events-none" />
-                <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-accent opacity-20 rounded-full blur-[80px] animate-blob pointer-events-none" style={{ animationDelay: '2s' }} />
+                <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-accent opacity-20 rounded-full blur-[80px] animate-blob pointer-events-none" style={{ '--delay': '2s' } as React.CSSProperties} />
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
                     <div className="w-28 h-28 bg-white/10 backdrop-blur-md rounded-[2rem] flex items-center justify-center shrink-0 border border-white/20 group-hover/proc:rotate-6 group-hover/proc:animate-bounce transition-all duration-500" aria-hidden="true">

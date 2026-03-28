@@ -132,53 +132,56 @@ export default async function AdminDashboard() {
         return (
             <section className="space-y-6">
                 {/* Header Section */}
-                <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 py-8">
+                <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 py-8 transition-all duration-500">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <Badge className="bg-primary/10 text-primary border-none text-[10px] sm:text-xs font-black tracking-widest px-3 py-1 uppercase rounded-full">System Overview</Badge>
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}</span>
+                            <Badge className="bg-primary/10 text-primary border-none text-[10px] sm:text-xs xl:text-sm 2xl:text-sm font-black tracking-widest px-3 py-1 2xl:px-4 2xl:py-1.5 uppercase rounded-full">System Overview</Badge>
+                            <div className="w-1.5 h-1.5 2xl:w-2 2xl:h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black text-muted-foreground uppercase tracking-widest opacity-60">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}</span>
                         </div>
-                        <h1 className=" font-black tracking-widest text-foreground uppercase leading-none">Dashboard Protocol</h1>
-                        <p className="text-xs sm:text-sm lg:text-sm xl:text-base font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2">Authenticated as {user?.name || user?.fullName}. Monitoring active infrastructure.</p>
+                        <h1 className=" font-black tracking-widest text-foreground uppercase leading-none text-2xl xl:text-3xl 2xl:text-3xl">Dashboard Protocol</h1>
+                        <p className="text-xs sm:text-sm lg:text-sm xl:text-base 2xl:text-lg font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2">Authenticated as {user?.name || user?.fullName}. Monitoring active infrastructure.</p>
                     </div>
                     <div className="flex flex-wrap sm:flex-nowrap gap-3">
-                        <Button size="sm" asChild className="flex-1 sm:flex-none h-11 px-6 bg-primary text-white dark:text-slate-900 border-none rounded-xl shadow-lg shadow-primary/20 transition-all cursor-pointer font-black text-xs tracking-widest uppercase">
-                            <Link href="/admin/users" className="flex items-center gap-2 cursor-pointer">
-                                <UserPlus className="w-4 h-4" /> Personnel Directory
+                        <Button size="lg" asChild className="flex-1 sm:flex-none h-11 xl:h-12 2xl:h-14 px-6 xl:px-8 2xl:px-10 bg-primary text-white dark:text-slate-900 border-none rounded-xl shadow-lg shadow-primary/20 transition-all cursor-pointer font-black text-xs xl:text-sm 2xl:text-base tracking-widest uppercase">
+                            <Link href="/admin/users" className="flex items-center gap-2 2xl:gap-3 cursor-pointer">
+                                <UserPlus className="w-4 h-4 2xl:w-5 2xl:h-5" /> Personnel Directory
                             </Link>
                         </Button>
                     </div>
                 </header>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6 transition-all duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-8 transition-all duration-500">
                     {stats.map((stat) => (
-                        <Card key={stat.label} className="border-border/50 shadow-sm bg-card backdrop-blur-sm">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.variant === 'emerald' ? 'bg-emerald-500/10 text-emerald-600' :
+                        <Card key={stat.label} className="border-border/50 shadow-sm bg-card backdrop-blur-sm 2xl:rounded-3xl">
+                            <CardContent className="p-6 2xl:p-10">
+                                <div className="flex items-center justify-between mb-4 2xl:mb-6">
+                                    <div className={`w-10 h-10 2xl:w-16 2xl:h-16 rounded-lg 2xl:rounded-2xl flex items-center justify-center ${stat.variant === 'emerald' ? 'bg-emerald-500/10 text-emerald-600' :
                                         stat.variant === 'blue' ? 'bg-blue-500/10 text-blue-600' :
                                             stat.variant === 'indigo' ? 'bg-indigo-500/10 text-indigo-600' :
                                                 'bg-amber-500/10 text-amber-600'
                                         }`}>
-                                        {stat.icon}
+                                        <div className="[&>svg]:w-4 [&>svg]:h-4 [&>svg]:2xl:w-8 [&>svg]:2xl:h-8">
+                                            {stat.icon}
+                                        </div>
                                     </div>
+                                    <Badge variant="outline" className="h-5 2xl:h-7 px-1.5 2xl:px-3 text-[9px] 2xl:text-xs font-black tracking-widest uppercase border-primary/20 text-primary">Live Data</Badge>
                                 </div>
                                 <div className="space-y-1 2xl:space-y-2">
                                     <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">{stat.label}</p>
-                                    <h3 className=" font-black text-foreground tracking-wider">{stat.value}</h3>
+                                    <h3 className=" font-black text-foreground tracking-wider text-2xl 2xl:text-3xl">{stat.value}</h3>
                                 </div>
                             </CardContent>
                         </Card>
                     ))}
                 </div>
 
-                <Tabs defaultValue="overview" className="space-y-6">
-                    <TabsList className="bg-muted/50 p-1 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 2xl:gap-2 rounded-2xl">
-                        <TabsTrigger value="overview" className="flex-1 sm:flex-none px-4 sm:px-6 2xl:px-8 py-3 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Queue Audit</TabsTrigger>
-                        <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 sm:px-6 2xl:px-8 py-3 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">My Works</TabsTrigger>
-                        <TabsTrigger value="infrastructure" className="flex-1 sm:flex-none px-4 sm:px-6 2xl:px-8 py-3 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Health Diagnostics</TabsTrigger>
+                <Tabs defaultValue="overview" className="space-y-6 2xl:space-y-10">
+                    <TabsList className="bg-muted/50 p-1 2xl:p-2 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 2xl:gap-2 rounded-2xl border border-border/50">
+                        <TabsTrigger value="overview" className="flex-1 sm:flex-none px-4 sm:px-6 2xl:px-8 py-3 2xl:py-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black uppercase tracking-widest rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all">Queue Audit</TabsTrigger>
+                        <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 sm:px-6 2xl:px-8 py-3 2xl:py-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black uppercase tracking-widest rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all">My Works</TabsTrigger>
+                        <TabsTrigger value="infrastructure" className="flex-1 sm:flex-none px-4 sm:px-6 2xl:px-8 py-3 2xl:py-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black uppercase tracking-widest rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all">Health Diagnostics</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-4">
@@ -191,31 +194,31 @@ export default async function AdminDashboard() {
                                                 Recent Submissions Activity
                                             </CardTitle>
                                         </div>
-                                        <Button asChild variant="ghost" size="sm" className="h-8 group text-primary hover:bg-primary/5 cursor-pointer">
+                                        <Button asChild variant="ghost" size="sm" className="h-8 group text-primary hover:bg-primary/20 cursor-pointer">
                                             <Link href="/admin/submissions" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider cursor-pointer">
                                                 Manage All <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                                             </Link>
                                         </Button>
                                     </CardHeader>
                                     <CardContent className="p-0">
-                                        <div className="divide-y divide-border/30">
+                                                <div className="divide-y divide-border/30">
                                             {recentSubmissions.map((sub: any) => (
                                                 <Link
                                                     href={`/admin/submissions/${sub.id}`}
                                                     key={sub.paper_id}
                                                     className="flex items-center justify-between p-4 hover:bg-muted/30 transition-all group"
                                                 >
-                                                    <div className="flex items-center gap-4 min-w-0">
-                                                        <div className="w-12 h-10 rounded-lg bg-primary/5 flex flex-col items-center justify-center font-black text-[10px] text-primary/40 border border-primary/5 shrink-0">
+                                                    <div className="flex items-center gap-4 min-w-0 2xl:gap-6">
+                                                        <div className="w-12 h-10 2xl:w-16 2xl:h-14 rounded-lg bg-primary/5 flex flex-col items-center justify-center font-black text-[10px] 2xl:text-xs text-primary/40 border border-primary/5 shrink-0">
                                                             <span className="opacity-40">NODE</span>
-                                                            <span className="text-primary font-black">{sub.paper_id.split('-').pop()}</span>
+                                                            <span className="text-primary font-black uppercase">{sub.paper_id.split('-').pop()}</span>
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <h4 className=" font-black text-foreground truncate group-hover:text-primary transition-colors tracking-wider uppercase">{sub.title}</h4>
+                                                            <h4 className=" font-black text-foreground truncate group-hover:text-primary transition-colors tracking-wider uppercase 2xl:text-base">{sub.title}</h4>
                                                             <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Authored by {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
-                                                    <Badge className={`border-none text-[10px] font-black uppercase py-1 px-3 rounded-full ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
+                                                    <Badge className={`border-none text-[10px] 2xl:text-sm font-black uppercase py-1 px-3 rounded-full ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
                                                         {sub.status.replace('_', ' ')}
                                                     </Badge>
                                                 </Link>
@@ -233,8 +236,8 @@ export default async function AdminDashboard() {
                                                     <span>Publication Rate</span>
                                                     <span>{pubPercent.toFixed(1)}%</span>
                                                 </div>
-                                                <div className="h-1 w-full bg-muted rounded-full">
-                                                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pubPercent}%` }} />
+                                                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                                                    <div className="h-full bg-emerald-500 rounded-full w-[var(--pub-progress)]" style={{ '--pub-progress': `${pubPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                             <div>
@@ -242,8 +245,8 @@ export default async function AdminDashboard() {
                                                     <span>Review Rate</span>
                                                     <span>{revPercent.toFixed(1)}%</span>
                                                 </div>
-                                                <div className="h-1 w-full bg-muted rounded-full">
-                                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${revPercent}%` }} />
+                                                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                                                    <div className="h-full bg-blue-500 rounded-full w-[var(--rev-progress)]" style={{ '--rev-progress': `${revPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                         </div>
@@ -280,7 +283,7 @@ export default async function AdminDashboard() {
                                             ))}
                                         </div>
                                         <div className="p-3 bg-muted/20 border-t border-border/20 text-center">
-                                            <Button asChild variant="ghost" className="h-8 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 cursor-pointer">
+                                            <Button asChild variant="ghost" className="h-8 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/15 cursor-pointer">
                                                 <Link className="cursor-pointer" href="/admin/applications">Audit Performance</Link>
                                             </Button>
                                         </div>
@@ -319,17 +322,17 @@ export default async function AdminDashboard() {
                                         <h3 className=" font-black text-foreground line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors leading-wider tracking-wider uppercase">{paper.title}</h3>
                                         <div className="flex items-center justify-between pt-4 border-t border-border/10">
                                             <span className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-black uppercase tracking-widest opacity-40"><Clock className="w-3 h-3" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
-                                            <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/5 rounded-md text-[10px] font-black uppercase tracking-widest cursor-pointer">
+                                            <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/15 rounded-md text-[10px] font-black uppercase tracking-widest cursor-pointer">
                                                 <Link href={`/track?id=${paper.paper_id}`} className="flex items-center gap-1.5 cursor-pointer">
                                                     Portal <ExternalLink className="w-3 h-3" />
                                                 </Link>
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="h-1 bg-muted/20">
+                                    <div className="h-1 bg-muted/20 overflow-hidden">
                                         <div
-                                            className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'}`}
-                                            style={{ width: paper.status === 'published' ? '100%' : '15%' }}
+                                            className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'} w-[var(--status-progress)]`}
+                                            style={{ '--status-progress': paper.status === 'published' ? '100%' : '15%' } as React.CSSProperties}
                                         />
                                     </div>
                                 </Card>
@@ -351,7 +354,7 @@ export default async function AdminDashboard() {
                                 <CardContent className="p-0">
                                     <div className="divide-y divide-border/20">
                                         {allStaff.map((staff: any) => (
-                                            <div key={staff.id} className="p-3 flex items-center justify-between hover:bg-muted/10 transition-colors">
+                                            <div key={staff.id} className="p-3 flex items-center justify-between hover:bg-muted/20 transition-colors">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-xs uppercase border border-primary/10">
                                                         {staff.full_name?.charAt(0) || staff.email.charAt(0)}

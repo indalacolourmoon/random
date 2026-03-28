@@ -57,7 +57,7 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                             href={item.href}
                             className={`transition-all duration-300 flex items-center gap-2 relative px-2 lg:px-3 ${isActive ? 'text-primary font-bold' : 'text-black font-semibold hover:text-primary'}`}
                         >
-                            <span className="relative z-10">{item.name}</span>
+                            <span className="relative  z-10 lg:text-md  xl:text-lg 2xl:text-xl">{item.name}</span>
                             {item.children && (
                                 <ChevronDown className={`w-3.5 h-3.5 2xl:w-5 2xl:h-5 transition-transform duration-500 text-secondary/50 group-hover:text-secondary ${isHovered ? 'rotate-180' : ''}`} />
                             )}

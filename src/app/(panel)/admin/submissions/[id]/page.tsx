@@ -119,42 +119,42 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                 </Button>
             </div>
 
-            <Card className="border-border/50 shadow-lg overflow-hidden bg-background">
+            <Card className="border-border/50 shadow-lg overflow-hidden bg-background 2xl:rounded-3xl">
                 <CardHeader className="p-8 bg-muted/20 border-b border-border/50">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                        <div className="space-y-4 max-w-2xl">
-                            <Badge className={`h-5 px-1.5 text-[9px] font-black  tracking-widest whitespace-nowrap ${getStatusVariant(submission.status)}`}>
+                        <div className="space-y-4 max-w-2xl 2xl:max-w-4xl">
+                            <Badge className={`h-5 2xl:h-9 px-1.5 2xl:px-4 text-[9px] 2xl:text-base font-black tracking-widest whitespace-nowrap ${getStatusVariant(submission.status)}`}>
                                 {submission.status.replace('_', ' ')}
                             </Badge>
-                            <h1 className=" font-black text-foreground tracking-widest uppercase leading-none">
+                            <h1 className="font-black text-foreground tracking-widest uppercase leading-none 2xl:text-3xl">
                                 {submission.title}
                             </h1>
-                            <div className="flex flex-wrap items-center gap-6 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground  tracking-widest capitalize">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-3.5 h-3.5 opacity-50" />
+                            <div className="flex flex-wrap items-center gap-6 2xl:gap-10 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg font-black text-muted-foreground tracking-widest capitalize">
+                                <div className="flex items-center gap-2 2xl:gap-4">
+                                    <Clock className="w-3.5 h-3.5 2xl:w-6 2xl:h-6 opacity-50" />
                                     <span>{new Date(submission.submitted_at).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-primary">
-                                    <Shield className="w-3.5 h-3.5" />
+                                <div className="flex items-center gap-2 2xl:gap-4 text-primary">
+                                    <Shield className="w-3.5 h-3.5 2xl:w-5 2xl:h-5" />
                                     <span>{submission.paper_id}</span>
                                 </div>
                                 {submission.keywords && (
-                                    <div className="flex items-center gap-2">
-                                        <Tag className="w-3.5 h-3.5 opacity-50" />
-                                        <span className="truncate max-w-[200px]">{submission.keywords}</span>
+                                    <div className="flex items-center gap-2 2xl:gap-4">
+                                        <Tag className="w-3.5 h-3.5 2xl:w-6 2xl:h-6 opacity-50" />
+                                        <span className="truncate max-w-[200px] 2xl:max-w-md">{submission.keywords}</span>
                                     </div>
                                 )}
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2 shrink-0">
+                        <div className="flex flex-col gap-2 2xl:gap-4 shrink-0">
                             {submission.file_path && (
-                                <Button asChild className="h-11 px-6 gap-2 bg-primary text-white font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs  tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.05] hover:opacity-90 hover:text-white dark:hover:text-slate-900 active:scale-[0.99] transition-all cursor-pointer">
+                                <Button asChild className="h-11 2xl:h-16 px-6 2xl:px-10 gap-2 2xl:gap-4 bg-primary text-white font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.05] hover:opacity-90 transition-all cursor-pointer">
                                     <a href={submission.file_path} download>
-                                        <Download className="w-4 h-4" /> Download Manuscript
+                                        <Download className="w-4 h-4 2xl:w-7 2xl:h-7" /> Download Manuscript
                                     </a>
                                 </Button>
                             )}
-                            <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold text-muted-foreground text-center  tracking-widest opacity-60">Authored by {submission.author_name}</p>
+                            <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-bold text-muted-foreground text-center tracking-widest opacity-60">Authored by {submission.author_name}</p>
                         </div>
                     </div>
                 </CardHeader>
@@ -163,12 +163,12 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                     <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
                         {/* Main Content (8 cols) */}
                         <div className="lg:col-span-8 p-8 space-y-12">
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-sm sm:text-base lg:text-base xl:text-lg 2xl:text-xl font-black text-muted-foreground  tracking-[0.2em] opacity-60 uppercase">
-                                    <FileText className="w-4 h-4" /> Abstract Overview
+                            <div className="space-y-4 2xl:space-y-6">
+                                <div className="flex items-center gap-2 2xl:gap-4 text-sm sm:text-base lg:text-base xl:text-lg 2xl:text-lg font-black text-muted-foreground tracking-[0.2em] opacity-60 uppercase">
+                                    <FileText className="w-4 h-4 2xl:w-6 2xl:h-6" /> Abstract Overview
                                 </div>
-                                <div className="p-6 bg-muted/5 rounded-xl border border-border/30">
-                                    <p className="text-sm text-foreground leading-relaxed text-justify font-medium selection:bg-primary/20 ">
+                                <div className="p-6 bg-muted/5 rounded-xl 2xl:rounded-3xl border border-border/30">
+                                    <p className="text-sm 2xl:text-lg text-foreground leading-relaxed text-justify font-medium selection:bg-primary/20 ">
                                         {submission.abstract || "No abstract provided."}
                                     </p>
                                 </div>
@@ -177,7 +177,10 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                             {submission.status !== 'submitted' && (
                                 <div className="space-y-6 pt-4 border-t border-border/30">
                                     <div className="flex items-center justify-between">
-                                        <MessageSquare className="w-4 h-4" /> <span className="text-sm sm:text-base lg:text-base xl:text-lg 2xl:text-xl font-black text-muted-foreground  tracking-[0.2em] opacity-60 uppercase">Reviewer Intelligence</span>
+                                        <div className="flex items-center gap-2 2xl:gap-4">
+                                            <MessageSquare className="w-4 h-4 2xl:w-6 2xl:h-6 text-primary/40" />
+                                            <span className="text-sm sm:text-base lg:text-base xl:text-lg 2xl:text-lg font-black text-muted-foreground tracking-[0.2em] opacity-60 uppercase">Reviewer Intelligence</span>
+                                        </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
                                         {(async () => {
@@ -187,22 +190,23 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                             );
 
                                             if (reviews.length === 0) return (
-                                                <div className="p-8 text-center bg-muted/10 rounded-xl border border-dashed border-border/50">
-                                                    <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground  tracking-widest ">Awaiting technical evaluation from assigned reviewers</p>
+                                                <div className="p-12 2xl:p-20 text-center bg-muted/10 rounded-xl 2xl:rounded-3xl border border-dashed border-border/50 flex flex-col items-center gap-4 2xl:gap-8">
+                                                    <History className="w-8 h-8 2xl:w-14 2xl:h-14 text-muted-foreground/10" />
+                                                    <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg font-black text-muted-foreground  tracking-widest ">Awaiting technical evaluation from assigned reviewers</p>
                                                 </div>
                                             );
 
                                             return reviews.map((r: any, i: number) => (
-                                                <Card key={r.id} className="border-border/50 shadow-none bg-muted/5 overflow-hidden">
-                                                    <CardHeader className="p-4 bg-muted/20 border-b border-border/30 flex flex-row items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge variant="outline" className="h-5 px-1.5 text-[8px] font-black  tracking-widest bg-background border-border text-primary">Technical Reviewer {i + 1}</Badge>
-                                                            <span className="text-[10px] font-black text-muted-foreground  tracking-widest opacity-60">{r.reviewer_name}</span>
+                                                <Card key={r.id} className="border-border/50 shadow-none bg-muted/5 overflow-hidden 2xl:rounded-3xl">
+                                                    <CardHeader className="p-4 2xl:p-8 bg-muted/20 border-b border-border/30 flex flex-row items-center justify-between">
+                                                        <div className="flex items-center gap-2 2xl:gap-4">
+                                                            <Badge variant="outline" className="h-5 2xl:h-8 px-1.5 2xl:px-4 text-[8px] 2xl:text-sm font-black tracking-widest bg-background border-border text-primary uppercase">Technical Reviewer {i + 1}</Badge>
+                                                            <span className="text-[10px] 2xl:text-base font-black text-muted-foreground tracking-widest opacity-60">{r.reviewer_name}</span>
                                                         </div>
-                                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                                        <CheckCircle className="w-4 h-4 2xl:w-7 2xl:h-7 text-emerald-500" />
                                                     </CardHeader>
-                                                    <CardContent className="p-4">
-                                                        <p className="text-xs text-muted-foreground font-medium  leading-relaxed whitespace-pre-wrap">"{r.feedback}"</p>
+                                                    <CardContent className="p-4 2xl:p-8">
+                                                        <p className="text-xs 2xl:text-lg text-muted-foreground font-medium leading-relaxed whitespace-pre-wrap">"{r.feedback}"</p>
                                                     </CardContent>
                                                 </Card>
                                             ));
@@ -214,26 +218,26 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
 
                         {/* Sidebar (4 cols) */}
                         <div className="lg:col-span-4 p-8 bg-muted/20 space-y-10">
-                            <div className="space-y-4">
-                                <h3 className=" font-black text-muted-foreground tracking-[0.2em] opacity-60 uppercase">Author Credentials</h3>
-                                <Card className="border-border/50 shadow-sm bg-background">
-                                    <CardContent className="p-5 space-y-4">
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
-                                                <User className="w-4 h-4 text-primary" />
+                            <div className="space-y-4 2xl:space-y-6">
+                                <h3 className="font-black text-muted-foreground tracking-[0.2em] opacity-60 uppercase 2xl:text-lg">Author Credentials</h3>
+                                <Card className="border-border/50 shadow-sm bg-background 2xl:rounded-3xl">
+                                    <CardContent className="p-5 space-y-4 2xl:space-y-8">
+                                        <div className="flex items-start gap-3 2xl:gap-6">
+                                            <div className="w-8 h-8 2xl:w-14 2xl:h-14 rounded-lg 2xl:rounded-2xl bg-primary/5 flex items-center justify-center shrink-0">
+                                                <User className="w-4 h-4 2xl:w-8 2xl:h-8 text-primary" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black  tracking-widest text-muted-foreground opacity-60 mb-0.5 uppercase">Corresponding Author</p>
-                                                <p className="font-black text-xs text-foreground tracking-wider">{submission.author_name}</p>
+                                                <p className="text-[9px] font-black tracking-widest text-muted-foreground opacity-60 mb-0.5 uppercase">Corresponding Author</p>
+                                                <p className="font-black text-xs 2xl:text-lg text-foreground tracking-wider">{submission.author_name}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
-                                                <Mail className="w-4 h-4 text-primary" />
+                                        <div className="flex items-start gap-3 2xl:gap-6">
+                                            <div className="w-8 h-8 2xl:w-14 2xl:h-14 rounded-lg 2xl:rounded-2xl bg-primary/5 flex items-center justify-center shrink-0">
+                                                <Mail className="w-4 h-4 2xl:w-8 2xl:h-8 text-primary" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[9px] font-black  tracking-widest text-muted-foreground opacity-60 mb-0.5 uppercase">Email Address</p>
-                                                <p className="font-black text-xs text-foreground tracking-wider truncate">{submission.author_email}</p>
+                                                <p className="text-[9px] font-black tracking-widest text-muted-foreground opacity-60 mb-0.5 uppercase">Email Address</p>
+                                                <p className="font-black text-xs 2xl:text-lg text-foreground tracking-wider truncate">{submission.author_email}</p>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -241,7 +245,7 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
 
                                 {submission.co_authors && (
                                     <div className="space-y-3 pt-2">
-                                        <h4 className="text-[9px] font-black text-muted-foreground tracking-[0.2em] opacity-60 uppercase">Collaborating Authors</h4>
+                                        <h4 className="text-[9px] 2xl:text-base font-black text-muted-foreground tracking-[0.2em] opacity-60 uppercase">Collaborating Authors</h4>
                                         <div className="space-y-2">
                                             {(() => {
                                                 try {
@@ -249,10 +253,10 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                                     return coAuthors.map((author: any, idx: number) => (
                                                         <div key={idx} className="p-3 bg-white border border-border/50 rounded-xl space-y-1 shadow-sm">
                                                             <div className="flex items-center justify-between">
-                                                                <p className="font-black text-[10px] text-foreground tracking-wider">{author.name}</p>
-                                                                <span className="text-[8px] font-black text-primary/30 uppercase tracking-wider">CO-AUTH {idx + 1}</span>
+                                                                <p className="font-black text-[10px] 2xl:text-lg text-foreground tracking-wider">{author.name}</p>
+                                                                <span className="text-[8px] 2xl:text-xs font-black text-primary/30 uppercase tracking-wider">CO-AUTH {idx + 1}</span>
                                                             </div>
-                                                            <p className="text-[9px] font-medium text-muted-foreground truncate">{author.institution}</p>
+                                                            <p className="text-[9px] 2xl:text-base font-medium text-muted-foreground truncate">{author.institution}</p>
                                                         </div>
                                                     ));
                                                 } catch (e) {
@@ -268,8 +272,8 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
 
                             <div className="space-y-6">
                                 <div className="flex flex-col gap-1.5">
-                                    <h3 className=" font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Manuscript Processing</h3>
-                                    <p className="text-[9px] font-bold text-muted-foreground/40 leading-relaxed uppercase tracking-widest">
+                                    <h3 className=" font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 2xl:text-lg">Manuscript Processing</h3>
+                                    <p className="text-[9px] 2xl:text-base font-bold text-muted-foreground/40 leading-relaxed uppercase tracking-widest">
                                         Finalize publication assets and formatting oversight.
                                     </p>
                                 </div>
@@ -326,25 +330,25 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
 
                                     {submission.status === 'under_review' && (
                                         <div className="space-y-4">
-                                            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-1">
-                                                <p className="text-[10px] font-black  text-primary tracking-widest">Editorial Threshold</p>
-                                                <p className="text-[10px] font-medium text-primary/70 ">Final authorization required</p>
+                                            <div className="p-4 2xl:p-6 bg-primary/5 border border-primary/20 rounded-xl 2xl:rounded-2xl space-y-1 2xl:space-y-3">
+                                                <p className="text-[10px] 2xl:text-base font-black  text-primary tracking-widest">Editorial Threshold</p>
+                                                <p className="text-[10px] 2xl:text-lg font-medium text-primary/70 ">Final authorization required</p>
                                             </div>
-                                            <div className="grid grid-cols-1 gap-2">
-                                                <form action={async () => {
+                                            <div className="grid grid-cols-1 gap-2 2xl:gap-4">
+                                                 <form action={async () => {
                                                     'use server';
                                                     await decideSubmission(submission.id, 'accepted');
                                                 }}>
-                                                    <Button className="w-full h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px]  tracking-widest rounded-xl shadow-xl shadow-emerald-600/20 cursor-pointer">
-                                                        <CheckCircle className="w-4 h-4" /> Authorize Acceptance
+                                                    <Button className="w-full h-11 2xl:h-16 gap-2 2xl:gap-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] 2xl:text-lg tracking-widest rounded-xl shadow-xl shadow-emerald-600/20 cursor-pointer">
+                                                        <CheckCircle className="w-4 h-4 2xl:w-6 2xl:h-6" /> Authorize Acceptance
                                                     </Button>
                                                 </form>
                                                 <form action={async () => {
                                                     'use server';
                                                     await decideSubmission(submission.id, 'rejected');
                                                 }}>
-                                                    <Button variant="outline" className="w-full h-11 gap-2 border-red-500/20 text-red-600 font-black text-[11px]  tracking-widest rounded-xl cursor-pointer">
-                                                        <XCircle className="w-4 h-4" /> Final Rejection
+                                                    <Button variant="outline" className="w-full h-11 2xl:h-16 gap-2 2xl:gap-4 border-red-500/20 text-red-600 font-black text-[11px] 2xl:text-lg tracking-widest rounded-xl cursor-pointer">
+                                                        <XCircle className="w-4 h-4 2xl:w-6 2xl:h-6" /> Final Rejection
                                                     </Button>
                                                 </form>
                                             </div>

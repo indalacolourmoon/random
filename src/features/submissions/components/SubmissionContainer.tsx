@@ -79,9 +79,9 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                             onLocalFilter={setFilterQuery}
                         />
                     </div>
-                    <div className="flex items-center gap-4 px-6 2xl:px-8 py-3 2xl:py-4 bg-card rounded-xl border border-primary/10 shrink-0 shadow-sm transition-all hover:border-primary/20 self-start md:self-auto uppercase">
-                        <FileText className="w-5 h-5 2xl:w-6 2xl:h-6 text-primary/40" />
-                        <span className="text-xs 2xl:text-base font-black text-primary/60 tracking-widest">
+                    <div className="flex items-center gap-4 px-6 2xl:px-12 py-3 2xl:py-6 bg-card rounded-xl 2xl:rounded-3xl border border-primary/10 shrink-0 shadow-sm transition-all hover:border-primary/20 self-start md:self-auto uppercase">
+                        <FileText className="w-5 h-5 2xl:w-8 2xl:h-8 text-primary/40" />
+                        <span className="text-xs 2xl:text-xl font-black text-primary/60 tracking-widest">
                             {filteredSubmissions.length} Showing / {submissions.length} Total
                         </span>
                     </div>
@@ -161,10 +161,10 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                 <Table>
                     <TableHeader className="bg-primary/[0.01]">
                         <TableRow className="hover:bg-transparent border-primary/5">
-                            <TableHead className="h-12 2xl:h-20 px-4 text-[10px] 2xl:text-xs font-black text-primary/40 tracking-[0.2em] uppercase w-40">Registry ID</TableHead>
-                            <TableHead className="h-12 2xl:h-20 px-4 text-[10px] 2xl:text-xs font-black text-primary/40 tracking-[0.2em] uppercase">Manuscript Dossier</TableHead>
-                            <TableHead className="h-12 2xl:h-20 px-4 text-[10px] 2xl:text-xs font-black text-primary/40 tracking-[0.2em] uppercase w-40 text-center">Protocol Status</TableHead>
-                            <TableHead className="h-12 2xl:h-20 px-4 text-[10px] 2xl:text-xs font-black text-primary/40 tracking-[0.2em] uppercase w-32 text-right">Operations</TableHead>
+                            <TableHead className="h-12 2xl:h-24 px-4 2xl:px-8 text-[10px] 2xl:text-base font-black text-primary/40 tracking-[0.2em] uppercase w-40 2xl:w-64">Registry ID</TableHead>
+                            <TableHead className="h-12 2xl:h-24 px-4 2xl:px-8 text-[10px] 2xl:text-base font-black text-primary/40 tracking-[0.2em] uppercase">Manuscript Dossier</TableHead>
+                            <TableHead className="h-12 2xl:h-24 px-4 2xl:px-8 text-[10px] 2xl:text-base font-black text-primary/40 tracking-[0.2em] uppercase w-40 2xl:w-64 text-center">Protocol Status</TableHead>
+                            <TableHead className="h-12 2xl:h-24 px-4 2xl:px-8 text-[10px] 2xl:text-base font-black text-primary/40 tracking-[0.2em] uppercase w-32 2xl:w-56 text-right">Operations</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -176,24 +176,24 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                                     </span>
                                 </TableCell>
                                 <TableCell className="px-4 py-4">
-                                    <div className="flex flex-col gap-1 max-w-xl">
-                                        <h4 className="font-black text-foreground dark:text-white text-[13px] leading-wider tracking-wider group-hover:text-secondary transition-colors truncate">
+                                    <div className="flex flex-col gap-1 2xl:gap-3 max-w-xl 2xl:max-w-4xl">
+                                        <h4 className="font-black text-foreground dark:text-white text-[13px] 2xl:text-2xl leading-wider tracking-wider group-hover:text-secondary transition-colors truncate">
                                             {sub.title}
                                         </h4>
-                                        <div className="flex items-center gap-4 text-[10px] 2xl:text-sm font-black text-primary/30 tracking-widest uppercase items-center">
-                                            <span className="flex items-center gap-1.5 whitespace-nowrap"><User className="w-3.5 h-3.5 2xl:w-4 2xl:h-4 opacity-50" /> {sub.author_name}</span>
-                                            <span className="flex items-center gap-1.5 whitespace-nowrap"><Calendar className="w-3.5 h-3.5 2xl:w-4 2xl:h-4 opacity-50" /> {new Date(sub.submitted_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+                                        <div className="flex items-center gap-4 2xl:gap-8 text-[10px] 2xl:text-base font-black text-primary/30 tracking-widest uppercase items-center">
+                                            <span className="flex items-center gap-1.5 2xl:gap-3 whitespace-nowrap"><User className="w-3.5 h-3.5 2xl:w-6 2xl:h-6 opacity-50" /> {sub.author_name}</span>
+                                            <span className="flex items-center gap-1.5 2xl:gap-3 whitespace-nowrap"><Calendar className="w-3.5 h-3.5 2xl:w-6 2xl:h-6 opacity-50" /> {new Date(sub.submitted_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
                                         </div>
                                     </div>
                                 </TableCell>
                                 <TableCell className="px-4 py-4">
-                                    <div className="flex flex-col gap-2 items-center">
-                                        <Badge className={`h-7 px-2.5 text-[10px] font-black tracking-widest border-none shadow-sm rounded-md ${getStatusVariant(sub.status)}`}>
+                                    <div className="flex flex-col gap-2 2xl:gap-4 items-center">
+                                        <Badge className={`h-7 2xl:h-12 px-2.5 2xl:px-6 text-[10px] 2xl:text-base font-black tracking-widest border-none shadow-sm rounded-md 2xl:rounded-xl ${getStatusVariant(sub.status)}`}>
                                             {sub.status.replace('_', ' ')}
                                         </Badge>
                                         {sub.status === 'under_review' && sub.completed_reviews > 0 && (
-                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 tracking-widest bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/10 uppercase">
-                                                <MessageSquare className="w-3 h-3" />
+                                            <div className="flex items-center gap-1.5 2xl:gap-3 text-[9px] 2xl:text-sm font-black text-emerald-600 tracking-widest bg-emerald-500/5 px-2 py-0.5 2xl:px-4 2xl:py-1.5 rounded-full border border-emerald-500/10 uppercase">
+                                                <MessageSquare className="w-3 h-3 2xl:w-5 2xl:h-5" />
                                                 ({sub.completed_reviews})
                                             </div>
                                         )}

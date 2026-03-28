@@ -88,7 +88,7 @@ export default function PaperCard({ paper, basePath = '/archives' }: PaperCardPr
                         </Button>
 
                         {paper.file_path && (
-                            <Button asChild variant="outline" className="w-full sm:w-auto h-12 px-8 font-black text-xs tracking-widest border-primary/10 text-primary hover:bg-primary/5 rounded-xl transition-all">
+                            <Button asChild variant="outline" className="w-full sm:w-auto h-12 px-8 font-black text-xs tracking-widest border-primary/10 text-primary hover:bg-orange-600 rounded-xl transition-all">
                                 <a href={paper.file_path} download className="flex items-center gap-3">
                                     <Download className="w-4 h-4" /> Download Tech Paper
                                 </a>

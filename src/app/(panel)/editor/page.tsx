@@ -113,15 +113,15 @@ export default async function EditorDashboard() {
 
         return (
             <main className="space-y-6">
-                <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 py-8 border-b border-primary/5">
-                    <div className="space-y-2">
+                <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 py-8 2xl:py-16 border-b border-primary/5">
+                    <div className="space-y-2 2xl:space-y-4">
                         <div className="flex items-center gap-2">
-                            <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black tracking-widest px-3 py-1 uppercase">Editorial Hub</Badge>
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}</span>
+                            <Badge className="bg-primary/10 text-primary border-none text-[10px] 2xl:text-base font-black tracking-widest px-3 py-1 2xl:px-6 2xl:py-2 uppercase">Editorial Hub</Badge>
+                            <div className="w-2 h-2 2xl:w-4 2xl:h-4 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] 2xl:text-base font-black text-muted-foreground uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}</span>
                         </div>
-                        <h1 className=" font-black text-foreground tracking-widest uppercase leading-none">Dashboard</h1>
-                        <p className="text-xs sm:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 transition-all duration-500">Managing journal lifecycle and content quality for {user?.fullName}.</p>
+                        <h1 className=" font-black text-foreground tracking-widest uppercase leading-none text-2xl xl:text-3xl 2xl:text-3xl">Dashboard</h1>
+                        <p className="text-xs sm:text-sm 2xl:text-xl font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 transition-all duration-500">Managing journal lifecycle and content quality for {user?.fullName}.</p>
                     </div>
                 </header>
 
@@ -130,14 +130,14 @@ export default async function EditorDashboard() {
                     <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none transition-transform duration-700 group-hover:scale-110 rotate-12">
                         <ShieldCheck className="w-32 h-32 text-primary" />
                     </div>
-                    <CardContent className="p-8 sm:p-10">
-                        <div className="max-w-4xl 2xl:max-w-6xl space-y-4 2xl:space-y-6">
-                            <Badge className="bg-primary text-white text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-[0.2em] px-3 py-1 2xl:px-4 2xl:py-2 border-none shadow-sm rounded-lg uppercase">Editorial Control</Badge>
-                            <h2 className=" font-black text-foreground tracking-wider transition-all duration-500">Focus: Pipeline Throughput & Integrity</h2>
-                            <div className="flex flex-wrap gap-2 pt-2">
+                    <CardContent className="p-8 sm:p-10 2xl:p-20">
+                        <div className="max-w-4xl 2xl:max-w-7xl space-y-4 2xl:space-y-8">
+                            <Badge className="bg-primary text-white text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black tracking-[0.2em] px-3 py-1 2xl:px-6 2xl:py-2 border-none shadow-sm rounded-lg uppercase">Editorial Control</Badge>
+                            <h2 className=" font-black text-foreground tracking-wider transition-all duration-500 text-xl xl:text-2xl 2xl:text-2xl">Focus: Pipeline Throughput & Integrity</h2>
+                            <div className="flex flex-wrap gap-2 2xl:gap-4 pt-2">
                                 {['Desk Screening', 'Expert Selection', 'Final Determinations'].map((action, i) => (
-                                    <div key={i} className="flex items-center gap-2 bg-card/80 border border-primary/10 px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold text-primary/70 uppercase tracking-widest shadow-sm">
-                                        <div className="w-1.5 h-1.5 bg-primary/40 rounded-full" />
+                                    <div key={i} className="flex items-center gap-2 2xl:gap-4 bg-card/80 border border-primary/10 px-4 py-1.5 2xl:px-8 2xl:py-3 rounded-lg 2xl:rounded-2xl text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg font-bold text-primary/70 uppercase tracking-widest shadow-sm">
+                                        <div className="w-1.5 h-1.5 2xl:w-3 2xl:h-3 bg-primary/40 rounded-full" />
                                         {action}
                                     </div>
                                 ))}
@@ -152,17 +152,19 @@ export default async function EditorDashboard() {
                         <Card key={stat.label} className="border-border/40 shadow-sm bg-card transition-all hover:border-primary/20">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.variant === 'primary' ? 'bg-primary/10 text-primary' :
+                                    <div className={`w-10 h-10 2xl:w-16 2xl:h-16 rounded-lg 2xl:rounded-2xl flex items-center justify-center ${stat.variant === 'primary' ? 'bg-primary/10 text-primary' :
                                         stat.variant === 'blue' ? 'bg-blue-500/10 text-blue-600' :
                                             stat.variant === 'emerald' ? 'bg-emerald-500/10 text-emerald-600' :
                                                 'bg-amber-500/10 text-amber-600'
                                         }`}>
-                                        {stat.icon}
+                                        <div className="[&>svg]:w-4 [&>svg]:h-4 [&>svg]:2xl:w-8 [&>svg]:2xl:h-8">
+                                            {stat.icon}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-1 2xl:space-y-2">
-                                    <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                                    <h3 className=" font-black text-foreground transition-all duration-500">{stat.value}</h3>
+                                <div className="space-y-1 2xl:space-y-3">
+                                    <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                                    <h3 className=" font-black text-foreground transition-all duration-500 2xl:text-2xl">{stat.value}</h3>
                                 </div>
                             </CardContent>
                         </Card>
@@ -170,10 +172,10 @@ export default async function EditorDashboard() {
                 </div>
 
                 <Tabs defaultValue="queue" className="space-y-4">
-                    <TabsList className="bg-muted/50 p-1 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 2xl:gap-2">
-                        <TabsTrigger value="queue" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-3 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest whitespace-nowrap">Editorial Queue</TabsTrigger>
-                        <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">My Papers</TabsTrigger>
-                        <TabsTrigger value="health" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Sector Status</TabsTrigger>
+                    <TabsList className="bg-muted/50 p-1 2xl:p-2 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 2xl:gap-3 rounded-xl 2xl:rounded-2xl">
+                        <TabsTrigger value="queue" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded-lg 2xl:rounded-xl">Editorial Queue</TabsTrigger>
+                        <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-4 text-[10px] 2xl:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded-lg 2xl:rounded-xl">My Papers</TabsTrigger>
+                        <TabsTrigger value="health" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-4 text-[10px] 2xl:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded-lg 2xl:rounded-xl">Sector Status</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="queue" className="space-y-4">
@@ -186,7 +188,7 @@ export default async function EditorDashboard() {
                                                 Active Assignments
                                             </CardTitle>
                                         </div>
-                                        <Button asChild variant="ghost" size="sm" className="h-8 group text-primary hover:bg-primary/5 cursor-pointer">
+                                        <Button asChild variant="ghost" size="sm" className="h-8 group text-primary hover:bg-primary/20 cursor-pointer">
                                             <Link href="/editor/submissions" className="flex items-center gap-2 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase tracking-wider cursor-pointer">
                                                 Manage Pipeline <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                                             </Link>
@@ -206,8 +208,8 @@ export default async function EditorDashboard() {
                                                             <span className="font-bold text-foreground">{sub.paper_id.split('-').pop()}</span>
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors">{sub.title}</h4>
-                                                            <p className="text-[10px] 2xl:text-xs text-muted-foreground uppercase font-medium">By {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}</p>
+                                                            <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors 2xl:text-lg">{sub.title}</h4>
+                                                            <p className="text-[10px] 2xl:text-base text-muted-foreground uppercase font-medium">By {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
                                                     <Badge className={`border-none text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase py-0.5 px-2 ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
@@ -232,7 +234,7 @@ export default async function EditorDashboard() {
                                                     <span>{pubPercent.toFixed(1)}%</span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pubPercent}%` }} />
+                                                    <div className="h-full bg-emerald-500 rounded-full w-[var(--pub-progress)]" style={{ '--pub-progress': `${pubPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                             <div>
@@ -241,7 +243,7 @@ export default async function EditorDashboard() {
                                                     <span>{revPercent.toFixed(1)}%</span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${revPercent}%` }} />
+                                                    <div className="h-full bg-blue-500 rounded-full w-[var(--rev-progress)]" style={{ '--rev-progress': `${revPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                         </div>
@@ -250,7 +252,7 @@ export default async function EditorDashboard() {
                                         <TrendingUp className="w-8 h-8 text-primary/30 mb-2" />
                                         <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Expand Network</h4>
                                         <p className="text-[10px] text-muted-foreground mb-4 leading-wider">Need more experts for your specific research track?</p>
-                                        <Button asChild size="sm" variant="outline" className="h-8 text-[9px] font-bold uppercase tracking-widest text-primary border-primary/20 hover:bg-primary/5 rounded-lg cursor-pointer">
+                                        <Button asChild size="sm" variant="outline" className="h-8 text-[9px] font-bold uppercase tracking-widest text-primary border-primary/20 hover:bg-primary/20 rounded-lg cursor-pointer">
                                             <Link href="/editor/messages" className="cursor-pointer">Contact Desk</Link>
                                         </Button>
                                     </Card>
@@ -321,17 +323,17 @@ export default async function EditorDashboard() {
                                             <h3 className=" font-semibold text-foreground line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
                                             <div className="flex items-center justify-between pt-4 border-t border-border/10">
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-medium tracking-wider"><Clock className="w-3 h-3" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
-                                                <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/5 rounded-md text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase cursor-pointer">
+                                                <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/20 rounded-md text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase cursor-pointer">
                                                     <Link href={`/track?id=${paper.paper_id}`} className="flex items-center gap-1.5 cursor-pointer">
                                                         Portal <ExternalLink className="w-3 h-3" />
                                                     </Link>
                                                 </Button>
                                             </div>
                                         </div>
-                                        <div className="h-1 bg-muted/20">
+                                        <div className="h-1 bg-muted/20 overflow-hidden">
                                             <div
-                                                className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'}`}
-                                                style={{ width: paper.status === 'published' ? '100%' : '15%' }}
+                                                className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'} w-[var(--status-progress)]`}
+                                                style={{ '--status-progress': paper.status === 'published' ? '100%' : '15%' } as React.CSSProperties}
                                             />
                                         </div>
                                     </Card>

@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 function HomeStats() {
     return (
-        <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
             {stats.map((stat, i) => (
                 <motion.div
                     key={i}
@@ -36,12 +36,12 @@ function HomeStats() {
 
                         <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
                             <div className="group-hover:-translate-y-1 transition-transform duration-500">
-                                <dt className="text-sm mb-3 group-hover:text-secondary transition-colors duration-500">
+                                <p className="text-sm mb-3 group-hover:text-secondary transition-colors duration-500">
                                     {stat.label}
-                                </dt>
-                                <dd className="font-black text-primary text-md sm:text-lg lg:text-lg xl:text-lg 2xl:text-lg tracking-wider uppercase">
+                                </p>
+                                <h3 className="font-black text-primary text-md sm:text-lg lg:text-lg xl:text-lg 2xl:text-lg tracking-wider uppercase">
                                     {stat.value}
-                                </dd>
+                                </h3>
                             </div>
 
                             <div className="mt-6 flex items-center gap-3">
@@ -66,7 +66,7 @@ function HomeStats() {
                     </Card>
                 </motion.div>
             ))}
-        </dl>
+        </div>
     );
 }
 

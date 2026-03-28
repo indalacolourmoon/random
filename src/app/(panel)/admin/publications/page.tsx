@@ -139,78 +139,77 @@ export default function PublicationsPage() {
     return (
         <section className="space-y-8 pb-24">
             {/* Header */}
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8">
-                <div className="space-y-2">
-                    <h1 className=" font-black text-primary tracking-widest uppercase leading-none">Volumes & Issues</h1>
-                    <p className="text-xs sm:text-sm font-medium text-primary/40 border-l-2 border-primary/10 pl-4">Journal publication schedule & editorial cycle management protocols.</p>
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8 2xl:pb-16">
+                <div className="space-y-2 2xl:space-y-4">
+                    <h1 className="font-black text-primary tracking-widest uppercase leading-none 2xl:text-3xl">Volumes & Issues</h1>
+                    <p className="text-xs sm:text-sm 2xl:text-xl font-medium text-primary/40 border-l-2 border-primary/10 pl-4">Journal publication schedule & editorial cycle management protocols.</p>
                 </div>
 
                 <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
                     <DialogTrigger asChild>
-                        <Button className="h-16 px-10 gap-3 bg-primary text-white dark:text-slate-900 font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs tracking-[0.3em] rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
-                            <Plus className="w-6 h-6" />create new
+                        <Button className="h-16 2xl:h-20 px-10 2xl:px-14 gap-3 bg-primary text-white dark:text-slate-900 font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg tracking-[0.3em] rounded-xl 2xl:rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
+                            <Plus className="w-6 h-6 2xl:w-8 2xl:h-8" />create new
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-xl rounded-xl p-10 bg-card border-primary/5 shadow-2xl overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2.5 bg-primary/10" />
+                    <DialogContent className="sm:max-w-md rounded-xl p-8 bg-card border-primary/5 shadow-2xl overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-primary/10" />
                         <DialogHeader className="space-y-4">
-                            <div className="w-16 h-16 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-inner mb-2">
-                                <Plus className="w-8 h-8" />
+                            <div className="w-12 h-12 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-inner mb-0">
+                                <Plus className="w-6 h-6" />
                             </div>
-                            <DialogTitle className="text-xl sm:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black text-foreground dark:text-primary tracking-wider uppercase">New Publication Hub</DialogTitle>
-                            <DialogDescription className="text-sm font-semibold text-muted-foreground leading-relaxed tracking-wider">
-                                Define a new volume or issue for manuscript aggregation and archival protocols.
+                            <DialogTitle className="text-xl sm:text-2xl 2xl:text-3xl font-black text-foreground dark:text-primary tracking-wider uppercase">New Publication Hub</DialogTitle>
+                            <DialogDescription className="text-[11px] 2xl:text-sm font-semibold text-muted-foreground leading-relaxed tracking-wider uppercase opacity-60">
+                                Define a new volume or issue for manuscript aggregation.
                             </DialogDescription>
                         </DialogHeader>
-                        <form action={handleCreate} className="space-y-6 pt-6">
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <Label className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Volume Designation</Label>
+                        <form action={handleCreate} className="space-y-4 pt-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Volume</Label>
                                     <Input
                                         name="volume"
                                         type="number"
                                         required
-                                        className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-5"
+                                        className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                         placeholder="e.g. 1"
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Issue Index</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Issue</Label>
                                     <Input
                                         name="issue"
                                         type="number"
                                         required
-                                        className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-5"
+                                        className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                         placeholder="e.g. 1"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Temporal Year</Label>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Year</Label>
                                 <Input
                                     name="year"
                                     type="number"
                                     required
                                     defaultValue={new Date().getFullYear()}
-                                    className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-black text-base shadow-inner rounded-xl px-5"
+                                    className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-black text-sm shadow-inner rounded-xl px-4"
                                 />
                             </div>
 
-                            <div className="space-y-3">
-                                <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Cycle Duration</Label>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Cycle Duration</Label>
                                 <Input
                                     name="monthRange"
                                     type="text"
                                     required
                                     placeholder="e.g. Jan - Mar"
-                                    className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-5"
+                                    className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                 />
                             </div>
 
-
-                            <DialogFooter className="pt-4">
-                                <Button disabled={isSubmitting} type="submit" className="w-full h-16 bg-primary text-white dark:text-slate-900 font-black text-xs  tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all  rounded-xl cursor-pointer">
+                            <DialogFooter className="pt-2">
+                                <Button disabled={isSubmitting} type="submit" className="w-full h-12 bg-primary text-white dark:text-slate-900 font-black text-[10px] xl:text-[11px] 2xl:text-base tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all rounded-xl cursor-pointer uppercase">
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                     ) : (
@@ -227,54 +226,54 @@ export default function PublicationsPage() {
             {/* Grid of Issues */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {volumes.map((v) => (
-                    <Card key={v.id} className="border-primary/5 shadow-vip hover:scale-[1.01] transition-all group overflow-hidden bg-card relative">
+                    <Card key={v.id} className="border-primary/5 shadow-vip hover:scale-[1.01] transition-all group overflow-hidden bg-card relative 2xl:rounded-[2rem]">
                         <div className={`absolute top-0 left-0 w-1 h-full ${v.status === 'published' ? 'bg-emerald-500/40' : 'bg-orange-500/40'}`} />
                         <CardContent className="p-0">
-                            <div className="p-8 space-y-6">
+                            <div className="p-8 2xl:p-14 space-y-6 2xl:space-y-10">
                                 <div className="flex items-start justify-between gap-4">
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 2xl:space-y-3">
                                         <div className="flex items-center gap-3">
-                                            <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/40 tracking-[0.3em] uppercase">Global Volume {v.volume_number}</p>
+                                            <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black text-primary/40 tracking-[0.3em] uppercase">Global Volume {v.volume_number}</p>
                                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button title='save changes' onClick={() => setShowEditModal(v)} className="p-1.5 hover:text-primary transition-colors hover:bg-primary/5 rounded-md">
-                                                    <Save className="w-4 h-4" />
+                                                <button title='save changes' onClick={() => setShowEditModal(v)} className="p-1.5 2xl:p-3 hover:text-primary transition-colors hover:bg-primary/15 rounded-md 2xl:rounded-xl">
+                                                    <Save className="w-4 h-4 2xl:w-7 2xl:h-7" />
                                                 </button>
-                                                <button title='delete' onClick={() => handleDelete(v.id)} className="p-1.5 hover:text-red-500 transition-colors hover:bg-red-500/5 rounded-md">
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button title='delete' onClick={() => handleDelete(v.id)} className="p-1.5 2xl:p-3 hover:text-red-500 transition-colors hover:bg-red-500/10 rounded-md 2xl:rounded-xl">
+                                                    <Trash2 className="w-4 h-4 2xl:w-7 2xl:h-7" />
                                                 </button>
                                             </div>
                                         </div>
-                                        <h3 className=" font-black text-primary tracking-wider leading-none group-hover:text-secondary transition-colors ">Issue {v.issue_number}</h3>
+                                        <h3 className=" font-black text-primary tracking-wider leading-none group-hover:text-secondary transition-colors 2xl:text-2xl">Issue {v.issue_number}</h3>
                                     </div>
-                                    <Badge className={`h-8 px-3 text-xs font-black tracking-widest border-none rounded-lg ${v.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-orange-500/10 text-orange-600'}`}>
+                                    <Badge className={`h-8 2xl:h-12 px-3 2xl:px-6 text-xs 2xl:text-lg font-black tracking-widest border-none rounded-lg 2xl:rounded-xl ${v.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-orange-500/10 text-orange-600'}`}>
                                         {v.status === 'published' ? (
-                                            <span className="flex items-center gap-2"><Globe className="w-4 h-4" /> Published</span>
+                                            <span className="flex items-center gap-2"><Globe className="w-4 h-4 2xl:w-7 2xl:h-7" /> Published</span>
                                         ) : (
-                                            <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> Open Cycle</span>
+                                            <span className="flex items-center gap-2"><Clock className="w-4 h-4 2xl:w-7 2xl:h-7" /> Open Cycle</span>
                                         )}
                                     </Badge>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-5">
-                                    <div className="bg-primary/5 p-5 rounded-xl border border-primary/5 shadow-inner">
-                                        <Calendar className="w-5 h-5 text-primary/20 mb-2.5" />
-                                        <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/40 tracking-widest mb-1 uppercase">Year</p>
-                                        <p className="text-base font-black text-primary ">{v.year}</p>
+                                <div className="grid grid-cols-2 gap-5 2xl:gap-8">
+                                    <div className="bg-primary/5 p-5 2xl:p-8 rounded-xl 2xl:rounded-2xl border border-primary/5 shadow-inner">
+                                        <Calendar className="w-5 h-5 2xl:w-7 2xl:h-7 text-primary/20 mb-2.5 2xl:mb-4" />
+                                        <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/40 tracking-widest mb-1 2xl:mb-2 uppercase">Year</p>
+                                        <p className="text-base 2xl:text-2xl font-black text-primary ">{v.year}</p>
                                     </div>
-                                    <div className="bg-primary/5 p-5 rounded-xl border border-primary/5 shadow-inner">
-                                        <Layers className="w-5 h-5 text-primary/20 mb-2.5" />
-                                        <p className="text-[10px] font-black text-primary/40 tracking-widest mb-1 uppercase">Cycle</p>
-                                        <p className="text-base font-black text-primary truncate ">{v.month_range}</p>
+                                    <div className="bg-primary/5 p-5 2xl:p-8 rounded-xl 2xl:rounded-2xl border border-primary/5 shadow-inner">
+                                        <Layers className="w-5 h-5 2xl:w-7 2xl:h-7 text-primary/20 mb-2.5 2xl:mb-4" />
+                                        <p className="text-[10px] 2xl:text-xs font-black text-primary/40 tracking-widest mb-1 2xl:mb-2 uppercase">Cycle</p>
+                                        <p className="text-base 2xl:text-xl font-black text-primary truncate ">{v.month_range}</p>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-3 2xl:space-y-6">
                                     <Button
                                         variant="outline"
                                         onClick={() => toggleExpand(v.id)}
-                                        className="w-full h-12 gap-3 border-primary/10 text-primary/60 font-black text-xs tracking-widest rounded-xl hover:bg-primary/5 shadow-sm uppercase"
+                                        className="w-full h-12 2xl:h-16 gap-3 2xl:gap-4 border-primary/20 text-primary/80 font-black text-xs 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl hover:bg-primary/20 hover:text-primary shadow-sm uppercase transition-all"
                                     >
-                                        {expandedIssue === v.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
+                                        {expandedIssue === v.id ? <ChevronUp className="w-5 h-5 2xl:w-7 2xl:h-7 transition-transform" /> : <ChevronDownIcon className="w-5 h-5 2xl:w-7 2xl:h-7 transition-transform" />}
                                         {expandedIssue === v.id ? 'Hide Manuscripts' : `View Manuscripts (${v.paper_count || 0})`}
                                     </Button>
 
@@ -301,12 +300,12 @@ export default function PublicationsPage() {
                                                                             <p className="text-[10px] font-semibold text-primary/40 mt-1 uppercase tracking-widest">Node ID: {paper.paper_id}</p>
                                                                         </div>
                                                                         <div className="flex items-center gap-2 shrink-0">
-                                                                            <Button asChild variant="ghost" size="icon" className="w-8 h-8 text-primary/40 hover:text-primary hover:bg-primary/5 rounded-lg cursor-pointer">
+                                                                            <Button asChild variant="ghost" size="icon" className="w-8 h-8 text-primary/40 hover:text-primary hover:bg-primary/15 rounded-lg cursor-pointer">
                                                                                 <a title='view paper' href={`/admin/submissions/${paper.id}`} target="_blank">
                                                                                     <Eye className="w-4 h-4" />
                                                                                 </a>
                                                                             </Button>
-                                                                            <Button title='unassign' onClick={() => handleUnassign(paper.id)} variant="ghost" size="icon" className="w-8 h-8 text-red-500/40 hover:text-red-500 hover:bg-red-500/5 rounded-lg">
+                                                                            <Button title='unassign' onClick={() => handleUnassign(paper.id)} variant="ghost" size="icon" className="w-8 h-8 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg">
                                                                                 <Unlink className="w-4 h-4" />
                                                                             </Button>
                                                                         </div>
@@ -325,13 +324,13 @@ export default function PublicationsPage() {
                                     {v.status === 'open' ? (
                                         <Button
                                             onClick={() => handlePublish(v.id)}
-                                            className="w-full h-14 gap-3 bg-primary text-white dark:text-slate-900 font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs tracking-widest shadow-lg shadow-primary/20 rounded-xl hover:bg-emerald-600 transition-all uppercase"
+                                            className="w-full h-14 2xl:h-16 gap-3 2xl:gap-4 bg-primary text-white dark:text-slate-900 font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg tracking-widest shadow-xl shadow-primary/20 rounded-xl 2xl:rounded-2xl hover:bg-emerald-600 transition-all uppercase"
                                         >
-                                            <CheckCircle className="w-5 h-5" /> Finalize & Publish Issue
+                                            <CheckCircle className="w-5 h-5 2xl:w-8 2xl:h-8" /> Finalize & Publish Issue
                                         </Button>
                                     ) : (
-                                        <div className="w-full h-14 bg-emerald-500/5 text-emerald-600 rounded-xl font-black text-xs tracking-widest flex items-center justify-center gap-3 border border-emerald-500/10 shadow-inner uppercase">
-                                            <Globe className="w-5 h-5" /> Immutable Archive Locked
+                                        <div className="w-full h-14 2xl:h-20 bg-emerald-500/5 text-emerald-600 rounded-xl 2xl:rounded-2xl font-black text-xs 2xl:text-xl tracking-widest flex items-center justify-center gap-3 2xl:gap-5 border border-emerald-500/10 shadow-inner uppercase">
+                                            <Globe className="w-5 h-5 2xl:w-10 2xl:h-10" /> Immutable Archive Locked
                                         </div>
                                     )}
                                 </div>
@@ -355,66 +354,66 @@ export default function PublicationsPage() {
 
             {/* Edit Modal */}
             <Dialog open={!!showEditModal} onOpenChange={(open) => !open && setShowEditModal(null)}>
-                <DialogContent className="sm:max-w-xl rounded-xl p-10 bg-card border-primary/5 shadow-2xl overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-2.5 bg-secondary/10" />
+                <DialogContent className="sm:max-w-md rounded-xl p-8 bg-card border-primary/5 shadow-2xl overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-secondary/10" />
                     <DialogHeader className="space-y-4">
-                        <div className="w-16 h-16 rounded-xl bg-secondary/5 border border-secondary/10 flex items-center justify-center text-secondary shadow-inner mb-2">
-                            <Save className="w-8 h-8" />
+                        <div className="w-12 h-12 rounded-xl bg-secondary/5 border border-secondary/10 flex items-center justify-center text-secondary shadow-inner mb-0">
+                            <Save className="w-6 h-6" />
                         </div>
-                        <DialogTitle className="text-3xl font-black text-foreground dark:text-primary tracking-wider">Update Metadata</DialogTitle>
-                        <DialogDescription className="text-sm font-semibold text-muted-foreground leading-relaxed tracking-wider">
-                            Modify the archival parameters for the selected publication node.
+                        <DialogTitle className="text-xl sm:text-2xl 2xl:text-3xl font-black text-foreground dark:text-primary tracking-wider uppercase">Update Metadata</DialogTitle>
+                        <DialogDescription className="text-[11px] 2xl:text-sm font-semibold text-muted-foreground leading-relaxed tracking-wider uppercase opacity-60">
+                            Modify the archival parameters for this publication node.
                         </DialogDescription>
                     </DialogHeader>
                     {showEditModal && (
-                        <form action={handleEdit} className="space-y-6 pt-6">
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Volume</Label>
+                        <form action={handleEdit} className="space-y-4 pt-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Volume</Label>
                                     <Input
                                         name="volume"
                                         type="number"
                                         required
                                         defaultValue={showEditModal.volume_number}
-                                        className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-5"
+                                        className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Issue</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Issue</Label>
                                     <Input
                                         name="issue"
                                         type="number"
                                         required
                                         defaultValue={showEditModal.issue_number}
-                                        className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-5"
+                                        className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Year</Label>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Year</Label>
                                 <Input
                                     name="year"
                                     type="number"
                                     required
                                     defaultValue={showEditModal.year}
-                                    className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-black text-base shadow-inner rounded-xl px-5"
+                                    className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-black text-sm shadow-inner rounded-xl px-4"
                                 />
                             </div>
 
-                            <div className="space-y-3">
-                                <Label className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Month Range</Label>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] 2xl:text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Month Range</Label>
                                 <Input
                                     name="monthRange"
                                     type="text"
                                     required
                                     defaultValue={showEditModal.month_range}
-                                    className="h-16 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-5"
+                                    className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                 />
                             </div>
 
-                            <DialogFooter className="pt-4">
-                                <Button disabled={isSubmitting} type="submit" className="w-full h-16 font-black text-xs  tracking-[0.3em] bg-secondary text-white shadow-xl shadow-secondary/20 hover:scale-[1.02] transition-all  rounded-xl cursor-pointer">
+                            <DialogFooter className="pt-2">
+                                <Button disabled={isSubmitting} type="submit" className="w-full h-12 font-black text-[10px] 2xl:text-base tracking-[0.2em] bg-secondary text-white shadow-xl shadow-secondary/20 hover:scale-[1.02] transition-all rounded-xl cursor-pointer uppercase">
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                     ) : (

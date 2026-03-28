@@ -33,7 +33,7 @@ export default function Error({
                 </button>
                 <Link
                     href="/admin"
-                    className="flex items-center justify-center gap-3 px-8 py-4 bg-primary/5 text-primary rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/10 transition-all border border-primary/10 cursor-pointer"
+                    className="flex items-center justify-center gap-3 px-8 py-4 bg-primary/5 text-primary rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/20 transition-all border border-primary/10 cursor-pointer"
                 >
                     <LayoutDashboard className="w-4 h-4" /> Back to Dashboard
                 </Link>

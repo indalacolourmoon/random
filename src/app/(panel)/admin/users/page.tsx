@@ -52,10 +52,10 @@ export default function UserManagement() {
     return (
         <section className="space-y-6">
             {/* Header Section */}
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8">
-                <div className="space-y-2">
-                    <h1 className=" font-black text-foreground tracking-widest uppercase leading-none">Users & Roles</h1>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4">Manage editorial staff, technical reviewers, and system archival access levels.</p>
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8 2xl:pb-16 transition-all duration-500">
+                <div className="space-y-2 2xl:space-y-4">
+                    <h1 className=" font-black text-foreground tracking-widest uppercase leading-none text-2xl xl:text-3xl 2xl:text-5xl">Users & Roles</h1>
+                    <p className="text-xs sm:text-sm 2xl:text-2xl font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2">Manage editorial staff, technical reviewers, and system archival access levels.</p>
                 </div>
                 <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
                     <DialogTrigger asChild>
@@ -121,12 +121,12 @@ export default function UserManagement() {
                     <Card key={user.id} className="border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden bg-card/50 backdrop-blur-sm">
                         <CardContent className="p-5">
                             <div className="flex items-center gap-4 mb-5">
-                                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/5 group-hover:text-primary transition-all duration-300 border border-border/10 shrink-0 shadow-inner">
+                                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-all duration-300 border border-border/10 shrink-0 shadow-inner">
                                     <UserCog className="w-8 h-8" />
                                 </div>
                                 <div className="min-w-0">
-                                    <h3 className="font-black text-foreground tracking-wider truncate leading-none mb-2 transition-all duration-500">{user.full_name}</h3>
-                                    <Badge className={`h-5 2xl:h-7 px-2.5 2xl:px-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-[0.1em] border-none shadow-sm transition-all duration-500 ${getRoleVariant(user.role)}`}>
+                                    <h3 className="font-black text-foreground tracking-wider truncate leading-none mb-2 transition-all duration-500 2xl:text-2xl">{user.full_name}</h3>
+                                    <Badge className={`h-5 2xl:h-8 px-2.5 2xl:px-6 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black tracking-[0.1em] border-none shadow-sm transition-all duration-500 ${getRoleVariant(user.role)}`}>
                                         {user.role}
                                     </Badge>
                                 </div>
@@ -137,37 +137,37 @@ export default function UserManagement() {
                                 )}
                             </div>
 
-                            <div className="space-y-4 mb-6">
-                                <div className="flex items-center gap-3 text-[10px] sm:text-xs lg:text-xs xl:text-sm 2xl:text-base font-bold text-muted-foreground/80 truncate bg-muted/30 px-3 py-2 2xl:px-4 2xl:py-3 rounded-xl border border-border/5">
-                                    <Mail className="w-4 h-4 2xl:w-5 2xl:h-5 opacity-40 text-primary" />
+                            <div className="space-y-4 mb-6 2xl:space-y-6">
+                                <div className="flex items-center gap-3 text-[10px] sm:text-xs lg:text-xs xl:text-sm 2xl:text-xl font-bold text-muted-foreground/80 truncate bg-muted/30 px-3 py-2 2xl:px-6 2xl:py-4 rounded-xl border border-border/5">
+                                    <Mail className="w-4 h-4 2xl:w-6 2xl:h-6 opacity-40 text-primary" />
                                     <span>{user.email}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground tracking-widest px-1">
-                                    <ShieldCheck className="w-4 h-4 opacity-30" />
+                                <div className="flex items-center gap-2.5 text-[10px] 2xl:text-base font-black text-muted-foreground tracking-widest px-1">
+                                    <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6 opacity-30" />
                                     <span>Member since {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                                 </div>
                             </div>
 
                             <Separator className="mb-4 opacity-50" />
 
-                            <div className="pt-2">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-4">Administrative Controls</p>
+                             <div className="pt-2 2xl:pt-6">
+                                <p className="text-[10px] 2xl:text-base font-black text-muted-foreground uppercase tracking-wider mb-4 2xl:mb-8">Administrative Controls</p>
                                 <div className="flex items-center justify-between gap-4">
-                                    <Badge variant="outline" className="text-[10px] font-mono font-black text-muted-foreground/50 tracking-widest bg-muted/20 border-border/20 px-2.5 py-1">
+                                    <Badge variant="outline" className="text-[10px] 2xl:text-base font-mono font-black text-muted-foreground/50 tracking-widest bg-muted/20 border-border/20 px-2.5 py-1 2xl:px-4 2xl:py-2">
                                         ID-{String(user.id).padStart(3, '0')}
                                     </Badge>
                                     {session?.user && String((session.user as any).id) === String(user.id) ? (
-                                        <Badge variant="outline" className="h-10 px-5 text-xs font-black tracking-widest text-emerald-600 border-emerald-500/20 bg-emerald-500/5 rounded-xl uppercase flex items-center gap-2.5">
-                                            <ShieldCheck className="w-4 h-4" /> My Active Session
+                                        <Badge variant="outline" className="h-10 2xl:h-16 px-5 2xl:px-10 text-xs 2xl:text-lg font-black tracking-widest text-emerald-600 border-emerald-500/20 bg-emerald-500/5 rounded-xl uppercase flex items-center gap-2.5">
+                                            <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6" /> My Active Session
                                         </Badge>
                                     ) : (
                                         <Button
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => setUserToDelete(user)}
-                                            className="h-10 px-5 gap-2.5 bg-rose-600 hover:bg-rose-700 text-white border-none rounded-xl transition-all text-xs font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 active:scale-95"
+                                            className="h-10 2xl:h-16 px-5 2xl:px-10 gap-2.5 bg-rose-600 hover:bg-rose-700 text-white border-none rounded-xl 2xl:rounded-2xl transition-all text-xs 2xl:text-lg font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 active:scale-95 cursor-pointer"
                                         >
-                                            <Trash2 className="w-4.5 h-4.5" /> Delete Account
+                                            <Trash2 className="w-4.5 h-4.5 2xl:w-6 2xl:h-6" /> Delete Account
                                         </Button>
                                     )}
                                 </div>
@@ -291,14 +291,14 @@ export default function UserManagement() {
                     ))}
                 </div>
 
-                <div className="border border-border/50 rounded-xl overflow-hidden mt-6 shadow-sm">
+                 <div className="border border-border/50 rounded-xl 2xl:rounded-[2rem] overflow-hidden mt-6 shadow-sm overflow-x-auto">
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow className="border-border/50">
-                                <TableHead className="h-10 px-6 text-[10px] font-black text-muted-foreground  tracking-widest">Level</TableHead>
-                                <TableHead className="h-10 px-6 text-[10px] font-black text-muted-foreground  tracking-widest">Focus</TableHead>
-                                <TableHead className="h-10 px-6 text-[10px] font-black text-muted-foreground  tracking-widest text-center">Publish?</TableHead>
-                                <TableHead className="h-10 px-6 text-[10px] font-black text-muted-foreground  tracking-widest text-center">Manage Staff?</TableHead>
+                                <TableHead className="h-10 2xl:h-20 px-6 2xl:px-10 text-[10px] 2xl:text-lg font-black text-muted-foreground  tracking-widest">Level</TableHead>
+                                <TableHead className="h-10 2xl:h-20 px-6 2xl:px-10 text-[10px] 2xl:text-lg font-black text-muted-foreground  tracking-widest">Focus</TableHead>
+                                <TableHead className="h-10 2xl:h-20 px-6 2xl:px-10 text-[10px] 2xl:text-lg font-black text-muted-foreground  tracking-widest text-center">Publish?</TableHead>
+                                <TableHead className="h-10 2xl:h-20 px-6 2xl:px-10 text-[10px] 2xl:text-lg font-black text-muted-foreground  tracking-widest text-center">Manage Staff?</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -307,14 +307,14 @@ export default function UserManagement() {
                                 { role: 'Editor', focus: 'Workflow', publish: true, staff: false },
                                 { role: 'Reviewer', focus: 'Accuracy', publish: false, staff: false },
                             ].map((row) => (
-                                <TableRow key={row.role} className="border-border/50 hover:bg-muted/10">
-                                    <TableCell className="px-6 py-4 font-black text-sm text-foreground">{row.role}</TableCell>
-                                    <TableCell className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase">{row.focus}</TableCell>
-                                    <TableCell className="px-6 py-4 text-center">
-                                        <div className={`w-2.5 h-2.5 rounded-full mx-auto ${row.publish ? 'bg-emerald-500' : 'bg-muted'}`} />
+                                <TableRow key={row.role} className="border-border/50 hover:bg-muted/20 transition-colors">
+                                    <TableCell className="px-6 py-4 2xl:px-10 2xl:py-8 font-black text-sm 2xl:text-2xl text-foreground">{row.role}</TableCell>
+                                    <TableCell className="px-6 py-4 2xl:px-10 2xl:py-8 text-xs 2xl:text-xl font-bold text-muted-foreground uppercase">{row.focus}</TableCell>
+                                    <TableCell className="px-6 py-4 2xl:px-10 2xl:py-8 text-center">
+                                        <div className={`w-2.5 h-2.5 2xl:w-5 2xl:h-5 rounded-full mx-auto ${row.publish ? 'bg-emerald-500' : 'bg-muted'}`} />
                                     </TableCell>
-                                    <TableCell className="px-6 py-4 text-center">
-                                        <div className={`w-2.5 h-2.5 rounded-full mx-auto ${row.staff ? 'bg-emerald-500' : 'bg-muted'}`} />
+                                    <TableCell className="px-6 py-4 2xl:px-10 2xl:py-8 text-center">
+                                        <div className={`w-2.5 h-2.5 2xl:w-5 2xl:h-5 rounded-full mx-auto ${row.staff ? 'bg-emerald-500' : 'bg-muted'}`} />
                                     </TableCell>
                                 </TableRow>
                             ))}

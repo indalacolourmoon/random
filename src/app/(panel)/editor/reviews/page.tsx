@@ -78,7 +78,7 @@ function ReviewsContent() {
                                 <Plus className="w-5 h-5 2xl:w-7 2xl:h-7" /> Assign New Reviewer
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-xl rounded-xl p-12 border-none shadow-vip bg-card">
+                        <DialogContent className="sm:max-w-xl rounded-xl p-8 border-none shadow-vip bg-card">
                             <DialogHeader className="space-y-3">
                                 <DialogTitle className="text-2xl font-black text-foreground dark:text-primary tracking-wider uppercase">Assign Internal Expert</DialogTitle>
                                 <DialogDescription className="text-xs font-black text-primary/40 uppercase tracking-[0.2em]">
@@ -137,7 +137,7 @@ function ReviewsContent() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary tracking-widest px-1 uppercase ml-1">Secure PDF Manuscript (Required)</label>
-                                    <div className="relative group border-2 border-dashed border-primary/20 rounded-xl p-6 transition-all hover:bg-primary/5 hover:border-primary/40 bg-primary/5">
+                                    <div className="relative group border-2 border-dashed border-primary/20 rounded-xl p-6 transition-all hover:bg-primary/15 hover:border-primary/40 bg-primary/5">
                                         <input
                                             title="pdfFile"
                                             name="pdfFile"
@@ -228,7 +228,7 @@ function ReviewsContent() {
                                                     <FileUp className="w-5 h-5" /> Submit Evaluation
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent className="sm:max-w-xl rounded-xl p-12 border-none shadow-vip bg-card">
+                                            <DialogContent className="sm:max-w-xl rounded-xl p-8 border-none shadow-vip bg-card">
                                                 <DialogHeader className="space-y-3">
                                                     <DialogTitle className="text-3xl font-black text-foreground dark:text-primary tracking-wider">Technical Evaluation</DialogTitle>
                                                     <DialogDescription className="text-xs font-black text-primary/40 uppercase tracking-[0.2em]">
@@ -269,7 +269,7 @@ function ReviewsContent() {
                                                                 className="absolute inset-0 opacity-0 cursor-pointer z-20"
                                                                 aria-label="Upload deep review file"
                                                             />
-                                                            <div className="w-full bg-primary/5 border-2 border-dashed border-primary/10 p-10 rounded-xl group-hover:bg-primary/10 group-hover:border-primary/20 transition-all flex flex-col items-center justify-center gap-4 shadow-inner">
+                                                            <div className="w-full bg-primary/5 border-2 border-dashed border-primary/10 p-10 rounded-xl group-hover:bg-primary/20 group-hover:border-primary/40 transition-all flex flex-col items-center justify-center gap-4 shadow-inner">
                                                                 <FileUp className="w-8 h-8 text-primary/30 group-hover:text-primary transition-colors animate-bounce" />
                                                                 <span className="text-xs font-black text-primary/40 uppercase tracking-widest group-hover:text-primary transition-colors">Attach Evaluation Assets</span>
                                                             </div>

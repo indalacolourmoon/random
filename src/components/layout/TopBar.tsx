@@ -1,5 +1,3 @@
-import Link from 'next/link';
-import { MousePointer2 } from 'lucide-react';
 
 export default function TopBar({ settings }: { settings?: Record<string, string> }) {
     const journalName = settings?.journal_name || "International Journal of Innovative Trends in Engineering Science and Technology (IJITEST)";
@@ -14,7 +12,7 @@ export default function TopBar({ settings }: { settings?: Record<string, string>
             <div className="container-responsive relative z-10">
                 <div className="flex flex-col items-center text-center space-y-3">
                     {/* Primary Title */}
-                    <div className="text-lg md:text-xl lg:text-[1.6rem]  tracking-wider text-white font-mono font-bold">
+                    <div className="text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-3xl   tracking-wider text-white font-mono font-bold">
                         {journalName}
                     </div>
 

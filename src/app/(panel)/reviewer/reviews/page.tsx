@@ -62,10 +62,10 @@ function ReviewsContent() {
             {/* Header Section */}
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8">
                 <div className="space-y-2">
-                    <h1 className=" font-black text-foreground tracking-widest uppercase leading-none">
+                    <h1 className=" font-black text-foreground tracking-widest uppercase leading-none 2xl:text-3xl">
                         {user?.role === 'reviewer' ? 'My Assigned Reviews' : 'Peer Review Tracking'}
                     </h1>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 transition-all duration-500">
+                    <p className="text-xs sm:text-sm 2xl:text-lg font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 transition-all duration-500">
                         {user?.role === 'reviewer'
                             ? 'Complete your assigned manuscript evaluations below.'
                             : 'Managing editorial reviews and staff assignments.'}
@@ -75,11 +75,11 @@ function ReviewsContent() {
                 {isInternalStaff && (
                     <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
                         <DialogTrigger asChild>
-                            <Button className="h-12 px-6 gap-3 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer">
-                                <Plus className="w-5 h-5" /> Assign New Reviewer
+                            <Button className="h-12 2xl:h-14 px-6 2xl:px-8 gap-3 font-black text-xs 2xl:text-base uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer">
+                                <Plus className="w-5 h-5 2xl:w-6 2xl:h-6" /> Assign New Reviewer
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-xl rounded-xl p-12 border-none shadow-vip">
+                        <DialogContent className="sm:max-w-xl rounded-xl p-8 border-none shadow-vip">
                             <DialogHeader className="space-y-3">
                                 <DialogTitle className="text-2xl font-black text-primary tracking-wider uppercase">Assign Expert Reviewer</DialogTitle>
                                 <DialogDescription className="text-xs font-black text-primary/40 uppercase tracking-[0.2em]">
@@ -138,7 +138,7 @@ function ReviewsContent() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-primary tracking-widest px-1 uppercase font-black ml-1">Secure PDF Manuscript (Required)</label>
-                                    <div className={`relative group border-2 border-dashed ${assignedFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/20 bg-primary/5'} rounded-xl p-6 transition-all hover:bg-primary/5 hover:border-primary/40`}>
+                                    <div className={`relative group border-2 border-dashed ${assignedFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/20 bg-primary/5'} rounded-xl p-6 transition-all hover:bg-primary/15 hover:border-primary/40`}>
                                         <input
                                             title="pdfFile"
                                             name="pdfFile"
@@ -210,17 +210,17 @@ function ReviewsContent() {
                                         </Badge>
                                     </div>
 
-                                    <h3 className=" font-black text-primary leading-wider tracking-wider group-hover:text-emerald-600 transition-colors line-clamp-2">
+                                    <h3 className=" font-black text-primary leading-wider tracking-wider group-hover:text-emerald-600 transition-colors line-clamp-2 2xl:text-2xl">
                                         {item.title}
                                     </h3>
 
-                                    <div className="flex flex-wrap gap-6 items-center">
-                                        <div className="flex items-center gap-3 text-[10px] font-black tracking-widest text-primary/40 uppercase">
-                                            <User className="w-5 h-5 opacity-40" />
+                                     <div className="flex flex-wrap gap-6 items-center">
+                                        <div className="flex items-center gap-3 text-[10px] font-black tracking-widest text-primary/40 uppercase 2xl:text-base">
+                                            <User className="w-5 h-5 2xl:w-6 2xl:h-6 opacity-40" />
                                             <span>Staff: {item.reviewer_name}</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-[10px] tracking-widest text-white dark:text-white bg-orange-500 px-4 py-2 rounded-xl border border-orange-500/10 uppercase font-black">
-                                            <Clock className="w-5 h-5" />
+                                        <div className="flex items-center gap-3 text-[10px] tracking-widest text-white dark:text-white bg-orange-500 px-4 py-2 rounded-xl border border-orange-500/10 uppercase font-black 2xl:text-base">
+                                            <Clock className="w-5 h-5 2xl:w-6 2xl:h-6" />
                                             <span className={item.status === 'completed' ? 'line-through dark:decoration-white' : ''}>
                                                 DEADLINE: {new Date(item.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
                                             </span>
@@ -236,9 +236,9 @@ function ReviewsContent() {
                                 </div>
 
                                 <div className="shrink-0 flex flex-col gap-3 min-w-[240px]">
-                                    <Button asChild variant="outline" className="h-12 gap-3 font-black text-xs uppercase tracking-widest border-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl shadow-sm transition-all cursor-pointer">
+                                    <Button asChild variant="outline" className="h-12 2xl:h-14 gap-3 font-black text-xs 2xl:text-base uppercase tracking-widest border-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl shadow-sm transition-all cursor-pointer">
                                         <Link className="cursor-pointer" href={`/reviewer/submissions/${item.submission_id}`}>
-                                            <Eye className="w-5 h-5" /> Open Manuscript
+                                            <Eye className="w-5 h-5 2xl:w-6 2xl:h-6" /> Open Manuscript
                                         </Link>
                                     </Button>
 
@@ -247,12 +247,12 @@ function ReviewsContent() {
                                             <DialogTrigger asChild>
                                                 <Button
                                                     onClick={() => setSelectedReview(item)}
-                                                    className="h-12 gap-3 font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 rounded-xl bg-primary hover:scale-[1.02] transition-all"
+                                                    className="h-12 2xl:h-14 gap-3 font-black text-xs 2xl:text-base uppercase tracking-widest shadow-xl shadow-primary/20 rounded-xl bg-primary hover:scale-[1.02] transition-all"
                                                 >
-                                                    <FileUp className="w-5 h-5" /> Submit Evaluation
+                                                    <FileUp className="w-5 h-5 2xl:w-6 2xl:h-6" /> Submit Evaluation
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent className="sm:max-w-2xl rounded-xl p-12 border-none shadow-vip">
+                                            <DialogContent className="sm:max-w-2xl rounded-xl p-8 border-none shadow-vip">
                                                 <DialogHeader className="space-y-3">
                                                     <DialogTitle className="text-3xl font-black text-primary tracking-wider">Submit Evaluation</DialogTitle>
                                                     <DialogDescription className="text-xs font-black text-primary/40 uppercase tracking-[0.2em]">
@@ -285,7 +285,7 @@ function ReviewsContent() {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label htmlFor={`feedback-file-${item.id}`} className="text-xs font-black text-primary/60 tracking-[0.2em] px-1 uppercase">Deep Review File (Optional)</label>
-                                                        <div className={`relative group border-2 border-dashed ${feedbackFiles[item.id] ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/10 bg-primary/5'} rounded-xl p-10 transition-all hover:bg-primary/10 hover:border-primary/20 shadow-inner`}>
+                                                        <div className={`relative group border-2 border-dashed ${feedbackFiles[item.id] ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/10 bg-primary/5'} rounded-xl p-10 transition-all hover:bg-primary/20 hover:border-primary/40 shadow-inner`}>
                                                             <input
                                                                 id={`feedback-file-${item.id}`}
                                                                 name="feedbackFile"
