@@ -44,7 +44,11 @@ export async function getLatestIssuePapers() {
         
         return rows;
     } catch (error: any) {
-        console.error("Get Latest Issue Papers Error:", error);
+        if (error.code === 'ETIMEDOUT') {
+            console.error("Build-time DB Connection Timeout (Latest Issue Papers) - Skipping");
+        } else {
+            console.error("Get Latest Issue Papers Error:", error);
+        }
         return [];
     }
 }

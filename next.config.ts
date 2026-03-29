@@ -5,10 +5,9 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "20mb"
     },
-    //@ts-ignore
-    turbopack: {
-      root: "./"
-    }
+  },
+  turbopack: {
+    root: "./"
   },
   images: {
     qualities: [75, 90, 100]
