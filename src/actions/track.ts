@@ -8,7 +8,7 @@ export async function trackManuscript(paperId: string, authorEmail?: string) {
              (SELECT MIN(assigned_at) FROM reviews WHERE submission_id = submissions.id) as review_started_at
              FROM submissions 
              WHERE paper_id = ?`;
-        let params: any[] = [paperId];
+        const params: any[] = [paperId];
 
         if (authorEmail) {
             sql += ` AND author_email = ?`;

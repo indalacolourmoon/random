@@ -335,7 +335,6 @@ export default function PaymentManagement() {
                             </CardContent>
                         </Card>
                     ))}
-)}
 
                     {filteredPayments.length === 0 && !loading && (
                         <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.02] border-2 border-dashed border-primary/5 rounded-xl space-y-6">
