@@ -1,14 +1,15 @@
 import Link from 'next/link';
-import { Mail, Phone, MapPin, ShieldCheck, Globe, Facebook, Twitter, Instagram } from 'lucide-react';
+import { Mail, Phone, MapPin, ShieldCheck, Globe } from 'lucide-react';
+import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 export default function Footer({ settings }: { settings?: Record<string, string> }) {
     const publisher = settings?.publisher_name || "Felix Academic Publications";
     const copyrightYear = new Date().getFullYear();
 
     const socialLinks = [
-        { icon: Facebook, href: process.env.NEXT_PUBLIC_FACEBOOK_URL || '#', label: 'Facebook' },
-        { icon: Twitter, href: process.env.NEXT_PUBLIC_TWITTER_URL || '#', label: 'Twitter' },
-        { icon: Instagram, href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || '#', label: 'Instagram' },
+        { icon: FaFacebook, href: process.env.NEXT_PUBLIC_FACEBOOK_URL || '#', label: 'Facebook' },
+        { icon: FaTwitter, href: process.env.NEXT_PUBLIC_TWITTER_URL || '#', label: 'Twitter' },
+        { icon: FaInstagram, href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || '#', label: 'Instagram' },
     ];
 
     return (
