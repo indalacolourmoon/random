@@ -12,7 +12,7 @@ const schema = z.object({
     fullName: z.string().min(2),
     designation: z.string().min(2),
     institute: z.string().min(2),
-    email: z.string().email(),
+    email: z.email(),
     application_type: z.enum(['reviewer', 'editor']).default('reviewer'),
     nationality: z.string().min(2),
 });
@@ -26,6 +26,7 @@ export async function submitReviewerApplication(formData: FormData) {
     const nationality = formData.get("nationality") as string;
     const cv = formData.get("cv") as File;
     const photo = formData.get("photo") as File;
+    const researchInterestsStr = formData.get("research_interests") as string;
 
     // Validate textual data
     const validation = schema.safeParse({ fullName, designation, institute, email, application_type, nationality });
@@ -55,10 +56,31 @@ export async function submitReviewerApplication(formData: FormData) {
         photoUrl = `/uploads/reviewer-apps/${photoName}`;
 
         // Save to Database
-        await pool.execute(
+        const [result] = await pool.execute(
             `INSERT INTO applications (full_name, designation, institute, email, cv_url, photo_url, application_type, nationality) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [fullName, designation, institute, email, cvUrl, photoUrl, application_type, nationality]
         );
+
+        const applicationId = (result as any).insertId;
+
+        // Persist Normalized Research Interests
+        if (researchInterestsStr && applicationId) {
+            try {
+                const interests = JSON.parse(researchInterestsStr) as string[];
+                if (Array.isArray(interests) && interests.length > 0) {
+                    // Optimized batch insert for MySQL
+                    const placeholders = interests.map(() => "(?, ?)").join(", ");
+                    const values = interests.flatMap(interest => [applicationId, interest]);
+                    await pool.execute(
+                        `INSERT INTO application_interests (application_id, interest) VALUES ${placeholders}`,
+                        values
+                    );
+                }
+            } catch (pErr) {
+                console.error("Error parsing/saving interests:", pErr);
+                // Non-blocking for the main application
+            }
+        }
 
         // Notify Admin via Email
         const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/reviewer-applications`;

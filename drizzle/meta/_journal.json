@@ -36,6 +36,27 @@
       "when": 1774110834690,
       "tag": "0004_blushing_vin_gonzales",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1774890499261,
+      "tag": "0005_short_harry_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1774893819182,
+      "tag": "0006_kind_khan",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1774895524657,
+      "tag": "0007_thankful_black_panther",
+      "breakpoints": true
     }
   ]
 }

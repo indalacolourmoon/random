@@ -21,8 +21,33 @@ interface PaperDetailClientProps {
 }
 
 export default function PaperDetailClient({ paper, id, mode = 'archive' }: PaperDetailClientProps) {
+    const isRetracted = paper.status === 'retracted';
+
     return (
         <div className="container-responsive -mt-10">
+            {isRetracted && (
+                <div className="mb-12 bg-red-50 border-2 border-red-200 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-red-900/5 animate-pulse">
+                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center flex-shrink-0 rotate-3">
+                        <FileText className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex-1 text-center md:text-left">
+                        <h3 className="font-serif font-black text-red-900 text-xl md:text-2xl mb-1 uppercase tracking-tighter">Manuscript Retracted</h3>
+                        <p className="text-red-700 font-bold text-sm leading-relaxed max-w-2xl">
+                            This article has been formally retracted due to editorial policy violations or significant technical inaccuracies. 
+                            Please refer to the official retraction notice for detailed reasoning.
+                        </p>
+                    </div>
+                    {paper.retraction_notice_url && (
+                        <a 
+                            href={paper.retraction_notice_url} 
+                            className="bg-red-900 text-white px-8 py-4 rounded-xl font-black text-[10px] tracking-[0.2em] hover:bg-red-800 transition-colors shadow-lg shadow-red-900/20"
+                        >
+                            VIEW NOTICE
+                        </a>
+                    )}
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Main Article Content */}
                 <div className="lg:col-span-2 space-y-12">

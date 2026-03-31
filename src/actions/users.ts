@@ -189,35 +189,51 @@ export async function requestPasswordReset(formData: FormData) {
 }
 
 export async function deleteUser(id: number) {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
         const session: any = await getServerSession(authOptions);
 
         if (!session) {
+            await connection.rollback();
+            connection.release();
             return { error: "Unauthorized" };
         }
 
         // Prevent self-deletion
         if (Number(session.user.id) === Number(id)) {
+            await connection.rollback();
+            connection.release();
             return { error: "You cannot delete your own administrative account while logged in." };
         }
 
         // Optional: Check if the current user is an admin
         if (session.user.role !== 'admin') {
+            await connection.rollback();
+            connection.release();
             return { error: "Only administrators can revoke staff access." };
         }
 
         // 3. Delete Photo and User
-        const [user]: any = await pool.execute('SELECT photo_url FROM users WHERE id = ?', [id]);
-        if (user.length > 0) {
+        const [user]: any = await connection.execute('SELECT photo_url FROM users WHERE id = ?', [id]);
+        
+        await connection.execute('DELETE FROM users WHERE id = ?', [id]);
+        
+        await connection.commit();
+
+        // Cleanup file after commit
+        if (user.length > 0 && user[0].photo_url) {
             await safeDeleteFile(user[0].photo_url);
         }
 
-        await pool.execute('DELETE FROM users WHERE id = ?', [id]);
         revalidatePath('/admin/users');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Delete User Error:", error);
         return { error: "Failed to delete user" };
+    } finally {
+        connection.release();
     }
 }
 
@@ -242,9 +258,15 @@ export async function getUserProfile() {
 }
 
 export async function updateUserProfile(formData: FormData) {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
         const session: any = await getServerSession(authOptions);
-        if (!session?.user) return { error: "Unauthorized" };
+        if (!session?.user) {
+            await connection.rollback();
+            connection.release();
+            return { error: "Unauthorized" };
+        }
 
         const fullName = formData.get('fullName') as string;
         const designation = formData.get('designation') as string;
@@ -255,32 +277,41 @@ export async function updateUserProfile(formData: FormData) {
         const photo = formData.get('photo') as File;
 
         let photoUrl = formData.get('existingPhotoUrl') as string;
+        let oldPhotoUrl: string | null = null;
 
         if (photo && photo.size > 0) {
             const uploadsDir = path.join(process.cwd(), "public", "uploads", "profiles");
             await mkdir(uploadsDir, { recursive: true });
 
-            const fileName = `${session.id}-${Date.now()}-${photo.name.replace(/\s/g, '-')}`;
+            const fileName = `${session.user.id}-${Date.now()}-${photo.name.replace(/\s/g, '-')}`;
             await writeFile(path.join(uploadsDir, fileName), Buffer.from(await photo.arrayBuffer()));
 
-            // Delete old photo
             if (photoUrl) {
-                await safeDeleteFile(photoUrl);
+                oldPhotoUrl = photoUrl;
             }
-
             photoUrl = `/uploads/profiles/${fileName}`;
         }
 
-        await pool.execute(
+        await connection.execute(
             'UPDATE users SET full_name = ?, designation = ?, institute = ?, phone = ?, bio = ?, photo_url = ?, nationality = ? WHERE id = ?',
             [fullName, designation, institute, phone, bio, photoUrl, nationality, session.user.id]
         );
 
+        await connection.commit();
+
+        // Cleanup old photo after successful DB update
+        if (oldPhotoUrl) {
+            await safeDeleteFile(oldPhotoUrl);
+        }
+
         revalidatePath(`/${session.user.role}/profile`);
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Update User Profile Error:", error);
         return { error: "Failed to update profile: " + error.message };
+    } finally {
+        connection.release();
     }
 }
 

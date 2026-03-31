@@ -218,7 +218,10 @@ export default async function AdminDashboard() {
                                                             <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Authored by {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
-                                                    <Badge className={`border-none text-[10px] 2xl:text-sm font-black uppercase py-1 px-3 rounded-full ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
+                                                    <Badge className={`border-none text-[10px] 2xl:text-sm font-black uppercase py-1 px-3 rounded-full ${
+                                                        sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 
+                                                        sub.status === 'retracted' ? 'bg-red-600/10 text-red-600' :
+                                                        'bg-primary/10 text-primary'}`}>
                                                         {sub.status.replace('_', ' ')}
                                                     </Badge>
                                                 </Link>

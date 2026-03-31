@@ -39,7 +39,9 @@ export async function getSettings() {
 }
 
 export async function updateSettings(formData: FormData) {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
         const entries = Array.from(formData.entries());
 
         for (const [key, value] of entries) {
@@ -52,11 +54,9 @@ export async function updateSettings(formData: FormData) {
                 const bytes = await value.arrayBuffer();
                 const buffer = Buffer.from(bytes);
 
-                // Create a clean filename based on key + original extension
                 const fileExt = value.name.split('.').pop();
                 const fileName = `${key.replace(/_/g, '-')}.${fileExt}`;
 
-                // Ensure directory exists
                 const uploadDir = path.join(process.cwd(), "public/docs");
                 await fs.mkdir(uploadDir, { recursive: true });
 
@@ -65,15 +65,16 @@ export async function updateSettings(formData: FormData) {
 
                 finalValue = `/docs/${fileName}`;
             } else if (value instanceof File && value.size === 0) {
-                // Skip if no new file was uploaded for this field
                 continue;
             }
 
-            await pool.execute(
+            await connection.execute(
                 'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
                 [key, finalValue, finalValue]
             );
         }
+
+        await connection.commit();
 
         revalidatePath('/admin/settings');
         revalidatePath('/');
@@ -82,7 +83,10 @@ export async function updateSettings(formData: FormData) {
         revalidatePath('/about');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Update Settings Error:", error);
         return { error: "Failed to update settings: " + error.message };
+    } finally {
+        connection.release();
     }
 }

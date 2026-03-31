@@ -36,6 +36,7 @@ function ManageApplicationsContent() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState<'all' | 'reviewer' | 'editor'>('all');
     const [processingId, setProcessingId] = useState<number | null>(null);
+    const [rejectionReason, setRejectionReason] = useState<{ id: number; text: string } | null>(null);
 
     const handleApprove = async (id: number) => {
         if (!confirm('Are you sure you want to APPROVE this application?\nThis will automatically create a user account and send an invitation.')) return;
@@ -55,13 +56,26 @@ function ManageApplicationsContent() {
     };
 
     const handleReject = async (id: number) => {
-        if (!confirm('Are you sure you want to REJECT this application?\nThis will delete the record and send a rejection email.')) return;
+        if (!rejectionReason || rejectionReason.id !== id) {
+            setRejectionReason({ id, text: "" });
+            return;
+        }
+
+        const reason = rejectionReason.text;
+        const finalReason = reason.trim();
+        if (finalReason.length < 20) {
+            toast.error("Reason Required", {
+                 description: "Please provide a rejection reason (min 20 characters)."
+            });
+            return;
+        }
 
         setProcessingId(id);
         try {
-            const result = await rejectMutation.mutateAsync(id);
+            const result = await rejectMutation.mutateAsync({ id, reason: finalReason });
             if (result.success) {
                 toast.success('Application rejected successfully!');
+                setRejectionReason(null);
             } else {
                 toast.error(result.error);
             }
@@ -200,36 +214,61 @@ function ManageApplicationsContent() {
                                         </div>
 
                                         <div className="bg-muted/10 md:w-72 p-6 border-t md:border-t-0 md:border-l border-border/50 flex flex-col justify-center gap-3">
-                                            <Button
-                                                disabled={processingId !== null}
-                                                onClick={() => handleApprove(app.id)}
-                                                className="w-full h-12 gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs tracking-widest border-none shadow-lg shadow-emerald-600/20 transition-all rounded-xl cursor-pointer"
-                                            >
-                                                {processingId === app.id ? (
-                                                    <span className="animate-pulse">Authorizing...</span>
-                                                ) : (
-                                                    <>
-                                                        Approve Proposal
-                                                        <CheckCircle className="w-4.5 h-4.5" />
-                                                    </>
-                                                )}
-                                            </Button>
-                                            <Button
-                                                disabled={processingId !== null}
-                                                variant="outline"
-                                                onClick={() => handleReject(app.id)}
-                                                className="w-full h-12 gap-2.5 border-red-500/20 text-red-600 hover:bg-red-500 hover:text-white font-black text-xs tracking-widest transition-all rounded-xl cursor-pointer"
-                                            >
-                                                {processingId === app.id ? (
-                                                    <span className="animate-pulse">Declining...</span>
-                                                ) : (
-                                                    <>
-                                                        Reject Request
-                                                        <X className="w-4.5 h-4.5" />
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </div>
+                                             {rejectionReason?.id === app.id && rejectionReason && (
+                                                 <div className="space-y-3 mb-3 animate-in fade-in slide-in-from-top-1">
+                                                     <textarea
+                                                         className="w-full h-24 p-3 text-[10px] bg-background border border-border/50 rounded-xl focus:ring-1 focus:ring-red-500/20 outline-none resize-none font-medium text-foreground placeholder:text-muted-foreground/50"
+                                                         placeholder="Reason for rejection (min 20 characters)..."
+                                                         value={rejectionReason.text}
+                                                         onChange={(e) => setRejectionReason({ id: app.id, text: e.target.value })}
+                                                     />
+                                                     <Button
+                                                         variant="ghost"
+                                                         size="sm"
+                                                         onClick={() => setRejectionReason(null)}
+                                                         className="h-8 w-full text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                                                     >
+                                                         Cancel
+                                                     </Button>
+                                                 </div>
+                                             )}
+                                             
+                                             <Button
+                                                 disabled={processingId !== null}
+                                                 onClick={() => handleReject(app.id)}
+                                                 variant={rejectionReason?.id === app.id ? "destructive" : "outline"}
+                                                 className={`w-full h-12 gap-2.5 font-black tracking-widest transition-all rounded-xl cursor-pointer ${rejectionReason?.id === app.id 
+                                                     ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/20' 
+                                                     : 'border-red-500/20 text-red-600 hover:bg-red-500 hover:text-white'
+                                                 } ${rejectionReason?.id === app.id ? 'text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs' : 'text-xs'}`}
+                                             >
+                                                 {processingId === app.id ? (
+                                                     <span className="animate-pulse">Declining...</span>
+                                                 ) : (
+                                                     <>
+                                                         {rejectionReason?.id === app.id ? 'Confirm Rejection' : 'Reject Request'}
+                                                         <X className="w-4.5 h-4.5" />
+                                                     </>
+                                                 )}
+                                             </Button>
+
+                                             {!rejectionReason && (
+                                                 <Button
+                                                     disabled={processingId !== null}
+                                                     onClick={() => handleApprove(app.id)}
+                                                     className="w-full h-12 gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs tracking-widest border-none shadow-lg shadow-emerald-600/20 transition-all rounded-xl cursor-pointer"
+                                                 >
+                                                     {processingId === app.id ? (
+                                                         <span className="animate-pulse">Authorizing...</span>
+                                                     ) : (
+                                                         <>
+                                                             Approve Proposal
+                                                             <CheckCircle className="w-4.5 h-4.5" />
+                                                         </>
+                                                     )}
+                                                 </Button>
+                                             )}
+                                         </div>
                                     </div>
                                 </Card>
                             </motion.div>

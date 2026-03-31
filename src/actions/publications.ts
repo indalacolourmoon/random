@@ -255,14 +255,19 @@ export async function getPapersByIssueId(issueId: number) {
 }
 
 export async function unassignPaperFromIssue(submissionId: number) {
+    const connection = await pool.getConnection();
     try {
-        await pool.execute(
+        await connection.beginTransaction();
+
+        await connection.execute(
             "UPDATE submissions SET issue_id = NULL, status = 'paid', submission_mode = 'archive' WHERE id = ?",
             [submissionId]
         );
 
-        // Sync Modes
-        await syncPublicationModes();
+        // Sync Modes inside transaction
+        await syncPublicationModes(connection);
+
+        await connection.commit();
 
         revalidatePath('/admin/publications');
         revalidatePath('/admin/submissions');
@@ -270,8 +275,11 @@ export async function unassignPaperFromIssue(submissionId: number) {
         revalidatePath('/current-issue');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Unassign Paper Error:", error);
         return { error: "Failed to unassign paper: " + error.message };
+    } finally {
+        connection.release();
     }
 }
 
@@ -281,45 +289,80 @@ export async function updateVolumeIssue(id: number, formData: FormData) {
     const year = parseInt(formData.get('year') as string);
     const monthRange = formData.get('monthRange') as string;
 
+    const connection = await pool.getConnection();
     try {
-        await pool.execute(
+        await connection.beginTransaction();
+
+        await connection.execute(
             'UPDATE volumes_issues SET volume_number = ?, issue_number = ?, year = ?, month_range = ? WHERE id = ?',
             [volume, issue, year, monthRange, id]
         );
 
         // Sync Modes
-        await syncPublicationModes();
+        await syncPublicationModes(connection);
+
+        await connection.commit();
 
         revalidatePath('/admin/publications');
         revalidatePath('/archives');
         revalidatePath('/current-issue');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Update Publication Error:", error);
         return { error: "Failed to update publication: " + error.message };
+    } finally {
+        connection.release();
     }
 }
 
 export async function deleteVolumeIssue(id: number) {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
+
         // 1. Unassign all papers first
-        await pool.execute(
+        await connection.execute(
             "UPDATE submissions SET issue_id = NULL, status = 'paid' WHERE issue_id = ?",
             [id]
         );
 
         // 2. Delete the issue
-        await pool.execute("DELETE FROM volumes_issues WHERE id = ?", [id]);
+        await connection.execute("DELETE FROM volumes_issues WHERE id = ?", [id]);
 
         // Sync Modes
-        await syncPublicationModes();
+        await syncPublicationModes(connection);
+
+        await connection.commit();
 
         revalidatePath('/admin/publications');
         revalidatePath('/archives');
         revalidatePath('/current-issue');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Delete Publication Error:", error);
         return { error: "Failed to delete publication: " + error.message };
+    } finally {
+        connection.release();
+    }
+}
+export async function retractPaper(submissionId: number, retractionNoticeUrl: string) {
+    try {
+        await pool.execute(
+            "UPDATE submissions SET status = 'retracted', retraction_notice_url = ? WHERE id = ?",
+            [retractionNoticeUrl, submissionId]
+        );
+
+        revalidatePath('/admin/submissions');
+        revalidatePath(`/archives/${submissionId}`);
+        revalidatePath('/archives');
+        revalidatePath('/current-issue');
+        revalidatePath('/');
+        
+        return { success: true };
+    } catch (error: any) {
+        console.error("Retract Paper Error:", error);
+        return { error: "Failed to retract paper: " + error.message };
     }
 }

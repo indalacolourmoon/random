@@ -20,7 +20,7 @@ export default function Messages() {
     const [activeTab, setActiveTab] = useState<'inbox' | 'archived'>('inbox');
     const [searchQuery, setSearchQuery] = useState('');
 
-    async function handleStatusChange(id: number, status: string) {
+    async function handleStatusChange(id: number, status: 'resolved' | 'archived' | 'read') {
         try {
             await updateMutation.mutateAsync({ id, status });
             if (selectedMessage?.id === id) {

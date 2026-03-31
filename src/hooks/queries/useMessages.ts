@@ -1,37 +1,59 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getMessages, updateMessageStatus, deleteMessage } from '@/actions/messages';
+import { getMessages, updateMessageStatus, bulkUpdateMessageStatus, revertMessageStatus, deleteMessage } from '@/actions/messages';
 
-export function useMessages() {
+export function useMessages(filters?: { status?: string, search?: string }) {
     return useQuery<any[]>({
-        queryKey: ['messages'],
+        queryKey: ['messages', filters],
         queryFn: async () => {
-            return await getMessages();
-        },
+            const data = await getMessages(filters);
+            return data || [];
+        }
     });
 }
 
 export function useUpdateMessageStatus() {
     const queryClient = useQueryClient();
+
     return useMutation({
-        mutationFn: async ({ id, status }: { id: number; status: string }) => {
-            return await updateMessageStatus(id, status);
-        },
+        mutationFn: ({ id, status }: { id: number, status: 'resolved' | 'archived' | 'read' }) => 
+            updateMessageStatus(id, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['messages'] });
-        },
+        }
+    });
+}
+
+export function useBulkUpdateMessages() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ ids, status }: { ids: number[], status: 'resolved' | 'archived' | 'read' }) => 
+            bulkUpdateMessageStatus(ids, status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['messages'] });
+        }
+    });
+}
+
+export function useRevertMessage() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number) => revertMessageStatus(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['messages'] });
+        }
     });
 }
 
 export function useDeleteMessage() {
     const queryClient = useQueryClient();
+
     return useMutation({
-        mutationFn: async (id: number) => {
-            return await deleteMessage(id);
-        },
-        onSuccess: (data) => {
-            if (!data.error) {
-                queryClient.invalidateQueries({ queryKey: ['messages'] });
-            }
-        },
+        mutationFn: (id: number) => deleteMessage(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['messages'] });
+        }
     });
 }
+      

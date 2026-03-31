@@ -7,19 +7,26 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export async function decideSubmission(id: number, decision: 'accepted' | 'rejected') {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
+
         // 1. Fetch deep details including reviewer feedback
-        const [subRows]: any = await pool.execute('SELECT * FROM submissions WHERE id = ?', [id]);
-        if (!subRows[0]) return { error: "Submission not found" };
+        const [subRows]: any = await connection.execute('SELECT * FROM submissions WHERE id = ?', [id]);
+        if (!subRows[0]) {
+            await connection.rollback();
+            connection.release();
+            return { error: "Submission not found" };
+        }
 
         const submission = subRows[0];
-        const [reviewRows]: any = await pool.execute('SELECT feedback, feedback_file_path FROM reviews WHERE submission_id = ? AND status = "completed"', [id]);
+        const [reviewRows]: any = await connection.execute('SELECT feedback, feedback_file_path FROM reviews WHERE submission_id = ? AND status = "completed"', [id]);
 
         // Aggregate feedback
         const aggregatedFeedback = reviewRows.map((r: any, i: number) => `Reviewer ${i + 1}:\n${r.feedback}`).join('\n\n');
 
         if (decision === 'accepted') {
-            await pool.execute('UPDATE submissions SET status = "accepted" WHERE id = ?', [id]);
+            await connection.execute('UPDATE submissions SET status = "accepted" WHERE id = ?', [id]);
             const template = emailTemplates.manuscriptAcceptance(submission.author_name, submission.title, submission.paper_id);
             sendEmail({
                 to: submission.author_email,
@@ -32,35 +39,28 @@ export async function decideSubmission(id: number, decision: 'accepted' | 'rejec
             if (submission.file_path && submission.file_path.startsWith('/')) {
                 try {
                     const fullPath = path.join(process.cwd(), 'public', submission.file_path);
-                    // Check if file exists first
                     await fs.access(fullPath);
                     await fs.unlink(fullPath);
-                    console.log(`Deleted manuscript file: ${fullPath}`);
                 } catch (e: any) {
-                    if (e.code !== 'ENOENT') {
-                        console.error("Manuscript Cleanup Error:", e);
-                    }
+                    if (e.code !== 'ENOENT') console.error("Manuscript Cleanup Error:", e);
                 }
             }
 
-            // 1.5 Delete reviewer feedback files if exist
+            // 1.5 Delete reviewer feedback files
             for (const review of reviewRows) {
                 if (review.feedback_file_path && review.feedback_file_path.startsWith('/')) {
                     try {
                         const fullPath = path.join(process.cwd(), 'public', review.feedback_file_path);
                         await fs.access(fullPath);
                         await fs.unlink(fullPath);
-                        console.log(`Deleted reviewer feedback file: ${fullPath}`);
                     } catch (e: any) {
-                        if (e.code !== 'ENOENT') {
-                            console.error("Reviewer File Cleanup Error:", e);
-                        }
+                        if (e.code !== 'ENOENT') console.error("Reviewer File Cleanup Error:", e);
                     }
                 }
             }
 
             // 2. Update status
-            await pool.execute('UPDATE submissions SET status = "rejected" WHERE id = ?', [id]);
+            await connection.execute('UPDATE submissions SET status = "rejected" WHERE id = ?', [id]);
 
             // 3. Send Rejection Email with feedback
             const template = emailTemplates.manuscriptRejection(submission.author_name, submission.title, submission.paper_id, aggregatedFeedback);
@@ -73,31 +73,28 @@ export async function decideSubmission(id: number, decision: 'accepted' | 'rejec
 
         if (decision === 'accepted') {
             // Fetch APC setting or default
-            const [settings]: any = await pool.execute('SELECT setting_value FROM settings WHERE setting_key = "apc_inr"');
+            const [settings]: any = await connection.execute('SELECT setting_value FROM settings WHERE setting_key = "apc_inr"');
             const amount = settings[0]?.setting_value || '2500';
 
             // Create payment record
-            await pool.execute(
+            await connection.execute(
                 'INSERT INTO payments (submission_id, amount, currency, status) VALUES (?, ?, ?, ?)',
                 [id, amount, 'INR', 'unpaid']
             );
-            console.log(`Created payment record for submission ${id} with amount ${amount}`);
         }
 
+        await connection.commit();
+        
         revalidatePath('/editor/submissions');
-        revalidatePath('/editor/submissions/[id]', 'page');
-        revalidatePath('/editor');
         revalidatePath('/admin/submissions');
-        revalidatePath('/admin/submissions/[id]', 'page');
-        revalidatePath('/admin');
-        revalidatePath('/admin/reviews');
-        revalidatePath('/editor/reviews');
-        revalidatePath('/admin/payments');
         revalidatePath('/track');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Decision Workflow Error:", error);
         return { error: "Failed to finalize decision: " + error.message };
+    } finally {
+        connection.release();
     }
 }
 
@@ -197,23 +194,24 @@ export async function uploadManuscriptPdf(submissionId: number, formData: FormDa
 }
 
 export async function deleteSubmissionPermanently(id: number) {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
+
         // 1. Fetch to get file path
-        const [rows]: any = await pool.execute('SELECT file_path FROM submissions WHERE id = ?', [id]);
+        const [rows]: any = await connection.execute('SELECT file_path FROM submissions WHERE id = ?', [id]);
         if (rows[0]?.file_path && rows[0].file_path.startsWith('/')) {
             try {
                 const fullPath = path.join(process.cwd(), 'public', rows[0].file_path);
                 await fs.access(fullPath);
                 await fs.unlink(fullPath);
             } catch (e: any) {
-                if (e.code !== 'ENOENT') {
-                    console.error("File deletion error during permanent delete:", e);
-                }
+                if (e.code !== 'ENOENT') console.error("File deletion error:", e);
             }
         }
 
         // 2. Delete reviewer files
-        const [reviews]: any = await pool.execute('SELECT feedback_file_path FROM reviews WHERE submission_id = ?', [id]);
+        const [reviews]: any = await connection.execute('SELECT feedback_file_path FROM reviews WHERE submission_id = ?', [id]);
         for (const r of reviews) {
             if (r.feedback_file_path && r.feedback_file_path.startsWith('/')) {
                 try {
@@ -221,16 +219,17 @@ export async function deleteSubmissionPermanently(id: number) {
                     await fs.access(fullPath);
                     await fs.unlink(fullPath);
                 } catch (e: any) {
-                    if (e.code !== 'ENOENT') {
-                        console.error("Reviewer file deletion error during permanent delete:", e);
-                    }
+                    if (e.code !== 'ENOENT') console.error("Reviewer file deletion error:", e);
                 }
             }
         }
 
-        // 3. Delete from DB (reviews will cascade if foreign keys are set, but let's be safe if not)
-        await pool.execute('DELETE FROM reviews WHERE submission_id = ?', [id]);
-        await pool.execute('DELETE FROM submissions WHERE id = ?', [id]);
+        // 3. Delete from DB
+        await connection.execute('DELETE FROM reviews WHERE submission_id = ?', [id]);
+        await connection.execute('DELETE FROM payments WHERE submission_id = ?', [id]);
+        await connection.execute('DELETE FROM submissions WHERE id = ?', [id]);
+
+        await connection.commit();
 
         revalidatePath('/admin/submissions');
         revalidatePath('/editor/submissions');
@@ -238,7 +237,10 @@ export async function deleteSubmissionPermanently(id: number) {
         revalidatePath('/editor');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Permanent Delete Error:", error);
         return { error: "Failed to delete submission: " + error.message };
+    } finally {
+        connection.release();
     }
 }

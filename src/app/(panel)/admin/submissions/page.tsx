@@ -10,6 +10,8 @@ import pool from '@/lib/db';
 import SubTabs from '@/features/submissions/components/SubmissionTabs';
 
 
+import SubmissionStats from '@/features/submissions/components/SubmissionStats';
+
 export const dynamic = 'force-dynamic';
 
 export default async function Submissions({
@@ -20,7 +22,19 @@ export default async function Submissions({
     const { status, q } = await searchParams;
     const currentStatus = status || 'all';
 
-    // Build SQL query dynamically
+    // 1. Fetch Stats Aggregation
+    const [statRows]: any = await pool.execute(`
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN status = 'under_review' THEN 1 ELSE 0 END) as underReview,
+            SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) as published,
+            SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+        FROM submissions
+    `);
+    const statsResult = statRows[0];
+
+    // 2. Build SQL query dynamically
     const conditions = [];
     const params: any[] = [];
 
@@ -49,23 +63,34 @@ export default async function Submissions({
     const [rows]: any = await pool.execute(query, params);
     const submissions = rows;
 
-
     return (
-        <section className="space-y-6 pb-20">
+        <section className="space-y-12 pb-20 max-w-7xl 2xl:max-w-[1900px] mx-auto overflow-visible">
             {/* Header Section */}
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8 transition-all duration-500">
-                <div className="space-y-2">
-                    <h1 className=" font-black text-foreground tracking-widest uppercase leading-none text-2xl xl:text-3xl 2xl:text-3xl">Manuscripts Registry</h1>
-                    <p className="text-xs sm:text-sm 2xl:text-lg font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2">Global submission pipeline & archival integrity oversight.</p>
+            <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-primary/5 pb-12">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 2xl:w-16 2xl:h-16 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
+                            <Plus className="w-6 h-6 2xl:w-10 2xl:h-10 text-primary" />
+                        </div>
+                        <h1 className="font-serif font-black text-foreground tracking-tighter uppercase leading-none text-3xl xl:text-4xl 2xl:text-6xl">
+                            Manuscripts <span className="text-secondary opacity-50">Registry</span>
+                        </h1>
+                    </div>
+                    <p className="text-xs sm:text-sm 2xl:text-2xl font-bold text-muted-foreground border-l-4 border-secondary/50 pl-6 py-1 max-w-2xl leading-relaxed">
+                        Precision oversight of the global technical submission pipeline and peer-review integrity protocols.
+                    </p>
                 </div>
                 <div className="flex gap-4">
-                    <Button asChild className="h-12 2xl:h-14 px-10 gap-3 bg-primary text-white dark:text-black font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base tracking-[0.3em] rounded-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
+                    <Button asChild className="h-14 2xl:h-20 px-12 2xl:px-20 gap-4 bg-primary text-white dark:text-black font-black text-[10px] 2xl:text-2xl tracking-[0.3em] rounded-2xl 2xl:rounded-3xl shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-t border-white/20">
                         <Link className="cursor-pointer" href="/submit">
-                            <Plus className="w-6 h-6 2xl:w-6 2xl:h-6" /> Add Manuscript
+                            <Plus className="w-6 h-6 2xl:w-10 2xl:h-10" /> New Submission
                         </Link>
                     </Button>
                 </div>
             </header>
+
+            {/* Performance Overviews */}
+            <SubmissionStats stats={statsResult} />
 
             {/* Main Content Area */}
             <Card className="border-primary/5 shadow-vip overflow-hidden bg-card">

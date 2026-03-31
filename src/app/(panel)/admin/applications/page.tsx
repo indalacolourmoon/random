@@ -1,8 +1,10 @@
 "use client";
 
 export const dynamic = "force-dynamic";
+
 import { useApplications, useApproveApplication, useRejectApplication } from '@/hooks/queries/useApplications';
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import {
     User,
@@ -20,224 +22,285 @@ import {
     MoreVertical,
     CheckCircle,
     X,
-    AlertTriangle
+    AlertTriangle,
+    Download,
+    Trash2,
+    RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Suspense } from 'react';
 
+
 function ManageApplicationsContent() {
-    const { data: applications = [], isLoading: loading } = useApplications();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // URL Filter State
+    const role = searchParams.get('role') || 'all';
+    const status = searchParams.get('status') || 'all';
+    const interest = searchParams.get('interest') || '';
+
+    const { data: applications = [], isLoading: loading } = useApplications({ 
+        role, 
+        status, 
+        interest 
+    });
+
     const approveMutation = useApproveApplication();
     const rejectMutation = useRejectApplication();
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterRole, setFilterRole] = useState<'all' | 'reviewer' | 'editor'>('all');
-    const [processingId, setProcessingId] = useState<number | null>(null);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [inspectApp, setInspectApp] = useState<any | null>(null);
+    const [rejectionMode, setRejectionMode] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState("");
+    const [approveConfirm, setApproveConfirm] = useState(false);
+    
+    // Bulk state
+    const [bulkMode, setBulkMode] = useState<'approve' | 'reject' | null>(null);
+    const [bulkReason, setBulkReason] = useState("");
+
+    const updateFilters = (newFilters: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(newFilters).forEach(([key, value]) => {
+            if (value === 'all' || !value) params.delete(key);
+            else params.set(key, value);
+        });
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const clearFilters = () => {
+        router.push(pathname);
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) setSelectedIds(applications.map(app => app.id));
+        else setSelectedIds([]);
+    };
+
+    const toggleSelect = (id: number) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
 
     const handleApprove = async (id: number) => {
-        if (!confirm('Are you sure you want to APPROVE this application?\nThis will automatically create a user account and send an invitation.')) return;
-
-        setProcessingId(id);
+        const toastId = toast.loading("Processing approval...");
         try {
-            const result = await approveMutation.mutateAsync(id);
-            if (result.success) {
-                toast.success('Application approved successfully!');
+            const res = await approveMutation.mutateAsync(id);
+            if (res.success) {
+                toast.success("Application approved and user invited", { id: toastId });
+                setInspectApp(null);
+                setApproveConfirm(false);
             } else {
-                toast.error(result.error);
+                toast.error(res.error || "Approval failed", { id: toastId });
             }
-        } catch (error) {
-            toast.error('Failed to approve application');
+        } catch (e) {
+            toast.error("Internal service error", { id: toastId });
         }
-        setProcessingId(null);
     };
 
-    const handleReject = async (id: number) => {
-        if (!confirm('Are you sure you want to REJECT this application?\nThis will delete the record and send a rejection email.')) return;
-
-        setProcessingId(id);
-        try {
-            const result = await rejectMutation.mutateAsync(id);
-            if (result.success) {
-                toast.success('Application rejected successfully!');
-            } else {
-                toast.error(result.error);
-            }
-        } catch (error) {
-            toast.error('Failed to reject application');
+    const handleReject = async (id: number, reason: string) => {
+        if (reason.length < 20) {
+            toast.error("Rejection reason must be at least 20 characters");
+            return;
         }
-        setProcessingId(null);
+        const toastId = toast.loading("Processing rejection...");
+        try {
+            const res = await rejectMutation.mutateAsync({ id, reason });
+            if (res.success) {
+                toast.success("Application rejected", { id: toastId });
+                setInspectApp(null);
+                setRejectionMode(false);
+                setRejectionReason("");
+            } else {
+                toast.error(res.error || "Rejection failed", { id: toastId });
+            }
+        } catch (e) {
+            toast.error("Internal service error", { id: toastId });
+        }
     };
-
-    const filteredApps = applications.filter(app => {
-        const matchesSearch = app.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.email?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesRole = filterRole === 'all' || app.application_type === filterRole;
-        return matchesSearch && matchesRole;
-    });
 
     return (
-        <section className="space-y-6 pb-24">
-            {/* Header Section */}
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 py-6 border-b border-primary/5 mb-8">
-                <div className="space-y-2">
-                    <h1 className="font-black text-foreground tracking-widest uppercase leading-none 2xl:text-3xl">Applications Archive</h1>
-                    <p className="text-xs sm:text-sm 2xl:text-lg font-medium text-muted-foreground border-l-2 border-primary/10 pl-4">Review and manage professional join requests for the journal portal.</p>
+        <section className="space-y-8 pb-32">
+            {/* Header Area */}
+            <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-white/5 pb-8 backdrop-blur-sm sticky top-0 z-10 py-4 bg-background/80">
+                <div className="space-y-1">
+                    <h1 className="font-serif text-3xl 2xl:text-5xl font-black tracking-tight text-foreground uppercase">Reviewer Archive</h1>
+                    <p className="font-mono text-[10px] 2xl:text-xs text-muted-foreground uppercase tracking-widest opacity-60">Professional Vetting & Onboarding Command</p>
                 </div>
-                <div className="flex bg-muted/50 p-1.5 rounded-xl border border-border/50 shrink-0 h-12 2xl:h-14">
-                    <Button
-                        variant={filterRole === 'all' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setFilterRole('all')}
-                        className={`h-full px-6 2xl:px-8 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black tracking-widest transition-all rounded-lg 2xl:rounded-xl ${filterRole === 'all' ? 'bg-background shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        All
-                    </Button>
-                    <Button
-                        variant={filterRole === 'reviewer' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setFilterRole('reviewer')}
-                        className={`h-full px-6 2xl:px-8 text-xs 2xl:text-base font-black tracking-widest transition-all rounded-lg 2xl:rounded-xl ${filterRole === 'reviewer' ? 'bg-background shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        Reviewers
-                    </Button>
-                    <Button
-                        variant={filterRole === 'editor' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setFilterRole('editor')}
-                        className={`h-full px-6 2xl:px-8 text-xs 2xl:text-base font-black tracking-widest transition-all rounded-lg 2xl:rounded-xl ${filterRole === 'editor' ? 'bg-background shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        Editors
-                    </Button>
+
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Role Filter */}
+                    <div className="flex bg-muted/30 p-1 rounded-full border border-white/5">
+                        {['all', 'reviewer', 'editor'].map((r) => (
+                            <Button
+                                key={r}
+                                variant={role === r ? 'secondary' : 'ghost'}
+                                size="sm"
+                                onClick={() => updateFilters({ role: r })}
+                                className={`rounded-full px-5 text-[10px] 2xl:text-sm font-black uppercase tracking-tighter h-8 2xl:h-10 ${role === r ? 'shadow-lg shadow-black/20' : 'text-muted-foreground'}`}
+                            >
+                                {r}
+                            </Button>
+                        ))}
+                    </div>
+
+                    {/* Status Filter */}
+                    <div className="flex bg-muted/30 p-1 rounded-full border border-white/5">
+                        {['all', 'pending', 'approved', 'rejected'].map((s) => (
+                            <Button
+                                key={s}
+                                variant={status === s ? 'secondary' : 'ghost'}
+                                size="sm"
+                                onClick={() => updateFilters({ status: s })}
+                                className={`rounded-full px-5 text-[10px] 2xl:text-sm font-black uppercase tracking-tighter h-8 2xl:h-10 ${status === s ? 'shadow-lg shadow-black/20' : 'text-muted-foreground'}`}
+                            >
+                                {s}
+                            </Button>
+                        ))}
+                    </div>
+
+                    {(role !== 'all' || status !== 'all' || interest) && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={clearFilters}
+                            className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/5 text-[10px] font-black uppercase"
+                        >
+                            <RotateCcw className="w-3 h-3 mr-2" /> Clear Filters
+                        </Button>
+                    )}
                 </div>
             </header>
 
-            {/* Filter Bar */}
-            <Card className="border-border/50 shadow-sm overflow-hidden bg-muted/10 rounded-xl">
-                <CardContent className="p-5 flex flex-col md:flex-row gap-5 items-center">
-                    <div className="relative flex-1 group w-full">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 2xl:w-6 2xl:h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        <Input
-                            type="text"
-                            placeholder="Search by name or email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-background border-none h-12 2xl:h-14 pl-12 2xl:pl-16 text-sm 2xl:text-lg font-bold text-foreground focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl"
-                        />
-                    </div>
-                    <div className="flex items-center gap-3 px-5 py-2.5 bg-background rounded-xl border border-border/50 shrink-0 h-12 2xl:h-14">
-                        <Clock className="w-4 h-4 2xl:w-6 2xl:h-6 text-primary opacity-40" />
-                        <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black text-muted-foreground tracking-widest uppercase opacity-60">{filteredApps.length} Pending Records</span>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Interest Search */}
+            <div className="relative group max-w-2xl">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input
+                    placeholder="Search by Research Domain (e.g. VLSI, AI, Signal...)"
+                    value={interest}
+                    onChange={(e) => updateFilters({ interest: e.target.value })}
+                    className="h-14 2xl:h-16 pl-14 bg-muted/10 border-white/5 font-bold text-sm rounded-2xl focus-visible:ring-primary/20"
+                />
+            </div>
 
-            {/* Applications List */}
+            {/* Selection Toolbar */}
+            {applications.length > 0 && (
+                <div className="flex items-center gap-4 px-4 py-2 bg-muted/20 rounded-xl border border-white/5 w-fit">
+                    <Checkbox 
+                        checked={selectedIds.length === applications.length && applications.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        id="select-all"
+                    />
+                    <label htmlFor="select-all" className="text-[10px] font-black text-muted-foreground uppercase cursor-pointer">
+                        {selectedIds.length === 0 ? "Select Items for Batch Action" : `${selectedIds.length} Applicants Selected`}
+                    </label>
+                </div>
+            )}
+
+            {/* Grid */}
             <div className="grid grid-cols-1 gap-4">
                 {loading ? (
-                    <div className="py-24 flex flex-col items-center justify-center gap-6 text-muted-foreground">
-                        <div className="w-10 h-10 border-[3px] border-primary/10 border-t-primary rounded-full animate-spin" />
-                        <p className="font-black text-xs tracking-[0.2em] animate-pulse">Scanning Applications...</p>
+                    <div className="h-96 flex flex-col items-center justify-center gap-4">
+                        <div className="w-12 h-12 border-t-2 border-primary rounded-full animate-spin" />
+                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] opacity-40">Decrypting Archive...</p>
                     </div>
-                ) : filteredApps.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 bg-muted/20 border border-dashed border-border/50 rounded-xl">
-                        <Filter className="w-12 h-12 text-muted-foreground/20 mb-6" />
-                        <p className="text-xs font-black text-muted-foreground tracking-[0.2em] uppercase">No join requests found</p>
-                    </div>
+                ) : applications.length === 0 ? (
+                    <Card className="border-dashed h-64 flex flex-col items-center justify-center bg-transparent border-white/5 opacity-50">
+                        <XCircle className="w-10 h-10 mb-4 text-muted-foreground" />
+                        <p className="font-mono text-[10px] uppercase">No matching dossiers found in sector</p>
+                    </Card>
                 ) : (
-                    <AnimatePresence mode="popLayout">
-                        {filteredApps.map((app) => (
+                    <AnimatePresence>
+                        {applications.map((app) => (
                             <motion.div
                                 key={app.id}
                                 layout
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
+                                className="group relative"
                             >
-                                 <Card className="border-border/50 shadow-sm overflow-hidden hover:border-primary/20 transition-all group 2xl:rounded-3xl">
-                                    <div className="flex flex-col md:flex-row">
-                                        <div className="p-5 flex-1 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
-                                            <div className="w-24 h-24 2xl:w-32 2xl:h-32 rounded-xl bg-muted border border-border/50 flex-shrink-0 overflow-hidden group-hover:shadow-xl transition-all shadow-inner">
-                                                {app.photo_url ? (
-                                                    <img src={app.photo_url} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <User className="w-10 h-10 2xl:w-16 2xl:h-16 text-muted-foreground/30" />
-                                                    </div>
-                                                )}
+                                <Card 
+                                    className={`relative overflow-hidden border-white/10 bg-white/[0.02] backdrop-blur-xl transition-all hover:bg-white/[0.04] hover:border-primary/30 cursor-pointer ${selectedIds.includes(app.id) ? 'border-primary/50' : ''}`}
+                                    onClick={() => setInspectApp(app)}
+                                >
+                                    <div className="flex items-stretch">
+                                        {/* Selection Area */}
+                                        <div 
+                                            className="px-6 flex items-center border-r border-white/5"
+                                            onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
+                                        >
+                                            <Checkbox checked={selectedIds.includes(app.id)} />
+                                        </div>
+
+                                        <CardContent className="p-0 flex-1 grid grid-cols-1 md:grid-cols-[120px_1fr_250px] items-center">
+                                            {/* Photo */}
+                                            <div className="p-4 flex justify-center">
+                                                <div className="w-16 h-16 2xl:w-20 2xl:h-20 bg-muted rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                                                    {app.photo_url ? (
+                                                        <img src={app.photo_url} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center opacity-20"><User /></div>
+                                                    )}
+                                                </div>
                                             </div>
 
-                                            <div className="space-y-2 flex-1 text-center sm:text-left min-w-0">
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                                                    <h3 className=" font-black text-foreground tracking-wider uppercase leading-none 2xl:text-xl">{app.full_name}</h3>
-                                                    <Badge className={`h-5 2xl:h-8 px-2 2xl:px-3 text-[8px] sm:text-[9px] lg:text-[9px] xl:text-[10px] 2xl:text-sm font-black tracking-widest uppercase rounded-full ${app.application_type === 'editor'
-                                                        ? 'bg-purple-500/10 text-purple-600 border-none'
-                                                        : 'bg-emerald-500/10 text-emerald-600 border-none'
-                                                        }`}>
+                                            {/* Info */}
+                                            <div className="p-6 space-y-2 border-r border-white/5">
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="font-serif text-xl 2xl:text-2xl font-black text-foreground">{app.full_name}</h3>
+                                                    <Badge className={`rounded-full h-5 px-3 border-none text-[8px] font-black uppercase tracking-widest ${
+                                                        app.application_type === 'editor' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
+                                                    }`}>
                                                         {app.application_type}
                                                     </Badge>
                                                 </div>
-
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-2.5 2xl:gap-x-8 text-muted-foreground text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black uppercase tracking-widest opacity-60">
-                                                    <p className="flex items-center gap-2 2xl:gap-4"><Mail className="w-3.5 h-3.5 2xl:w-5 2xl:h-5 text-primary/40" /> {app.email}</p>
-                                                    <p className="flex items-center gap-2 2xl:gap-4"><Building2 className="w-3.5 h-3.5 2xl:w-5 2xl:h-5 text-primary/40" /> {app.institute}</p>
-                                                    <p className="flex items-center gap-2 2xl:gap-4"><Briefcase className="w-3.5 h-3.5 2xl:w-5 2xl:h-5 text-primary/40" /> {app.designation}</p>
+                                                <div className="flex flex-wrap gap-x-6 gap-y-1 text-muted-foreground text-[10px] 2xl:text-xs font-bold uppercase tracking-wide opacity-70">
+                                                    <span className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5" /> {app.institute}</span>
+                                                    <span className="flex items-center gap-2"><Briefcase className="w-3.5 h-3.5" /> {app.designation}</span>
+                                                    <span className="flex items-center gap-2 underline decoration-primary/20"><Mail className="w-3.5 h-3.5" /> {app.email}</span>
                                                 </div>
-
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-4 border-t border-border/10 mt-2">
-                                                    <Button asChild variant="secondary" size="sm" className="h-9 2xl:h-12 px-4 2xl:px-8 gap-2 text-[10px] 2xl:text-base font-black tracking-widest uppercase rounded-lg hover:bg-muted border border-border/20 cursor-pointer">
-                                                        <a href={app.cv_url} target="_blank" className="flex items-center gap-2">
-                                                            <FileText className="w-4 h-4 2xl:w-6 2xl:h-6" /> View Documentation
-                                                        </a>
-                                                    </Button>
-                                                    <p className="text-[10px] font-black text-muted-foreground opacity-30 tracking-widest uppercase">
-                                                        Record Logged: {new Date(app.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                    </p>
+                                                
+                                                {/* Domain Tags */}
+                                                <div className="flex flex-wrap gap-2 pt-2">
+                                                    {app.research_interests?.map((tag: string) => (
+                                                        <span key={tag} className="text-[8px] font-black uppercase text-primary px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="bg-muted/10 md:w-72 2xl:w-80 p-6 2xl:p-8 border-t md:border-t-0 md:border-l border-border/50 flex flex-col justify-center gap-3">
-                                            <Button
-                                                disabled={processingId !== null}
-                                                onClick={() => handleApprove(app.id)}
-                                                className="w-full h-12 2xl:h-14 gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs 2xl:text-base tracking-widest border-none shadow-lg shadow-emerald-600/20 transition-all rounded-xl"
-                                            >
-                                                {processingId === app.id ? (
-                                                    <span className="animate-pulse">Onboarding...</span>
-                                                ) : (
-                                                    <>
-                                                        Approve & Invite
-                                                        <CheckCircle className="w-4.5 h-4.5 2xl:w-6 2xl:h-6" />
-                                                    </>
-                                                )}
-                                            </Button>
-                                            <Button
-                                                disabled={processingId !== null}
-                                                variant="outline"
-                                                onClick={() => handleReject(app.id)}
-                                                className="w-full h-12 2xl:h-14 gap-2.5 border-red-500/20 text-red-600 hover:bg-red-500 hover:text-white font-black text-xs 2xl:text-base tracking-widest transition-all rounded-xl"
-                                            >
-                                                {processingId === app.id ? (
-                                                    <span className="animate-pulse">Terminating...</span>
-                                                ) : (
-                                                    <>
-                                                        Reject Request
-                                                        <X className="w-4.5 h-4.5 2xl:w-6 2xl:h-6" />
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </div>
+                                            {/* Status & Meta */}
+                                            <div className="p-8 flex flex-col items-center md:items-end justify-center gap-4 bg-muted/10 h-full">
+                                                <Badge className={`h-8 px-6 text-xs font-black tracking-widest uppercase border-none rounded-xl ${
+                                                    app.status === 'approved' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' :
+                                                    app.status === 'rejected' ? 'bg-rose-700 text-white shadow-lg shadow-rose-700/30' :
+                                                    'bg-amber-500 text-black shadow-lg shadow-amber-500/30'
+                                                }`}>
+                                                    {app.status}
+                                                </Badge>
+                                                <p className="text-[9px] font-mono text-muted-foreground uppercase opacity-40">
+                                                    Logged: {new Date(app.created_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </CardContent>
                                     </div>
                                 </Card>
                             </motion.div>
@@ -245,13 +308,357 @@ function ManageApplicationsContent() {
                     </AnimatePresence>
                 )}
             </div>
+
+            {/* Sticky Batch Action Bar */}
+            <AnimatePresence>
+                {selectedIds.length > 0 && (
+                    <motion.div
+                        initial={{ y: 100 }}
+                        animate={{ y: 0 }}
+                        exit={{ y: 100 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-4xl"
+                    >
+                        <Card className="bg-black/80 backdrop-blur-2xl border-white/20 p-6 shadow-2xl rounded-3xl ring-4 ring-black/50">
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col">
+                                    <span className="font-serif text-lg font-bold text-white">{selectedIds.length} Candidates</span>
+                                    <span className="text-[9px] font-mono uppercase text-muted-foreground">Multiple Batch Operations Active</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])} className="text-white opacity-50 hover:opacity-100">
+                                        Deselect All
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => setBulkMode('reject')}
+                                        className="bg-rose-900/20 border-rose-500/50 text-rose-500 hover:bg-rose-500 hover:text-white font-black"
+                                    >
+                                        Batch Reject
+                                    </Button>
+                                    <Button 
+                                        onClick={() => setBulkMode('approve')}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black"
+                                    >
+                                        Batch Approve
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Inspect Modal */}
+            <Dialog open={!!inspectApp} onOpenChange={(o) => { if(!o) { setInspectApp(null); setRejectionMode(false); setApproveConfirm(false); } }}>
+                <DialogContent className="max-w-6xl w-[95vw] p-0 border-white/10 bg-black overflow-hidden rounded-3xl">
+                    {inspectApp && (
+                        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] h-[80vh]">
+                            {/* Profile Panel */}
+                            <div className="p-10 bg-muted/10 border-r border-white/5 space-y-8 overflow-y-auto custom-scrollbar">
+                                <div className="space-y-6 text-center lg:text-left">
+                                    <div className="w-40 h-40 2xl:w-48 2xl:h-48 rounded-3xl bg-muted border border-white/10 mx-auto lg:mx-0 overflow-hidden shadow-2xl ring-1 ring-white/5">
+                                        {inspectApp.photo_url ? (
+                                            <img src={inspectApp.photo_url} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center opacity-20 scale-150"><User /></div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h2 className="font-serif text-3xl 2xl:text-4xl font-bold">{inspectApp.full_name}</h2>
+                                        <p className="font-mono text-xs text-primary uppercase tracking-widest">{inspectApp.designation}</p>
+                                    </div>
+                                </div>
+
+                                <Separator className="bg-white/5" />
+
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                                        <div className="space-y-1">
+                                            <span className="opacity-40">Institution</span>
+                                            <p className="text-[11px] text-foreground font-bold">{inspectApp.institute}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="opacity-40">Nationality</span>
+                                            <p className="text-[11px] text-foreground font-bold">{inspectApp.nationality}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="opacity-40">Role Target</span>
+                                            <p className="text-[11px] text-foreground font-bold">{inspectApp.application_type}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="opacity-40">Status</span>
+                                            <p className={`text-[11px] font-black ${
+                                                 inspectApp.status === 'approved' ? 'text-emerald-500' : 
+                                                 inspectApp.status === 'rejected' ? 'text-rose-500' : 'text-amber-500'
+                                            }`}>{inspectApp.status}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground opacity-40">Expertise Tags</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {inspectApp.research_interests?.map((tag: string) => (
+                                                <span key={tag} className="text-[9px] font-black uppercase text-primary px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {inspectApp.status === 'rejected' && inspectApp.rejection_reason && (
+                                        <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl space-y-2">
+                                            <span className="font-mono text-[9px] uppercase tracking-widest text-rose-500">Rejection Reasoning</span>
+                                            <p className="text-xs text-rose-200/60 leading-relaxed italic">"{inspectApp.rejection_reason}"</p>
+                                        </div>
+                                    )}
+
+                                    {inspectApp.reviewed_at && (
+                                         <div className="pt-8 opacity-40 text-[8px] font-mono uppercase tracking-[0.2em] leading-loose">
+                                            Audited At: {new Date(inspectApp.reviewed_at).toLocaleString()}
+                                            <br />
+                                            Auditor ID: 0000{inspectApp.reviewed_by}
+                                         </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Verification Panel */}
+                            <div className="flex flex-col bg-background">
+                                <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <FileText className="text-primary w-5 h-5" />
+                                        <span className="font-black text-xs uppercase tracking-widest">Research Dossier</span>
+                                    </div>
+                                    <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg border border-white/5 px-4 text-[10px] font-black uppercase">
+                                        <a href={inspectApp.cv_url} download>
+                                            <Download className="w-3.5 h-3.5 mr-2" /> Download Original
+                                        </a>
+                                    </Button>
+                                </div>
+
+                                <div className="flex-1 bg-muted/20 relative">
+                                    {inspectApp.cv_url?.toLowerCase().endsWith('.pdf') ? (
+                                        <iframe 
+                                            src={inspectApp.cv_url} 
+                                            title="Candidate CV Preview"
+                                            className="w-full h-full border-none grayscale contrast-125"
+                                        />
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-20 text-center space-y-6">
+                                            <div className="p-8 bg-muted rounded-full border border-white/5 opacity-40">
+                                                <FileText className="w-16 h-16" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <h4 className="font-serif text-2xl font-bold">Incompatible Preview</h4>
+                                                <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">Non-PDF Research Documentation Detected</p>
+                                            </div>
+                                            <Button asChild className="rounded-2xl h-14 px-8 bg-white text-black font-black hover:bg-white/90">
+                                                <a href={inspectApp.cv_url} download>
+                                                    Retrieve & Download Document
+                                                </a>
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Actions Footer */}
+                                {inspectApp.status === 'pending' && (
+                                    <div className="p-8 border-t border-white/5 bg-muted/5">
+                                        <AnimatePresence mode="wait">
+                                            {rejectionMode ? (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    className="space-y-6"
+                                                >
+                                                    <div className="space-y-3">
+                                                        <div className="flex justify-between items-end">
+                                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mandatory Vetting Reason (Audit Log)</label>
+                                                            <span className={`text-[10px] font-mono ${rejectionReason.length < 20 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                {rejectionReason.length}/20 min
+                                                            </span>
+                                                        </div>
+                                                        <textarea
+                                                            value={rejectionReason}
+                                                            onChange={(e) => setRejectionReason(e.target.value)}
+                                                            placeholder="State the academic grounds for rejection... (Minimum 20 characters required)"
+                                                            className="w-full h-32 bg-black border border-rose-500/30 rounded-2xl p-4 text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all resize-none"
+                                                        />
+                                                    </div>
+                                                    <div className="flex gap-4">
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            onClick={() => setRejectionMode(false)}
+                                                            className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                        <Button 
+                                                            disabled={rejectionReason.length < 20}
+                                                            onClick={() => handleReject(inspectApp.id, rejectionReason)}
+                                                            className="flex-[2] h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-black uppercase tracking-widest shadow-xl shadow-rose-900/40"
+                                                        >
+                                                            Confirm Terminal Rejection
+                                                        </Button>
+                                                    </div>
+                                                </motion.div>
+                                            ) : approveConfirm ? (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    className="space-y-6 text-center"
+                                                >
+                                                    <div className="space-y-2">
+                                                        <h4 className="font-serif text-xl font-bold">Proceed with Onboarding?</h4>
+                                                        <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">
+                                                            Approving {inspectApp.full_name} as {inspectApp.application_type}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-4">
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            onClick={() => setApproveConfirm(false)}
+                                                            className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                                        >
+                                                            Abort
+                                                        </Button>
+                                                        <Button 
+                                                            onClick={() => handleApprove(inspectApp.id)}
+                                                            className="flex-[2] h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                        >
+                                                            Confirm Approval & Invite
+                                                        </Button>
+                                                    </div>
+                                                </motion.div>
+                                            ) : (
+                                                <div className="flex gap-4">
+                                                    <Button 
+                                                        variant="outline" 
+                                                        onClick={() => setRejectionMode(true)}
+                                                        className="flex-1 h-16 rounded-2xl border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white font-black uppercase tracking-widest"
+                                                    >
+                                                        Reject Candidate
+                                                    </Button>
+                                                    <Button 
+                                                        onClick={() => setApproveConfirm(true)}
+                                                        className="flex-[2] h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                    >
+                                                        Approve Request
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Confirmation Modals */}
+            <Dialog open={bulkMode === 'approve'} onOpenChange={() => setBulkMode(null)}>
+                <DialogContent className="max-w-md bg-black border-white/10 p-8 rounded-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-serif text-2xl font-bold">Batch Onboarding</DialogTitle>
+                        <DialogDescription className="font-mono text-[10px] uppercase tracking-widest py-2">
+                            Awaiting confirmation for {selectedIds.length} candidate profiles.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6 space-y-4">
+                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+                            <p className="text-xs text-white/60 leading-relaxed">
+                                This action will atomically create professional user profiles for all selected candidates and broadcast formal invitation protocols.
+                            </p>
+                        </div>
+                    </div>
+                    <DialogFooter className="flex gap-4">
+                        <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-black uppercase h-14 rounded-2xl flex-1">Abort</Button>
+                        <Button 
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase h-14 rounded-2xl flex-[2]"
+                            onClick={() => {
+                                toast.promise(
+                                    // Use individual approval for simplicity or a dedicated batch action if built
+                                    Promise.all(selectedIds.map(id => handleApprove(id))),
+                                    {
+                                        loading: 'Executing batch onboarding...',
+                                        success: 'Batch complete. Selection cleared.',
+                                        error: 'Partial failure in batch operation'
+                                    }
+                                );
+                                setSelectedIds([]);
+                                setBulkMode(null);
+                            }}
+                        >
+                            Execute Batch Approval
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={bulkMode === 'reject'} onOpenChange={() => setBulkMode(null)}>
+                <DialogContent className="max-w-md bg-black border-white/10 p-8 rounded-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-serif text-2xl font-bold">Terminal Batch Rejection</DialogTitle>
+                        <DialogDescription className="font-mono text-[10px] uppercase tracking-widest py-2">
+                            Shared reasoning protocol for {selectedIds.length} profiles.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6 space-y-6">
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-end">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Audit Reason (Bulk Applied)</label>
+                                <span className={`text-[10px] font-mono ${bulkReason.length < 20 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                    {bulkReason.length}/20 min
+                                </span>
+                            </div>
+                            <textarea
+                                value={bulkReason}
+                                onChange={(e) => setBulkReason(e.target.value)}
+                                placeholder="Explain basic rejection grounds for this cohort..."
+                                className="w-full h-32 bg-muted/10 border border-rose-500/30 rounded-2xl p-4 text-sm focus:ring-1 focus:ring-rose-500 outline-none transition-all resize-none"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="flex gap-4">
+                        <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-black uppercase h-14 rounded-2xl flex-1">Abort</Button>
+                        <Button 
+                            disabled={bulkReason.length < 20}
+                            className="bg-rose-700 hover:bg-rose-800 text-white font-black uppercase h-14 rounded-2xl flex-[2]"
+                            onClick={() => {
+                                toast.promise(
+                                    Promise.all(selectedIds.map(id => handleReject(id, bulkReason))),
+                                    {
+                                        loading: 'Executing terminal batch...',
+                                        success: 'Batch rejection finalized.',
+                                        error: 'Partial failure in batch operation'
+                                    }
+                                );
+                                setSelectedIds([]);
+                                setBulkMode(null);
+                                setBulkReason("");
+                            }}
+                        >
+                            Confirm Batch Rejection
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         </section>
     );
 }
 
 export default function ManageApplicationsPage() {
     return (
-        <Suspense fallback={<div className="p-20 flex flex-col items-center justify-center gap-4 text-muted-foreground"><div className="w-8 h-8 border-2 border-primary/10 border-t-primary rounded-full animate-spin" /><p className="font-black text-[10px] tracking-[0.2em] animate-pulse">Initializing Interface...</p></div>}>
+        <Suspense fallback={
+            <div className="p-20 flex flex-col items-center justify-center gap-4 text-muted-foreground">
+                <div className="w-8 h-8 border-2 border-primary/10 border-t-primary rounded-full animate-spin" />
+                <p className="font-mono text-[10px] tracking-[0.2em] animate-pulse uppercase">Initializing Interface Architecture...</p>
+            </div>
+        }>
             <ManageApplicationsContent />
         </Suspense>
     );

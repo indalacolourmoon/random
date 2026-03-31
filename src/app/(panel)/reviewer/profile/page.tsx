@@ -1,28 +1,38 @@
-import { getUserProfile } from "@/actions/users";
-import ProfileForm from "@/features/shared/components/ProfileForm";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import ProfileDossier from "@/features/profile/components/ProfileDossier";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-    title: "Account Profile | Reviewer Portal",
+    title: "Review Board Profile | IJITEST",
 };
 
 export default async function ReviewerProfilePage() {
-    const user = await getUserProfile();
+    const session = await getServerSession(authOptions);
 
-    if (!user) {
+    if (!session?.user) {
         redirect("/login");
     }
 
     return (
-        <section className="space-y-10 pb-20">
-            <header className="space-y-2 border-b border-primary/5 pb-8">
-                <h1 className=" font-black text-foreground tracking-widest uppercase leading-none">Technical Identity</h1>
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 transition-all duration-500">Ensure your expertise and research interests are current for better review assignments.</p>
+        <section className="space-y-10">
+            <header className="space-y-2 border-b border-white/5 pb-8">
+                <h1 className="font-serif text-3xl font-black text-foreground tracking-tight uppercase leading-none">Reviewer Identity</h1>
+                <p className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-widest opacity-60">Professional Dossier and Board Clearance Repository.</p>
             </header>
 
-            <ProfileForm user={user} />
+            <Suspense fallback={
+                <div className="h-96 flex flex-col items-center justify-center gap-4 text-muted-foreground">
+                    <Loader2 className="w-8 h-8 animate-spin opacity-20" />
+                    <p className="font-mono text-[10px] uppercase tracking-widest animate-pulse">Decrypting Identity Archive...</p>
+                </div>
+            }>
+                <ProfileDossier role="reviewer" userId={parseInt((session.user as any).id)} />
+            </Suspense>
         </section>
     );
 }

@@ -4,9 +4,47 @@ import pool from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 
-export async function getMessages() {
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+
+export async function getMessages(filters?: { status?: string, search?: string }) {
     try {
-        const [rows]: any = await pool.execute('SELECT * FROM contact_messages ORDER BY created_at DESC');
+        let query = `
+            SELECT 
+                m.id, 
+                m.name, 
+                m.email, 
+                m.subject, 
+                m.message, 
+                m.status, 
+                m.created_at as createdAt, 
+                m.resolved_at as resolvedAt, 
+                m.resolved_by as resolvedBy,
+                u.full_name as resolvedByName 
+            FROM contact_messages m 
+            LEFT JOIN users u ON m.resolved_by = u.id
+        `;
+        const params: any[] = [];
+        const whereClauses: string[] = [];
+
+        if (filters?.status && filters.status !== 'all') {
+            whereClauses.push("m.status = ?");
+            params.push(filters.status);
+        }
+
+        if (filters?.search) {
+            whereClauses.push("(m.name LIKE ? OR m.email LIKE ? OR m.subject LIKE ?)");
+            const searchPattern = `%${filters.search}%`;
+            params.push(searchPattern, searchPattern, searchPattern);
+        }
+
+        if (whereClauses.length > 0) {
+            query += " WHERE " + whereClauses.join(" AND ");
+        }
+
+        query += " ORDER BY m.created_at DESC";
+
+        const [rows]: any = await pool.execute(query, params);
         return rows;
     } catch (error: any) {
         console.error("Get Messages Error:", error);
@@ -14,17 +52,82 @@ export async function getMessages() {
     }
 }
 
-export async function updateMessageStatus(id: number, status: string) {
+export async function updateMessageStatus(id: number, status: 'resolved' | 'archived' | 'read') {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        throw new Error("Unauthorized: Admin session required.");
+    }
+    const adminId = (session.user as any).id;
+
     try {
-        await pool.execute(
-            'UPDATE contact_messages SET status = ? WHERE id = ?',
-            [status, id]
-        );
+        if (status === 'resolved') {
+            await pool.execute(
+                'UPDATE contact_messages SET status = ?, resolved_at = NOW(), resolved_by = ? WHERE id = ?',
+                [status, adminId, id]
+            );
+        } else {
+            // Archived or Read - don't overwrite resolved info if it exists
+            await pool.execute(
+                'UPDATE contact_messages SET status = ? WHERE id = ?',
+                [status, id]
+            );
+        }
         revalidatePath('/admin/messages');
         return { success: true };
     } catch (error: any) {
         console.error("Update Message Status Error:", error);
-        return { error: "Failed to update message: " + error.message };
+        return { error: "Failed to update message" };
+    }
+}
+
+export async function bulkUpdateMessageStatus(ids: number[], status: 'resolved' | 'archived' | 'read') {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        throw new Error("Unauthorized: Admin session required.");
+    }
+    const adminId = (session.user as any).id;
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        for (const id of ids) {
+            if (status === 'resolved') {
+                await connection.execute(
+                    'UPDATE contact_messages SET status = ?, resolved_at = NOW(), resolved_by = ? WHERE id = ?',
+                    [status, adminId, id]
+                );
+            } else {
+                await connection.execute(
+                    'UPDATE contact_messages SET status = ? WHERE id = ?',
+                    [status, id]
+                );
+            }
+        }
+
+        await connection.commit();
+        revalidatePath('/admin/messages');
+        return { success: true, count: ids.length };
+    } catch (error: any) {
+        await connection.rollback();
+        console.error("Bulk Update Message Error:", error);
+        return { error: "Bulk operation failed" };
+    } finally {
+        connection.release();
+    }
+}
+
+export async function revertMessageStatus(id: number) {
+    try {
+        await pool.execute(
+            'UPDATE contact_messages SET status = "pending", resolved_at = NULL, resolved_by = NULL WHERE id = ?',
+            [id]
+        );
+        revalidatePath('/admin/messages');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Revert Message Error:", error);
+        return { error: "Failed to revert message" };
     }
 }
 

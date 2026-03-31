@@ -17,6 +17,7 @@ export const users = mysqlTable("users", {
     invitationExpires: timestamp("invitation_expires"),
     nationality: varchar("nationality", { length: 100 }).default('India'),
     hasSeenPromotion: tinyint("has_seen_promotion").default(0),
+    orcidId: varchar("orcid_id", { length: 50 }),
 }, (table) => [
     unique("email").on(table.email),
     unique("invitation_token").on(table.invitationToken),
@@ -42,9 +43,10 @@ export const submissions = mysqlTable("submissions", {
     authorName: varchar("author_name", { length: 255 }).notNull(),
     authorEmail: varchar("author_email", { length: 255 }).notNull(),
     affiliation: varchar("affiliation", { length: 500 }),
-    status: mysqlEnum("status", ['submitted', 'under_review', 'accepted', 'rejected', 'published', 'paid']).default('submitted'),
+    status: mysqlEnum("status", ['submitted', 'under_review', 'accepted', 'rejected', 'published', 'paid', 'retracted']).default('submitted'),
     filePath: varchar("file_path", { length: 500 }),
     pdfUrl: varchar("pdf_url", { length: 500 }),
+    retractionNoticeUrl: varchar("retraction_notice_url", { length: 500 }),
     submittedAt: timestamp("submitted_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
     issueId: int("issue_id").references(() => volumesIssues.id, { onDelete: "restrict", onUpdate: "restrict" }),
@@ -70,6 +72,7 @@ export const reviews = mysqlTable("reviews", {
     feedback: text("feedback"),
     feedbackFilePath: varchar("feedback_file_path", { length: 500 }),
     assignedAt: timestamp("assigned_at").defaultNow(),
+    completedAt: timestamp("completed_at"),
 }, (table) => [
     index("submission_id").on(table.submissionId),
     index("reviewer_id").on(table.reviewerId),
@@ -84,6 +87,7 @@ export const payments = mysqlTable("payments", {
     transactionId: varchar("transaction_id", { length: 255 }),
     paidAt: timestamp("paid_at"),
     createdAt: timestamp("created_at").defaultNow(),
+    
 }, (table) => [
     index("submission_id").on(table.submissionId),
 ]);
@@ -96,9 +100,14 @@ export const contactMessages = mysqlTable("contact_messages", {
     message: text("message").notNull(),
     replyText: text("reply_text"),
     repliedAt: timestamp("replied_at"),
-    status: mysqlEnum("status", ['unread', 'read', 'archived']).default('unread'),
+    status: mysqlEnum("status", ['pending', 'resolved', 'archived']).default('pending').notNull(),
+    resolvedAt: timestamp("resolved_at"),
+    resolvedBy: int("resolved_by").references(() => users.id),
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+    index("msg_status_idx").on(table.status),
+    index("resolved_by_msg_idx").on(table.resolvedBy),
+]);
 
 export const applications = mysqlTable("applications", {
     id: int("id").primaryKey().autoincrement().notNull(),
@@ -111,11 +120,24 @@ export const applications = mysqlTable("applications", {
     photoUrl: varchar("photo_url", { length: 500 }).notNull(),
     status: mysqlEnum("status", ['pending', 'approved', 'rejected']).default('pending'),
     nationality: varchar("nationality", { length: 100 }).default('India'),
+    rejectionReason: text("rejection_reason"),
+    reviewedAt: timestamp("reviewed_at"),
+    reviewedBy: int("reviewed_by").references(() => users.id),
     createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
     unique("email").on(table.email),
     index("app_status_idx").on(table.status),
     index("app_type_idx").on(table.applicationType),
+    index("reviewed_by_idx").on(table.reviewedBy),
+]);
+
+export const applicationInterests = mysqlTable("application_interests", {
+    id: int("id").primaryKey().autoincrement().notNull(),
+    applicationId: int("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
+    interest: varchar("interest", { length: 255 }).notNull(),
+}, (table) => [
+    index("app_interest_idx").on(table.applicationId),
+    index("interest_val_idx").on(table.interest),
 ]);
 
 export const settings = mysqlTable("settings", {

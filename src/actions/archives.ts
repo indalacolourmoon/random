@@ -13,7 +13,7 @@ export async function getPublishedPapers() {
                 vi.month_range
             FROM submissions s
             JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.status = 'published'
+            WHERE s.status IN ('published', 'retracted')
             ORDER BY vi.year DESC, vi.volume_number DESC, vi.issue_number DESC, s.updated_at DESC
         `);
         return rows;
@@ -37,7 +37,7 @@ export async function getLatestIssuePapers() {
                 vi.month_range
             FROM submissions s
             JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.status = 'published' 
+            WHERE s.status IN ('published', 'retracted')
             AND s.submission_mode = 'current'
             ORDER BY s.published_at DESC
         `);
@@ -64,7 +64,7 @@ export async function getArchivePapers() {
                 vi.month_range
             FROM submissions s
             JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.status = 'published' 
+            WHERE s.status IN ('published', 'retracted')
             AND s.submission_mode = 'archive'
             ORDER BY s.published_at DESC, vi.year DESC, vi.issue_number DESC
         `);
@@ -86,7 +86,7 @@ export async function getPaperById(id: string) {
                 vi.month_range
             FROM submissions s
             JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.id = ? AND s.status = 'published'
+            WHERE s.id = ? AND s.status IN ('published', 'retracted')
         `, [id]);
         return rows[0] || null;
     } catch (error: any) {

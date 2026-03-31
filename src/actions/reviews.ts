@@ -13,17 +13,56 @@ export async function assignReviewer(formData: FormData) {
     const deadline = formData.get('deadline') as string;
     const pdfFile = formData.get('pdfFile') as File;
 
+    const connection = await pool.getConnection();
     try {
-        // Fetch current PDF status to see if upload is truly mandatory
-        const [existing]: any = await pool.execute("SELECT pdf_url FROM submissions WHERE id = ?", [submissionId]);
+        await connection.beginTransaction();
+
+        // --- Reviewer Fatigue & Conflict Checks ---
+        
+        // 1. Check for Active review limit (Max 2)
+        const [activeReviews]: any = await connection.execute(
+            "SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ? AND status IN ('pending', 'in_progress')",
+            [reviewerId]
+        );
+        if (activeReviews[0].count >= 2) {
+            await connection.rollback();
+            return { error: "This reviewer already has 2 active assignments. Please wait until they complete one." };
+        }
+
+        // 2. Check for 30-day Cooldown
+        const [lastCompletion]: any = await connection.execute(
+            "SELECT completed_at FROM reviews WHERE reviewer_id = ? AND status = 'completed' ORDER BY completed_at DESC LIMIT 1",
+            [reviewerId]
+        );
+        if (lastCompletion.length > 0 && lastCompletion[0].completed_at) {
+            const daysSinceLast = (Date.now() - new Date(lastCompletion[0].completed_at).getTime()) / (1000 * 60 * 60 * 24);
+            if (daysSinceLast < 30) {
+                await connection.rollback();
+                return { error: `This reviewer completed a review recently. Please allow a 30-day cooldown (Days passed: ${Math.floor(daysSinceLast)}).` };
+            }
+        }
+
+        // 3. Conflict of Interest Check (Basic: Same Institution)
+        const [reviewerInfo]: any = await connection.execute("SELECT institute FROM users WHERE id = ?", [reviewerId]);
+        const [authorInfo]: any = await connection.execute("SELECT affiliation FROM submissions WHERE id = ?", [submissionId]);
+        if (reviewerInfo[0] && authorInfo[0] && reviewerInfo[0].institute === authorInfo[0].affiliation) {
+            await connection.rollback();
+            return { error: "Conflict of Interest detected: Reviewer and Author are from the same institution." };
+        }
+
+        // --- Assignment Logic ---
+
+        // Fetch current PDF status
+        const [existing]: any = await connection.execute("SELECT pdf_url FROM submissions WHERE id = ?", [submissionId]);
         const currentPdf = existing[0]?.pdf_url;
 
         if (!currentPdf && (!pdfFile || pdfFile.size === 0)) {
+            await connection.rollback();
             return { error: "A secure PDF version of the manuscript is REQUIRED for assignment as none is currently attached." };
         }
 
-        // Update submission status to 'under_review' if it's still 'submitted'
-        await pool.execute(
+        // Update submission status to 'under_review'
+        await connection.execute(
             "UPDATE submissions SET status = 'under_review' WHERE id = ? AND status = 'submitted'",
             [submissionId]
         );
@@ -39,20 +78,22 @@ export async function assignReviewer(formData: FormData) {
             await fs.writeFile(filePath, buffer);
 
             const pdfUrl = `/uploads/submissions/${fileName}`;
-            await pool.execute(
+            await connection.execute(
                 "UPDATE submissions SET pdf_url = ? WHERE id = ?",
                 [pdfUrl, submissionId]
             );
         }
 
-        await pool.execute(
+        await connection.execute(
             'INSERT INTO reviews (submission_id, reviewer_id, deadline, status) VALUES (?, ?, ?, ?)',
             [submissionId, reviewerId, deadline, 'in_progress']
         );
 
         // Fetch user and paper details for the email
-        const [userRows]: any = await pool.execute('SELECT email, full_name FROM users WHERE id = ?', [reviewerId]);
-        const [subRows]: any = await pool.execute('SELECT title, paper_id FROM submissions WHERE id = ?', [submissionId]);
+        const [userRows]: any = await connection.execute('SELECT email, full_name FROM users WHERE id = ?', [reviewerId]);
+        const [subRows]: any = await connection.execute('SELECT title, paper_id FROM submissions WHERE id = ?', [submissionId]);
+
+        await connection.commit();
 
         const reviewer = userRows[0];
         const paperTitle = subRows[0]?.title || "Assigned Paper";
@@ -71,8 +112,11 @@ export async function assignReviewer(formData: FormData) {
         revalidatePath('/admin/submissions');
         return { success: true };
     } catch (error: any) {
+        await connection.rollback();
         console.error("Assign Reviewer Error:", error);
         return { error: "Failed to assign reviewer: " + error.message };
+    } finally {
+        connection.release();
     }
 }
 
@@ -98,7 +142,7 @@ export async function uploadReviewFeedback(reviewId: number, formData: FormData)
         }
 
         await pool.execute(
-            "UPDATE reviews SET feedback_file_path = COALESCE(?, feedback_file_path), feedback = ?, status = 'completed' WHERE id = ?",
+            "UPDATE reviews SET feedback_file_path = COALESCE(?, feedback_file_path), feedback = ?, status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE id = ?",
             [relativePath, feedbackText, reviewId]
         );
 
