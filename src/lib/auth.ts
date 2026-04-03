@@ -1,8 +1,32 @@
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, DefaultSession } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+
+declare module "next-auth" {
+    interface Session extends DefaultSession {
+        user: {
+            id: string;
+            role: string;
+        } & DefaultSession["user"];
+    }
+
+    interface User {
+        id: string;
+        role: string;
+        email: string;
+        name: string;
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        id: string;
+        role: string;
+    }
+}
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -18,11 +42,11 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
-                    const rows: any = await db.execute(
+                    const result: any = await db.execute(
                         sql`SELECT * FROM users WHERE email = ${credentials.email}`
                     )
 
-                    const user = rows[0]?.[0];
+                    const user = result[0]?.[0];
 
                     if (!user) {
                         throw new Error("Invalid email or password");
@@ -40,7 +64,7 @@ export const authOptions: NextAuthOptions = {
                         name: user.full_name,
                         role: user.role,
                     };
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error("Auth error:", error);
                     return null;
                 }
@@ -48,17 +72,17 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user }): Promise<JWT> {
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
+                token.role = user.role;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
-                (session.user as any).id = token.id;
-                (session.user as any).role = token.role;
+                session.user.id = token.id;
+                session.user.role = token.role;
             }
             return session;
         }

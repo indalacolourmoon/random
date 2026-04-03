@@ -4,6 +4,7 @@ import { waivePayment } from "@/actions/payments";
 import DeleteSubmissionButton from "@/features/submissions/components/DeleteSubmissionButton";
 import AdminPdfUpload from "@/features/submissions/components/AdminPdfUpload";
 import PublicationAssignment from "@/features/submissions/components/PublicationAssignment";
+import { RequestResubmissionModal } from "@/components/panels/RequestResubmissionModal";
 import {
     Calendar,
     ChevronDown,
@@ -345,6 +346,12 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                                         <XCircle className="w-4 h-4 2xl:w-6 2xl:h-6" /> Final Rejection
                                                     </Button>
                                                 </form>
+                                                <RequestResubmissionModal
+                                                    submissionId={submission.id}
+                                                    paperId={(submission as any).paper_id}
+                                                    paperTitle={submission.title}
+                                                    requestedBy="admin"
+                                                />
                                             </div>
                                         </div>
                                     )}

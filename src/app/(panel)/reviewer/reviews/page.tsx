@@ -1,6 +1,6 @@
 'use client'
 import { ShieldAlert, User, Mail, FileUp, CheckCircle, Clock, Search, Plus, X, Download, FileText, Eye, AlertTriangle } from 'lucide-react';
-import { useActiveReviews, useUnassignedPapers, useAssignReviewer, useUploadReviewFeedback } from '@/hooks/queries/useReviews';
+import { useActiveReviews, useUnassignedPapers, useAssignReviewer, useSubmitReview } from '@/hooks/queries/useReviews';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
@@ -35,7 +35,7 @@ function ReviewsContent() {
     const { data: unassigned = [], isLoading: loadingUnassigned } = useUnassignedPapers();
     const { data: staff = [], isLoading: loadingStaff } = useUsers('reviewer');
     const assignMutation = useAssignReviewer();
-    const uploadMutation = useUploadReviewFeedback();
+    const uploadMutation = useSubmitReview();
 
     const loading = loadingReviews || loadingUnassigned || loadingStaff;
 
@@ -227,10 +227,10 @@ function ReviewsContent() {
                                         </div>
                                     </div>
 
-                                    {item.feedback && (
+                                    {item.comments_to_author && (
                                         <div className="bg-primary/5 p-6 rounded-xl border border-primary/10 text-sm text-primary/70 font-bold leading-relaxed relative pl-10 shadow-inner">
                                             <span className="absolute left-4 top-4 text-3xl text-emerald-500/30 font-serif leading-none dark:text-white">“</span>
-                                            {item.feedback}
+                                            {item.comments_to_author}
                                         </div>
                                     )}
                                 </div>
@@ -261,7 +261,7 @@ function ReviewsContent() {
                                                 </DialogHeader>
                                                 <form action={async (formData) => {
                                                     try {
-                                                        const result = await uploadMutation.mutateAsync({ reviewId: item.id, formData });
+                                                        const result = await uploadMutation.mutateAsync({ assignmentId: item.id, formData });
                                                         if (result.success) {
                                                             toast.success('Evaluation finalized');
                                                             setSelectedReview(null);

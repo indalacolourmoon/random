@@ -35,10 +35,10 @@ export default async function ReviewerDashboard() {
 
         // Stats for Reviewer
         const pendingResult: any = await db.execute(
-            sql`SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ${user.id} AND status != 'completed'`
+            sql`SELECT COUNT(*) as count FROM review_assignments WHERE reviewer_id = ${user.id} AND status != 'completed'`
         );
         const completedResult: any = await db.execute(
-            sql`SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ${user.id} AND status = 'completed'`
+            sql`SELECT COUNT(*) as count FROM review_assignments WHERE reviewer_id = ${user.id} AND status = 'completed'`
         );
 
         const pendingCount = pendingResult[0][0].count;
@@ -51,11 +51,13 @@ export default async function ReviewerDashboard() {
         ];
 
         const assignedRowsResult: any = await db.execute(sql`
-            SELECT r.id, s.paper_id, s.title, s.author_name, r.status, r.assigned_at 
-            FROM reviews r 
-            JOIN submissions s ON r.submission_id = s.id 
-            WHERE r.reviewer_id = ${user.id} 
-            ORDER BY r.assigned_at DESC LIMIT 5
+            SELECT ra.id, s.paper_id, sv.title, up.full_name as author_name, ra.status, ra.assigned_at
+            FROM review_assignments ra
+            JOIN submissions s ON ra.submission_id = s.id
+            JOIN submission_versions sv ON ra.version_id = sv.id
+            LEFT JOIN user_profiles up ON s.corresponding_author_id = up.user_id
+            WHERE ra.reviewer_id = ${user.id}
+            ORDER BY ra.assigned_at DESC LIMIT 5
         `);
         const assignedRows = assignedRowsResult[0] || [];
 

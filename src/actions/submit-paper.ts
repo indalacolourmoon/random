@@ -1,20 +1,21 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { 
-    submissions, 
-    submissionFiles, 
-    submissionVersions, 
-    submissionAuthors, 
-    users, 
-    userProfiles 
+import {
+    submissions,
+    submissionFiles,
+    submissionVersions,
+    submissionAuthors,
+    users,
+    userProfiles
 } from "@/db/schema";
 import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
-import { count, eq } from "drizzle-orm";
+import { count, eq, inArray } from "drizzle-orm";
+import crypto from 'crypto';
 
 const submissionSchema = z.object({
     author_name: z.string().min(2, "Author name is required"),
@@ -34,15 +35,12 @@ const submissionSchema = z.object({
 async function saveFile(file: File, submissionId: number, type: string) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
     const fileExt = file.name.split('.').pop() || 'pdf';
     const fileName = `${type}-${submissionId}-${Date.now()}.${fileExt}`;
     const uploadDir = path.join(process.cwd(), "public/uploads/submissions");
-    
     await fs.mkdir(uploadDir, { recursive: true });
     const filePath = path.join(uploadDir, fileName);
     await fs.writeFile(filePath, buffer);
-
     return {
         url: `/uploads/submissions/${fileName}`,
         size: file.size,
@@ -51,8 +49,11 @@ async function saveFile(file: File, submissionId: number, type: string) {
 }
 
 export async function submitPaper(formData: FormData) {
+    const createdFiles: string[] = [];
+    let invitationToken: string | null = null;
+
     try {
-        // 1. Zod Validation
+        // 1️⃣ Validate
         const rawData = {
             author_name: formData.get("author_name") as string,
             author_email: formData.get("author_email") as string,
@@ -73,26 +74,30 @@ export async function submitPaper(formData: FormData) {
 
         const manuscriptFile = formData.get("manuscript") as File;
         const copyrightFile = formData.get("copyright_form") as File;
-
         if (!manuscriptFile || manuscriptFile.size === 0) return { error: "Manuscript file is mandatory" };
         if (!copyrightFile || copyrightFile.size === 0) return { error: "Copyright form is mandatory" };
 
-        // 2. Transactional Database Orchestration
-        const result = await db.transaction(async (tx:any) => {
-            
-            // A. User Handling: Find or Create corresponding author
-            let [user] = await tx.select().from(users).where(eq(users.email, validated.data.author_email));
+        // 2️⃣ CORE TRANSACTION
+        const result = await db.transaction(async (tx: any) => {
+            // A. Find or create user
+            const [user] = await tx.select().from(users).where(eq(users.email, validated.data.author_email));
             let userId: string;
-
+            
             if (!user) {
                 userId = crypto.randomUUID();
-                await tx.insert(users).values({
-                    id: userId,
-                    email: validated.data.author_email,
-                    role: 'author',
+                invitationToken = crypto.randomBytes(32).toString('hex');
+                const expires = new Date();
+                expires.setHours(expires.getHours() + 72); // 72-hour window
+
+                await tx.insert(users).values({ 
+                    id: userId, 
+                    email: validated.data.author_email, 
+                    role: "author",
+                    invitationToken,
+                    invitationExpires: expires
                 });
                 await tx.insert(userProfiles).values({
-                    userId: userId,
+                    userId,
                     fullName: validated.data.author_name,
                     institute: validated.data.affiliation,
                     phone: validated.data.author_phone,
@@ -100,23 +105,40 @@ export async function submitPaper(formData: FormData) {
                 });
             } else {
                 userId = user.id;
+                // If existing user has no password, generate invitation token
+                if (!user.passwordHash && !user.invitationToken) {
+                    invitationToken = crypto.randomBytes(32).toString('hex');
+                    const expires = new Date();
+                    expires.setHours(expires.getHours() + 72);
+                    await tx.update(users)
+                        .set({ invitationToken, invitationExpires: expires })
+                        .where(eq(users.id, userId));
+                }
+                
+                await tx.update(userProfiles)
+                    .set({
+                        fullName: validated.data.author_name,
+                        institute: validated.data.affiliation,
+                        phone: validated.data.author_phone,
+                        designation: validated.data.author_designation,
+                    })
+                    .where(eq(userProfiles.userId, userId));
             }
 
-            // B. Generate Professional Paper ID
+            // B. Generate paper ID
             const [countRes] = await tx.select({ value: count() }).from(submissions);
             const total = countRes?.value || 0;
             const year = new Date().getFullYear();
-            const paperId = `IJITEST-${year}-${String(total + 1).padStart(3, '0')}`;
+            const paperId = `IJITEST-${year}-${String(total + 1).padStart(3, "0")}`;
 
-            // C. Create Base Submission Record
+            // C. Create submission & version
             const [submissionInsert] = await tx.insert(submissions).values({
-                paperId: paperId,
-                status: 'submitted',
+                paperId,
+                status: "submitted",
                 correspondingAuthorId: userId,
             });
             const submissionId = (submissionInsert as any).insertId;
 
-            // D. Create Version 1 - Holds current title/abstract/metadata
             const [versionInsert] = await tx.insert(submissionVersions).values({
                 submissionId,
                 versionNumber: 1,
@@ -126,48 +148,23 @@ export async function submitPaper(formData: FormData) {
             });
             const versionId = (versionInsert as any).insertId;
 
-            // E. Process & Save Physical Files
-            const manuscriptData = await saveFile(manuscriptFile, submissionId, 'main_manuscript');
-            const copyrightData = await saveFile(copyrightFile, submissionId, 'copyright_form');
+            // D. Lead Author & Co-authors
+            const authorsToInsert: any[] = [{
+                submissionId,
+                name: validated.data.author_name,
+                email: validated.data.author_email,
+                phone: validated.data.author_phone,
+                designation: validated.data.author_designation,
+                institution: validated.data.affiliation,
+                isCorresponding: true,
+                orderIndex: 0,
+            }];
 
-            // F. Store File Metadata
-            await tx.insert(submissionFiles).values([
-                { 
-                    versionId, 
-                    fileType: 'main_manuscript', 
-                    fileUrl: manuscriptData.url, 
-                    originalName: manuscriptData.originalName, 
-                    fileSize: manuscriptData.size 
-                },
-                { 
-                    versionId, 
-                    fileType: 'copyright_form', 
-                    fileUrl: copyrightData.url, 
-                    originalName: copyrightData.originalName, 
-                    fileSize: copyrightData.size 
-                }
-            ]);
-            
-            // F. Register Authors (Starting with Lead Author)
-            const authorsToInsert = [
-                {
-                    submissionId,
-                    name: validated.data.author_name,
-                    email: validated.data.author_email,
-                    phone: validated.data.author_phone,
-                    designation: validated.data.author_designation,
-                    institution: validated.data.affiliation,
-                    isCorresponding: true,
-                    orderIndex: 0
-                }
-            ];
-
-            // G. Register Co-Authors
             if (validated.data.co_authors) {
                 try {
                     const coAuthors = JSON.parse(validated.data.co_authors);
-                    if (Array.isArray(coAuthors) && coAuthors.length > 0) {
-                        coAuthors.forEach((ca: any, index: number) => {
+                    if (Array.isArray(coAuthors)) {
+                        coAuthors.forEach((ca: any, idx: number) => {
                             authorsToInsert.push({
                                 submissionId,
                                 name: ca.name,
@@ -176,7 +173,7 @@ export async function submitPaper(formData: FormData) {
                                 designation: ca.designation,
                                 institution: ca.institution,
                                 isCorresponding: false,
-                                orderIndex: index + 1
+                                orderIndex: idx + 1,
                             });
                         });
                     }
@@ -184,49 +181,102 @@ export async function submitPaper(formData: FormData) {
                     console.error("Co-author parsing error:", e);
                 }
             }
-
             await tx.insert(submissionAuthors).values(authorsToInsert);
+
+            // E. PRE-GENERATE FILE URLS (Important: We don't save yet)
+            const uploadDir = "public/uploads/submissions";
+            await fs.mkdir(path.join(process.cwd(), uploadDir), { recursive: true });
+
+            const mExt = manuscriptFile.name.split('.').pop() || 'docx';
+            const cExt = copyrightFile.name.split('.').pop() || 'pdf';
+            const mName = `main_manuscript-${submissionId}-${Date.now()}.${mExt}`;
+            const cName = `copyright_form-${submissionId}-${Date.now()}.${cExt}`;
+
+            const mUrl = `/uploads/submissions/${mName}`;
+            const cUrl = `/uploads/submissions/${cName}`;
+
+            // F. Insert file metadata
+            await tx.insert(submissionFiles).values([
+                { versionId, fileType: "main_manuscript", fileUrl: mUrl, originalName: manuscriptFile.name, fileSize: manuscriptFile.size },
+                { versionId, fileType: "copyright_form", fileUrl: cUrl, originalName: copyrightFile.name, fileSize: copyrightFile.size }
+            ]);
+
+            // G. WRITE FILES TO DISK (Final step inside or just after transaction)
+            // We do it INSIDE transaction block to ensure if file write fails, tx rolls back.
+            await fs.writeFile(path.join(process.cwd(), uploadDir, mName), Buffer.from(await manuscriptFile.arrayBuffer()));
+            createdFiles.push(path.join(process.cwd(), uploadDir, mName));
+
+            await fs.writeFile(path.join(process.cwd(), uploadDir, cName), Buffer.from(await copyrightFile.arrayBuffer()));
+            createdFiles.push(path.join(process.cwd(), uploadDir, cName));
 
             return { paperId, submissionId };
         });
 
-        // 3. Communications Dispatch
-        const emailTemplate = emailTemplates.submissionReceived(
-            validated.data.author_name, 
-            validated.data.title, 
-            result.paperId
+        // 3️⃣ POST-SUBMISSION EMAILS
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        let setupUrl = "";
+        if (invitationToken) {
+            setupUrl = `${baseUrl}/auth/setup-password?token=${invitationToken}&role=author`;
+        }
+
+        const authorTemplate = emailTemplates.submissionReceived(
+            validated.data.author_name,
+            validated.data.title,
+            result.paperId,
+            setupUrl
         );
 
+        // Notify co-authors (filtered unique)
+        if (validated.data.co_authors) {
+            try {
+                const coAuthors = JSON.parse(validated.data.co_authors);
+                if (Array.isArray(coAuthors)) {
+                    await Promise.allSettled(coAuthors.map((ca: any) => 
+                        sendEmail({
+                            to: ca.email,
+                            subject: `Co-Author Notification: ${result.paperId}`,
+                            html: `<div style="font-family: serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
+                                <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
+                                <p>Dear <strong>${ca.name}</strong>,</p>
+                                <p>You have been listed as a co-author on "<strong>${validated.data.title}</strong>" (Paper ID: ${result.paperId}), submitted to IJITEST.</p>
+                                <p>Track its status via the public portal:</p>
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="${baseUrl}/track?id=${result.paperId}" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Track Submission</a>
+                                </div>
+                                <p>Regards,<br>Editorial Office, IJITEST</p>
+                            </div>`
+                        })
+                    ));
+                }
+            } catch {}
+        }
+
+        // Notify Admins/Editors
+        const staffUsers = await db.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
+        const adminHtml = `<div style="font-family: sans-serif; padding: 20px; color: #1a1a1a;">
+            <h2 style="color: #6d0202;">New Submission Received</h2>
+            <p><strong>Paper ID:</strong> ${result.paperId}</p>
+            <p><strong>Title:</strong> ${validated.data.title}</p>
+            <p><strong>Author:</strong> ${validated.data.author_name}</p>
+            <hr style="border: 1px solid #eee; margin: 20px 0;" />
+            <a href="${baseUrl}/admin/submissions/${result.submissionId}" style="background: #1a1a1a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">View Submission</a>
+        </div>`;
+
         await Promise.allSettled([
-            sendEmail({
-                to: validated.data.author_email,
-                subject: emailTemplate.subject,
-                html: emailTemplate.html
-            }),
-            sendEmail({
-                to: process.env.SMTP_USER as string,
-                subject: `IJITEST ALERT: NEW DOCTRINE [${result.paperId}]`,
-                html: `
-                    <div style="font-family: sans-serif; padding: 20px; color: #1a1a1a;">
-                        <h2 style="color: #6d0202;">New Manuscript Transmission Detected</h2>
-                        <p><strong>Paper ID:</strong> ${result.paperId}</p>
-                        <p><strong>Title:</strong> ${validated.data.title}</p>
-                        <p><strong>Author:</strong> ${validated.data.author_name} (${validated.data.author_email})</p>
-                        <p><strong>Affiliation:</strong> ${validated.data.affiliation}</p>
-                        <hr style="border: 1px solid #eee; margin: 20px 0;" />
-                        <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/submissions/${result.submissionId}" 
-                           style="background: #1a1a1a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                           ACCESS CORE CONSOLE
-                        </a>
-                    </div>
-                `
-            })
+            sendEmail({ to: validated.data.author_email, subject: authorTemplate.subject, html: authorTemplate.html }),
+            ...staffUsers.map(s => sendEmail({ to: s.email, subject: `IJITEST New Submission [${result.paperId}]`, html: adminHtml }))
         ]);
 
+        revalidatePath('/admin/submissions');
         return { success: true, paperId: result.paperId };
 
     } catch (error: any) {
-        console.error("CRITICAL MISSION FAILURE:", error);
-        return { error: "Submission transmission failed: " + error.message };
+        // CLEANUP FILES ON ERROR
+        for (const file of createdFiles) {
+            try { await fs.unlink(file); } catch {}
+        }
+        console.error("Submission Error:", error);
+        return { error: "Submission failed: " + error.message };
     }
 }
+

@@ -177,10 +177,14 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
                                     <p className="text-[10px] font-black  tracking-[0.3em] text-primary/40 ">256-Bit SSL Encryption Active</p>
                                 </div>
 
-                                <RazorpayPayment
-                                    submissionId={manuscript.id}
-                                    paperId={manuscript.paper_id}
-                                />
+                                {apcTotal > 0 ? (
+                                    <RazorpayPayment
+                                        submissionId={manuscript.id}
+                                        paperId={manuscript.paper_id}
+                                    />
+                                ) : (
+                                    <p className="text-[10px] font-black text-primary/60">No payment required for this manuscript.</p>
+                                )}
 
                                 <div className="flex items-center justify-center gap-6 pt-4 grayscale opacity-40">
                                     <div className="w-10 h-6 bg-primary/10 rounded flex items-center justify-center text-[8px] font-black tracking-widerer">VISA</div>

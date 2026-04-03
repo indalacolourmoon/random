@@ -11,7 +11,6 @@ import { authOptions } from "@/lib/auth";
 
 export type ProfileData = {
     id: string;
-    id: number;
     name: string;
     email: string;
     designation: string;
@@ -46,7 +45,7 @@ export async function getProfileData(userId: string, role: 'admin' | 'editor' | 
         if (userRows[0].length === 0) throw new Error("User not found");
         const userData = userRows[0][0];
 
-        let profileData: any = { ...userData };
+        const profileData: any = { ...userData };
 
         // 2. Fetch Application Data (if not admin)
         if (role !== 'admin') {

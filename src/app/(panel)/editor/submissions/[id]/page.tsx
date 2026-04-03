@@ -1,4 +1,4 @@
-import { requestResubmission } from "@/actions/submissions";
+import { getSubmissionById, decideSubmission, requestResubmissionWithComments } from "@/actions/submissions";
 import { assignPaperToIssue } from "@/actions/publications";
 import { waivePayment } from "@/actions/payments";
 import DeleteSubmissionButton from "@/features/submissions/components/DeleteSubmissionButton";
@@ -15,6 +15,7 @@ import {
     CheckCircle,
     XCircle,
     Clock,
+    Calendar,
     Shield,
     BookOpen,
     FileCheck,
@@ -321,23 +322,7 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                         </div>
                                     )}
 
-                                    {submission.status === 'rejected' && (
-                                        <div className="space-y-4">
-                                            <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xl space-y-2">
-                                                <p className="text-[10px] font-semibold text-rose-600 tracking-widest">Manuscript Rejected</p>
-                                                <p className="text-[10px] font-medium text-rose-600/70">Author may revise and resubmit.</p>
-                                            </div>
-                                            <form action={async () => {
-                                                'use server';
-                                                await requestResubmission(submission.id);
-                                            }}>
-                                                <Button className="w-full h-11 gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-[11px] tracking-widest rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer">
-                                                    <RefreshCw className="w-4 h-4" /> Request Resubmission
-                                                </Button>
-                                            </form>
-                                        </div>
-                                    )}
-
+                                    {submission.status === 'published' && (
                                         <div className="space-y-4">
                                             <Card className="bg-emerald-950 text-white border-none overflow-hidden rounded-xl shadow-2xl">
                                                 <CardContent className="p-8 space-y-6 relative">

@@ -46,7 +46,7 @@ export async function convertDocxToPdf(fileBuffer: Buffer, fileName: string): Pr
 
         // 6. Ensure it's a Buffer
         return Buffer.from(pdfData);
-    } catch (error: any) {
+    } catch (error) {
         console.error("iLovePDF Conversion Error:", error);
         // Provide user-friendly error message as requested
         throw new Error("Failed to convert document. Please try again.");

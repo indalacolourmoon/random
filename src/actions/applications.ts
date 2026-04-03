@@ -17,7 +17,7 @@ export async function getApplications(filters?: { role?: string, status?: string
             FROM applications a 
             LEFT JOIN application_interests ai ON a.id = ai.application_id 
         `;
-        const whereClauses = [];
+        const whereClauses: ReturnType<typeof sql>[] = [];
 
         if (filters?.role && filters.role !== 'all') {
             whereClauses.push(sql`a.application_type = ${filters.role}`);
@@ -55,7 +55,7 @@ export async function approveApplication(id: number) {
     const adminId = (session.user as any).id;
 
     try {
-        return await db.transaction(async (tx) => {
+        return await db.transaction(async (tx: any) => {
             // 1. Get Application Details
             const apps: any = await tx.execute(sql`SELECT * FROM applications WHERE id = ${id}`);
             if (apps[0].length === 0) {

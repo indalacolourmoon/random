@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { Shield, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,9 +75,11 @@ export const ProfileInfoCards = React.memo(({
                                     {countries.map(c => (
                                         <SelectItem key={c.code} value={c.name} className="py-2.5 2xl:py-5 focus:bg-primary/5 rounded-lg 2xl:rounded-xl cursor-pointer">
                                             <div className="flex items-center gap-3 2xl:gap-6">
-                                                <img
+                                                <Image
                                                     src={getFlagUrl(c.name)}
-                                                    alt=""
+                                                    alt={`${c.name} flag`}
+                                                    width={28}
+                                                    height={20}
                                                     className="w-5 2xl:w-7 h-3.5 2xl:h-5 object-cover rounded-sm shadow-sm border border-black/5"
                                                 />
                                                 <span className="font-bold text-foreground/80 uppercase tracking-widest text-[10px] 2xl:text-base">{c.name}</span>

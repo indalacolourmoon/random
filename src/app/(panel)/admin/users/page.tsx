@@ -1,10 +1,11 @@
 "use client";
 
-import { Users, UserPlus, Shield, Mail, Trash2, X, ShieldCheck, UserCog, MoreVertical, Plus, Info, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, UserPlus, Shield, Mail, Trash2, X, ShieldCheck, UserCog, MoreVertical, Plus, Info, CheckCircle, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useUsers, useCreateUser, useDeleteUser } from '@/hooks/queries/useUsers';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { cleanupInactiveAuthors } from '@/actions/cleanup-inactive-authors';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,22 @@ export default function UserManagement() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isCleaning, startCleanup] = useTransition();
+
+    const handleCleanup = () => {
+        startCleanup(async () => {
+            try {
+                const result = await cleanupInactiveAuthors();
+                if (result.success) {
+                    toast.success(`Cleanup complete. Deleted ${result.deletedCount} inactive authors.`);
+                } else {
+                    toast.error(result.error || "Failed to perform cleanup");
+                }
+            } catch (error) {
+                toast.error("An unexpected error occurred during cleanup");
+            }
+        });
+    };
 
     if (loading) return <div className="p-20 text-center font-semibold text-muted-foreground  tracking-widest text-xs animate-pulse ">Scanning Directory...</div>;
 
@@ -57,12 +74,22 @@ export default function UserManagement() {
                     <h1 className="font-semibold text-foreground tracking-widest leading-none text-xl xl:text-2xl 2xl:text-4xl capitalize">Users & roles</h1>
                     <p className="text-[10px] xl:text-xs 2xl:text-base font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2">Manage editorial staff, technical reviewers, and system archival access levels.</p>
                 </div>
-                <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-                    <DialogTrigger asChild>
-                        <Button className="h-10 xl:h-12 2xl:h-16 px-5 xl:px-6 2xl:px-10 gap-2.5 bg-primary text-white dark:text-slate-900 font-semibold text-[9px] xl:text-xs 2xl:text-base tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer capitalize">
-                            <UserPlus className="w-4 h-4 2xl:w-6 2xl:h-6" /> Add staff member
-                        </Button>
-                    </DialogTrigger>
+                <div className="flex flex-wrap gap-4">
+                    <Button 
+                        variant="outline" 
+                        onClick={handleCleanup}
+                        disabled={isCleaning}
+                        className="h-10 xl:h-12 2xl:h-16 px-5 xl:px-6 2xl:px-10 gap-2.5 border-amber-500/20 text-amber-600 hover:bg-amber-500/5 font-semibold text-[9px] xl:text-xs 2xl:text-base tracking-widest rounded-xl transition-all cursor-pointer capitalize"
+                    >
+                        <ShieldAlert className="w-4 h-4 2xl:w-6 2xl:h-6" /> 
+                        {isCleaning ? "Cleaning..." : "Cleanup Inactive Authors"}
+                    </Button>
+                    <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+                        <DialogTrigger asChild>
+                            <Button className="h-10 xl:h-12 2xl:h-16 px-5 xl:px-6 2xl:px-10 gap-2.5 bg-primary text-white dark:text-slate-900 font-semibold text-[9px] xl:text-xs 2xl:text-base tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer capitalize">
+                                <UserPlus className="w-4 h-4 2xl:w-6 2xl:h-6" /> Add staff member
+                            </Button>
+                        </DialogTrigger>
                     <DialogContent className="sm:max-w-md rounded-xl p-6 bg-card border-border/50">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-semibold text-foreground tracking-wider">Invite Staff Member</DialogTitle>
@@ -107,6 +134,7 @@ export default function UserManagement() {
                         </form>
                     </DialogContent>
                 </Dialog>
+                </div>
             </header>
 
             {/* Users Grid */}

@@ -103,9 +103,13 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
             // 3. Fetch Settings
             const settings = await getSettings();
 
-            // 4. Ensure PDF is present for publication
+            // 4. Verification Checks
+            if (submission.status !== 'paid') {
+                return { error: "Manuscript must be marked as 'Paid' (APC received) before it can be assigned to an issue." };
+            }
+
             if (!submission.pdf_url) {
-                throw new Error("Final styled PDF must be uploaded before publication.");
+                return { error: "Final styled PDF must be uploaded before publication." };
             }
 
             // 4.5 Auto-Page Numbering Logic
@@ -117,7 +121,7 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
                     sql`SELECT MAX(end_page) as last_page FROM submissions WHERE issue_id = ${issueId} AND status = "published"`
                 );
                 const lastPage: number = maxPageRows[0][0]?.last_page || 0;
-                // Ensure computedStartPage is always a number after this block
+                
                 computedStartPage = computedStartPage ?? (lastPage + 1);
 
                 if (!computedEndPage) {

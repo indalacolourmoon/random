@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2, Loader2, AlertTriangle, XCircle } from "lucide-react";
-import { deleteSubmissionPermanently } from "@/actions/submissions";
+import { deleteSubmission } from "@/actions/submissions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default function DeleteSubmissionButton({ submissionId, status, variant =
 
         setLoading(true);
         try {
-            const res = await deleteSubmissionPermanently(submissionId);
+            const res = await deleteSubmission(submissionId);
             if (res.success) {
                 if (variant === "full") {
                     router.push("/admin/submissions");

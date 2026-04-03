@@ -1,107 +1,217 @@
 "use server";
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { sql, eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
+import crypto from "crypto";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import { safeDeleteFile } from "@/lib/fs-utils";
+import {
+    reviewAssignments,
+    reviews,
+    submissions,
+    submissionVersions,
+    submissionFiles,
+    submissionAuthors,
+    users,
+    userProfiles,
+} from "@/db/schema";
 
+import { convertDocxToPdf } from "@/lib/ilovepdf";
+
+// ─── Assign Reviewer ──────────────────────────────────────────────────────────
 export async function assignReviewer(formData: FormData) {
     const submissionId = parseInt(formData.get('submissionId') as string);
-    const reviewerId = parseInt(formData.get('reviewerId') as string);
+    const reviewerId = formData.get('reviewerId') as string;
     const deadline = formData.get('deadline') as string;
+    const assignedBy = formData.get('assignedBy') as string;
     const pdfFile = formData.get('pdfFile') as File;
 
     try {
         return await db.transaction(async (tx) => {
-            // --- Reviewer Fatigue & Conflict Checks ---
+            // 1. Max 6 reviewers check
+            const assignments = await tx.select()
+                .from(reviewAssignments)
+                .where(and(eq(reviewAssignments.submissionId, submissionId), eq(reviewAssignments.status, 'assigned')));
             
-            // 1. Check for Active review limit (Max 2)
-            const activeReviews: any = await tx.execute(
-                sql`SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ${reviewerId} AND status IN ('pending', 'in_progress')`
-            );
-            if (activeReviews[0][0].count >= 2) {
-                return { error: "This reviewer already has 2 active assignments. Please wait until they complete one." };
+            if (assignments.length >= 6) {
+                return { error: "Maximum of 6 active reviewers already assigned." };
             }
 
-            // 2. Check for 30-day Cooldown
-            const lastCompletion: any = await tx.execute(
-                sql`SELECT completed_at FROM reviews WHERE reviewer_id = ${reviewerId} AND status = 'completed' ORDER BY completed_at DESC LIMIT 1`
-            );
-            if (lastCompletion[0].length > 0 && lastCompletion[0][0].completed_at) {
-                const daysSinceLast = (Date.now() - new Date(lastCompletion[0][0].completed_at).getTime()) / (1000 * 60 * 60 * 24);
-                if (daysSinceLast < 30) {
-                    return { error: `This reviewer completed a review recently. Please allow a 30-day cooldown (Days passed: ${Math.floor(daysSinceLast)}).` };
+            // 2. Duplicate check
+            const existing = await tx.select()
+                .from(reviewAssignments)
+                .where(and(eq(reviewAssignments.submissionId, submissionId), eq(reviewAssignments.reviewerId, reviewerId)));
+            
+            if (existing.length > 0) {
+                return { error: "This reviewer is already assigned to this submission." };
+            }
+
+            // 3. Conflict of interest
+            const [reviewerProfile] = await tx.select({ institute: userProfiles.institute })
+                .from(userProfiles)
+                .where(eq(userProfiles.userId, reviewerId))
+                .limit(1);
+            
+            const [leadAuthor] = await tx.select({ institution: submissionAuthors.institution })
+                .from(submissionAuthors)
+                .where(and(eq(submissionAuthors.submissionId, submissionId), eq(submissionAuthors.isCorresponding, true)))
+                .limit(1);
+
+            if (reviewerProfile?.institute && leadAuthor?.institution && reviewerProfile.institute === leadAuthor.institution) {
+                return { error: "Conflict of interest detected: Reviewer and Author are from the same institution." };
+            }
+
+            // 4. Get latest version
+            const latestVersions = await tx.select()
+                .from(submissionVersions)
+                .where(eq(submissionVersions.submissionId, submissionId))
+                .orderBy(desc(submissionVersions.versionNumber))
+                .limit(1);
+            
+            if (!latestVersions.length) return { error: "Submission version not found." };
+            const version = latestVersions[0];
+
+            // 5. PDF Check/Conversion
+            let pdfUrl: string | null = null;
+            const existingPdfs = await tx.select()
+                .from(submissionFiles)
+                .where(and(eq(submissionFiles.versionId, version.id), eq(submissionFiles.fileType, 'pdf_version')))
+                .limit(1);
+
+            if (pdfFile && pdfFile.size > 0) {
+                // Manual PDF upload
+                const bytes = await pdfFile.arrayBuffer();
+                const fileName = `secure-reviewer-${submissionId}-v${version.versionNumber}-${Date.now()}.pdf`;
+                const uploadPath = path.join(process.cwd(), "public/uploads/submissions", fileName);
+                await fs.writeFile(uploadPath, Buffer.from(bytes));
+                pdfUrl = `/uploads/submissions/${fileName}`;
+
+                await tx.insert(submissionFiles).values({
+                    versionId: version.id,
+                    fileType: 'pdf_version',
+                    fileUrl: pdfUrl,
+                    originalName: 'secure-reviewer-copy.pdf'
+                });
+            } else if (existingPdfs.length > 0) {
+                pdfUrl = existingPdfs[0].fileUrl;
+            } else {
+                // AUTO-CONVERT Main Manuscript if it's DOCX
+                const manuscripts = await tx.select()
+                    .from(submissionFiles)
+                    .where(and(eq(submissionFiles.versionId, version.id), eq(submissionFiles.fileType, 'main_manuscript')))
+                    .limit(1);
+                
+                if (!manuscripts.length) return { error: "No manuscript found to convert." };
+                const manuscript = manuscripts[0];
+
+                if (manuscript.fileUrl.toLowerCase().endsWith('.pdf')) {
+                    // Just copy the URL if it's already a PDF
+                    pdfUrl = manuscript.fileUrl;
+                    await tx.insert(submissionFiles).values({
+                        versionId: version.id,
+                        fileType: 'pdf_version',
+                        fileUrl: pdfUrl,
+                        originalName: 'reviewer-copy.pdf'
+                    });
+                } else {
+                    // CONVERT DOCX -> PDF
+                    try {
+                        const mBuffer = await fs.readFile(path.join(process.cwd(), "public", manuscript.fileUrl));
+                        const pdfBuffer = await convertDocxToPdf(mBuffer, manuscript.originalName || "manuscript.docx");
+                        const fileName = `converted-${submissionId}-v${version.versionNumber}-${Date.now()}.pdf`;
+                        const uploadPath = path.join(process.cwd(), "public/uploads/submissions", fileName);
+                        await fs.writeFile(uploadPath, pdfBuffer);
+                        pdfUrl = `/uploads/submissions/${fileName}`;
+
+                        await tx.insert(submissionFiles).values({
+                            versionId: version.id,
+                            fileType: 'pdf_version',
+                            fileUrl: pdfUrl,
+                            originalName: 'converted-reviewer-copy.pdf'
+                        });
+                    } catch (convErr: any) {
+                        return { error: "PDF Conversion failed. Please upload a PDF version manually. Details: " + convErr.message };
+                    }
                 }
             }
 
-            // 3. Conflict of Interest Check (Basic: Same Institution)
-            const reviewerInfoRows: any = await tx.execute(sql`SELECT institute FROM users WHERE id = ${reviewerId}`);
-            const authorInfoRows: any = await tx.execute(sql`SELECT affiliation FROM submissions WHERE id = ${submissionId}`);
-            
-            const reviewerInfo = reviewerInfoRows[0][0];
-            const authorInfo = authorInfoRows[0][0];
+            // 6. Assignment
+            const roundRes = await tx.select({ max: sql<number>`MAX(review_round)` })
+                .from(reviewAssignments)
+                .where(eq(reviewAssignments.submissionId, submissionId));
+            const reviewRound = (roundRes[0]?.max || 0) + 1;
 
-            if (reviewerInfo && authorInfo && reviewerInfo.institute === authorInfo.affiliation) {
-                return { error: "Conflict of Interest detected: Reviewer and Author are from the same institution." };
-            }
+            await tx.insert(reviewAssignments).values({
+                submissionId,
+                reviewerId,
+                versionId: version.id,
+                assignedBy,
+                reviewRound,
+                status: 'assigned',
+                deadline: new Date(deadline),
+                assignedAt: new Date(),
+            });
 
-            // --- Assignment Logic ---
+            // 7. Status update
+            await tx.update(submissions)
+                .set({ status: 'under_review', updatedAt: new Date() })
+                .where(eq(submissions.id, submissionId));
 
-            // Fetch current PDF status
-            const existingRows: any = await tx.execute(sql`SELECT pdf_url FROM submissions WHERE id = ${submissionId}`);
-            const currentPdf = existingRows[0][0]?.pdf_url;
+            // 8. Notifications
+            const [reviewerData] = await tx.select({ email: users.email, name: userProfiles.fullName })
+                .from(users)
+                .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+                .where(eq(users.id, reviewerId))
+                .limit(1);
 
-            if (!currentPdf && (!pdfFile || pdfFile.size === 0)) {
-                return { error: "A secure PDF version of the manuscript is REQUIRED for assignment as none is currently attached." };
-            }
+            const [paperData] = await tx.select({ paperId: submissions.paperId, title: submissionVersions.title })
+                .from(submissions)
+                .join(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+                .where(eq(submissions.id, submissionId))
+                .orderBy(desc(submissionVersions.versionNumber))
+                .limit(1);
 
-            // Update submission status to 'under_review'
-            await tx.execute(
-                sql`UPDATE submissions SET status = 'under_review' WHERE id = ${submissionId} AND status = 'submitted'`
-            );
-
-            // If a new PDF was uploaded, update the submission's PDF URL
-            if (pdfFile && pdfFile.size > 0) {
-                const bytes = await pdfFile.arrayBuffer();
-                const buffer = Buffer.from(bytes);
-                const fileName = `secure-${submissionId}-${Date.now()}.pdf`;
-                const uploadDir = path.join(process.cwd(), "public", "uploads", "submissions");
-                await fs.mkdir(uploadDir, { recursive: true });
-                const filePath = path.join(uploadDir, fileName);
-                await fs.writeFile(filePath, buffer);
-
-                const pdfUrl = `/uploads/submissions/${fileName}`;
-                await tx.execute(
-                    sql`UPDATE submissions SET pdf_url = ${pdfUrl} WHERE id = ${submissionId}`
+            if (reviewerData?.email) {
+                const template = emailTemplates.reviewAssignment(
+                    reviewerData.name || "Reviewer",
+                    paperData.title,
+                    deadline,
+                    paperData.paperId
                 );
+                await sendEmail({ to: reviewerData.email, subject: template.subject, html: template.html });
             }
 
-            await tx.execute(
-                sql`INSERT INTO reviews (submission_id, reviewer_id, deadline, status) VALUES (${submissionId}, ${reviewerId}, ${deadline}, 'in_progress')`
-            );
+            // 9. Author Portal Invite
+            const [authorData] = await tx.select({ id: users.id, email: users.email, name: userProfiles.fullName, pass: users.passwordHash })
+                .from(submissions)
+                .join(users, eq(submissions.correspondingAuthorId, users.id))
+                .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+                .where(eq(submissions.id, submissionId))
+                .limit(1);
 
-            // Fetch user and paper details for the email
-            const userRows: any = await tx.execute(sql`SELECT email, full_name FROM users WHERE id = ${reviewerId}`);
-            const subRows: any = await tx.execute(sql`SELECT title, paper_id FROM submissions WHERE id = ${submissionId}`);
+            if (authorData && !authorData.pass) {
+                const token = crypto.randomBytes(32).toString('hex');
+                const expires = new Date();
+                expires.setHours(expires.getHours() + 72);
 
-            const reviewer = userRows[0][0];
-            const paperTitle = subRows[0][0]?.title || "Assigned Paper";
-            const paperId = subRows[0][0]?.paper_id || "Unknown ID";
+                await tx.update(users)
+                    .set({ invitationToken: token, invitationExpires: expires })
+                    .where(eq(users.id, authorData.id));
 
-            if (reviewer) {
-                const template = emailTemplates.reviewAssignment(reviewer.full_name, paperTitle, deadline, paperId);
-                sendEmail({
-                    to: reviewer.email,
-                    subject: template.subject,
-                    html: template.html
-                });
+                const setupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com'}/auth/setup-password?token=${token}&role=author`;
+                const template = emailTemplates.authorInvitation(
+                    authorData.name || "Author",
+                    paperData.title,
+                    paperData.paperId,
+                    setupUrl
+                );
+                await sendEmail({ to: authorData.email, subject: template.subject, html: template.html });
             }
 
             revalidatePath('/admin/reviews');
-            revalidatePath('/admin/submissions');
             return { success: true };
         });
     } catch (error: any) {
@@ -110,81 +220,138 @@ export async function assignReviewer(formData: FormData) {
     }
 }
 
+// ─── Reviewer submits their review ────────────────────────────────────────────
+export async function submitReview(assignmentId: number, formData: FormData) {
+    const decision = formData.get('decision') as string;
+    const commentsToAuthor = formData.get('commentsToAuthor') as string;
+    const commentsToEditor = formData.get('commentsToEditor') as string;
+    const score = formData.get('score') ? parseInt(formData.get('score') as string) : null;
+    const confidence = formData.get('confidence') ? parseInt(formData.get('confidence') as string) : null;
 
-export async function uploadReviewFeedback(reviewId: number, formData: FormData) {
-    let relativePath: string | null = null;
     try {
-        const file = formData.get('feedbackFile') as File;
-        const feedbackText = formData.get('feedbackText') as string;
+        // 1. Get assignment + submission details
+        const assignmentRows: any = await db.execute(
+            sql`SELECT ra.submission_id, ra.reviewer_id, s.paper_id, sv.title,
+                       u.email as author_email, up.full_name as author_name
+                FROM review_assignments ra
+                JOIN submissions s ON ra.submission_id = s.id
+                JOIN submission_versions sv ON ra.version_id = sv.id
+                JOIN users u ON s.corresponding_author_id = u.id
+                LEFT JOIN user_profiles up ON u.id = up.user_id
+                WHERE ra.id = ${assignmentId}`
+        );
+        if (!assignmentRows[0].length) return { error: "Assignment not found." };
+        const assignment = assignmentRows[0][0];
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
 
-        if (file && file.size > 0) {
-            const bytes = await file.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-
-            const fileExt = file.name.split('.').pop();
-            const fileName = `review-${reviewId}-${Date.now()}.${fileExt}`;
-            const uploadDir = path.join(process.cwd(), "public/uploads/reviews");
-            await fs.mkdir(uploadDir, { recursive: true });
-
-            const filePath = path.join(uploadDir, fileName);
-            await fs.writeFile(filePath, buffer);
-            relativePath = `/uploads/reviews/${fileName}`;
-        }
-
+        // 2. Upsert review record
         await db.execute(
-            sql`UPDATE reviews SET feedback_file_path = COALESCE(${relativePath}, feedback_file_path), feedback = ${feedbackText}, status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE id = ${reviewId}`
+            sql`INSERT INTO reviews (assignment_id, decision, score, confidence, comments_to_author, comments_to_editor, submitted_at)
+                VALUES (${assignmentId}, ${decision}, ${score}, ${confidence}, ${commentsToAuthor}, ${commentsToEditor}, NOW())
+                ON DUPLICATE KEY UPDATE
+                  decision = ${decision}, score = ${score}, confidence = ${confidence},
+                  comments_to_author = ${commentsToAuthor}, comments_to_editor = ${commentsToEditor},
+                  submitted_at = NOW()`
         );
 
-        // Notify Editor/Admin
-        try {
-            const details: any = await db.execute(sql`
-                SELECT r.reviewer_id, u.full_name as reviewer_name, s.paper_id, s.title 
-                FROM reviews r
-                JOIN users u ON r.reviewer_id = u.id
-                JOIN submissions s ON r.submission_id = s.id
-                WHERE r.id = ${reviewId}
-            `);
+        // 3. Update assignment status to completed
+        await db.execute(
+            sql`UPDATE review_assignments SET status = 'completed', responded_at = NOW() WHERE id = ${assignmentId}`
+        );
 
-            if (details[0].length > 0) {
-                const { reviewer_name, paper_id, title } = details[0][0];
-                const template = emailTemplates.reviewCompleted(reviewer_name, title, paper_id);
-                sendEmail({
-                    to: process.env.SMTP_USER as string, // Notify Admin/Editor
-                    subject: template.subject,
-                    html: template.html
-                });
+        // 4. Based on decision, notify author and/or admin
+        if (decision === 'accept') {
+            // Notify admin/editor for final evaluation
+            const adminRows: any = await db.execute(
+                sql`SELECT email FROM users WHERE role IN ('admin', 'editor')`
+            );
+            await Promise.allSettled(adminRows[0].map((a: any) => sendEmail({
+                to: a.email,
+                subject: `Review Completed (Accept): ${assignment.paper_id}`,
+                html: emailTemplates.reviewCompleted("Reviewer", assignment.title, assignment.paper_id).html
+            })));
+        } else {
+            // minor_revision, major_revision, reject → notify author
+            const statusMap: Record<string, string> = {
+                minor_revision: 'revision_requested',
+                major_revision: 'revision_requested',
+                reject: 'rejected',
+            };
+            const newStatus = statusMap[decision];
+
+            if (newStatus) {
+                await db.execute(
+                    sql`UPDATE submissions SET status = ${newStatus}, updated_at = NOW() WHERE id = ${assignment.submission_id}`
+                );
+
+                if (newStatus === 'revision_requested') {
+                    const emailData = emailTemplates.resubmissionRequest(
+                        assignment.author_name,
+                        assignment.title,
+                        assignment.paper_id,
+                        commentsToAuthor
+                    );
+                    await sendEmail({ to: assignment.author_email, subject: emailData.subject, html: emailData.html });
+                } else {
+                    const emailData = emailTemplates.manuscriptRejection(
+                        assignment.author_name,
+                        assignment.title,
+                        assignment.paper_id,
+                        commentsToAuthor
+                    );
+                    await sendEmail({ to: assignment.author_email, subject: emailData.subject, html: emailData.html });
+                }
             }
-        } catch (emailErr) {
-            console.error("Failed to send review completion email:", emailErr);
         }
 
         revalidatePath('/admin/reviews');
+        revalidatePath('/reviewer/reviews');
         return { success: true };
     } catch (error: any) {
-        console.error("Upload Feedback Error:", error);
-        if (relativePath) {
-            await safeDeleteFile(relativePath);
-        }
-        return { error: "Failed to upload feedback: " + error.message };
+        console.error("Submit Review Error:", error);
+        return { error: "Failed to submit review: " + error.message };
     }
 }
 
-export async function getActiveReviews(reviewerId?: number) {
+// ─── Get all review assignments (optionally for a specific reviewer) ──────────
+export async function getActiveReviews(reviewerId?: string) {
     try {
-        let rawQuery = sql`
-            SELECT r.*, s.title, s.paper_id, s.pdf_url as manuscript_path, s.status as submission_status, u.full_name as reviewer_name
-            FROM reviews r 
-            JOIN submissions s ON r.submission_id = s.id 
-            JOIN users u ON r.reviewer_id = u.id
-        `;
-
+        let query;
         if (reviewerId) {
-            rawQuery = sql`${rawQuery} WHERE r.reviewer_id = ${reviewerId}`;
+            query = sql`
+                SELECT ra.id, ra.status, ra.assigned_at, ra.deadline, ra.review_round,
+                       s.id as submission_id, s.paper_id, s.status as submission_status,
+                       sv.title,
+                       up.full_name as reviewer_name,
+                       r.decision, r.comments_to_author, r.submitted_at as review_submitted_at,
+                       (SELECT file_url FROM submission_files WHERE version_id = sv.id AND file_type = 'pdf_version' LIMIT 1) as manuscript_path,
+                       (SELECT file_url FROM submission_files WHERE version_id = sv.id AND file_type = 'feedback' LIMIT 1) as feedback_file_path
+                FROM review_assignments ra
+                JOIN submissions s ON ra.submission_id = s.id
+                JOIN submission_versions sv ON ra.version_id = sv.id
+                LEFT JOIN user_profiles up ON ra.reviewer_id = up.user_id
+                LEFT JOIN reviews r ON ra.id = r.assignment_id
+                WHERE ra.reviewer_id = ${reviewerId}
+                ORDER BY ra.assigned_at DESC
+            `;
+        } else {
+            query = sql`
+                SELECT ra.id, ra.status, ra.assigned_at, ra.deadline, ra.review_round,
+                       s.id as submission_id, s.paper_id, s.status as submission_status,
+                       sv.title,
+                       up.full_name as reviewer_name,
+                       r.decision, r.comments_to_author, r.submitted_at as review_submitted_at,
+                       (SELECT file_url FROM submission_files WHERE version_id = sv.id AND file_type = 'pdf_version' LIMIT 1) as manuscript_path,
+                       (SELECT file_url FROM submission_files WHERE version_id = sv.id AND file_type = 'feedback' LIMIT 1) as feedback_file_path
+                FROM review_assignments ra
+                JOIN submissions s ON ra.submission_id = s.id
+                JOIN submission_versions sv ON ra.version_id = sv.id
+                LEFT JOIN user_profiles up ON ra.reviewer_id = up.user_id
+                LEFT JOIN reviews r ON ra.id = r.assignment_id
+                ORDER BY ra.assigned_at DESC
+            `;
         }
-
-        rawQuery = sql`${rawQuery} ORDER BY r.assigned_at DESC`;
-
-        const rows: any = await db.execute(rawQuery);
+        const rows: any = await db.execute(query);
         return rows[0] || [];
     } catch (error: any) {
         console.error("Get Reviews Error:", error);
@@ -192,13 +359,17 @@ export async function getActiveReviews(reviewerId?: number) {
     }
 }
 
+// ─── Get unassigned / ready-for-review submissions ────────────────────────────
 export async function getUnassignedAcceptedPapers() {
     try {
         const rows: any = await db.execute(sql`
-            SELECT id, paper_id, title, pdf_url
-            FROM submissions 
-            WHERE status IN ('submitted', 'under_review', 'accepted') 
-            AND id NOT IN (SELECT submission_id FROM reviews WHERE status != 'completed')
+            SELECT s.id, s.paper_id, sv.title,
+                   f.file_url as pdf_url
+            FROM submissions s
+            JOIN submission_versions sv ON sv.submission_id = s.id
+                AND sv.version_number = (SELECT MAX(version_number) FROM submission_versions WHERE submission_id = s.id)
+            LEFT JOIN submission_files f ON f.version_id = sv.id AND f.file_type = 'pdf_version'
+            WHERE s.status IN ('submitted', 'editor_assigned', 'under_review', 'accepted')
         `);
         return rows[0] || [];
     } catch (error: any) {

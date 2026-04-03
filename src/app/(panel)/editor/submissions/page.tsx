@@ -32,7 +32,7 @@ export default async function Submissions({
     const statsResult = statRows[0][0];
 
     // 2. Build SQL query dynamically
-    const conditions = [];
+    const conditions: any[] = [];
 
     if (currentStatus === 'pending') {
         conditions.push(sql`s.status IN ("under_review", "accepted")`);

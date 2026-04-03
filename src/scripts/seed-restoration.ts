@@ -58,7 +58,7 @@ async function seed() {
 
         for (const u of coreUsers) {
             // Check if user exists
-            let existing = await db.query.users.findFirst({
+            const existing = await db.query.users.findFirst({
                 where: eq(users.email, u.email)
             });
 
@@ -94,7 +94,7 @@ async function seed() {
         ];
 
         for (const a of dummyAuthors) {
-            let existing = await db.query.users.findFirst({
+            const existing = await db.query.users.findFirst({
                 where: eq(users.email, a.email)
             });
 

@@ -26,7 +26,7 @@ export async function getMessages(filters?: { status?: string, search?: string }
             LEFT JOIN users u ON m.resolved_by = u.id
         `;
         
-        const whereClauses = [];
+        const whereClauses: ReturnType<typeof sql>[] = [];
 
         if (filters?.status && filters.status !== 'all') {
             whereClauses.push(sql`m.status = ${filters.status}`);

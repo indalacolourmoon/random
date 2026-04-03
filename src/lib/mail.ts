@@ -34,16 +34,16 @@ export async function sendEmail({ to, subject, text, html }: SendEmailProps) {
         console.error("--- SMTP Error Diagnosis ---");
         console.error("Host:", process.env.SMTP_HOST);
         console.error("User:", process.env.SMTP_USER);
-        console.error("Error Code:", error.code);
-        console.error("SMTP Response:", error.response);
+        console.error("Error Code:", error?.code);
+        console.error("SMTP Response:", error?.response);
         console.error("---------------------------");
-        return { success: false, error: error.message };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
 // Helper templates
 export const emailTemplates = {
-    submissionReceived: (authorName: string, paperTitle: string, paperId: string) => {
+    submissionReceived: (authorName: string, paperTitle: string, paperId: string, setupUrl?: string) => {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
         return {
             subject: `Submission Received: ${paperId}`,
@@ -56,10 +56,20 @@ export const emailTemplates = {
                     <p style="margin: 0; font-weight: bold;">Paper ID: ${paperId}</p>
                     <p style="margin: 5px 0 0 0;">Title: ${paperTitle}</p>
                 </div>
-                <p>Your submission is currently under initial screening. You can track its live progress anytime in our author portal:</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="${baseUrl}/track" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Track Manuscript Status</a>
-                </div>
+                
+                ${setupUrl ? `
+                    <div style="background: #fff8f1; padding: 25px; border-radius: 15px; border: 1px solid #ffedd5; margin: 25px 0; text-align: center;">
+                        <p style="margin-top: 0; font-weight: bold; color: #9a3412;">Set Up Your Author Account</p>
+                        <p style="font-size: 14px; color: #9a3412; margin-bottom: 20px;">To track your submission, receive reviewer feedback, and manage revisions, please secure your account:</p>
+                        <a href="${setupUrl}" style="background: #6d0202; color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Secure My Account</a>
+                    </div>
+                ` : `
+                    <p>Your submission is currently under initial screening. You can track its live progress anytime in our author portal:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${baseUrl}/track" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Track Manuscript Status</a>
+                    </div>
+                `}
+                
                 <p>Warm regards,<br>Editorial Office, IJITEST</p>
             </div>
         `
@@ -79,7 +89,7 @@ export const emailTemplates = {
                     <div style="text-align: center; margin: 30px 0;">
                         <h2 style="color: ${isAccepted ? '#16a34a' : status === 'rejected' ? '#dc2626' : '#2563eb'}; text-transform: uppercase;">${status.replace('_', ' ')}</h2>
                     </div>
-                    
+
                     ${isAccepted ? `
                         <div style="background: #f0fdf4; padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #dcfce7;">
                             <p style="margin-top: 0; font-weight: bold; color: #166534;">Congratulations on your acceptance!</p>
@@ -89,7 +99,7 @@ export const emailTemplates = {
                     ` : `
                         <p>Please log in to the portal or check your records for more details.</p>
                     `}
-                    
+
                     <p style="margin-top: 30px;">Warm regards,<br>Editor-in-Chief, IJITEST</p>
                 </div>
             `
@@ -127,13 +137,13 @@ export const emailTemplates = {
                     <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
                     <p>Dear <strong>${authorName}</strong>,</p>
                     <p>I am pleased to inform you that your manuscript, "<strong>${paperTitle}</strong>" (ID: ${paperId}), has been <strong>ACCEPTED</strong> for publication in the <em>International Journal of Innovative Trends in Engineering Science and Technology (IJITEST)</em>.</p>
-                    
+
                     <div style="background: #f0fdf4; padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #dcfce7; margin: 30px 0;">
                         <p style="margin-top: 0; font-weight: bold; color: #166534; font-size: 18px;">Congratulations on your achievement!</p>
                         <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">To finalize the publication and include your paper in the upcoming issue, please complete the Article Processing Charge (APC) payment.</p>
                         <a href="${baseUrl}/payment/${paperId}" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Proceed to Payment & Publish</a>
                     </div>
-                    
+
                     <p>After payment, our technical team will reach out for the final camera-ready copy formatting.</p>
                     <p>Warm regards,<br><strong>Editor-in-Chief, IJITEST</strong></p>
                 </div>
@@ -148,18 +158,18 @@ export const emailTemplates = {
                 <p>Dear <strong>${authorName}</strong>,</p>
                 <p>Thank you for submitting your manuscript, "<strong>${paperTitle}</strong>" (ID: ${paperId}), to IJITEST.</p>
                 <p>After a thorough evaluation by our editorial board and peer reviewers, we regret to inform you that your manuscript has been <strong>REJECTED</strong> for publication in our journal.</p>
-                
+
                 <div style="background: #f9fafb; padding: 25px; border-radius: 15px; border: 1px solid #e5e7eb; margin: 30px 0;">
                     <p style="margin-top: 0; font-weight: bold; font-size: 10px; color: #6b7280; letter-spacing: 0.1em; text-transform: uppercase;">Reviewer Comments & Feedback</p>
                     <div style="color: #374151; line-height: 1.6;">
                         ${feedback || 'The submission did not meet the technical criteria for our current focus areas.'}
                     </div>
                 </div>
-                
+
                 <p>We appreciate your interest in IJITEST and wish you the best for your future research endeavors.</p>
                 <p>Sincerely,<br><strong>Editorial Board, IJITEST</strong></p>
             </div>
-        `
+        `,
     }),
     reviewCompleted: (reviewerName: string, paperTitle: string, paperId: string) => ({
         subject: `Review Completed: ${paperId}`,
@@ -174,7 +184,7 @@ export const emailTemplates = {
                 <p>Please log in to the admin panel to evaluate the feedback and make a final decision.</p>
                 <a href="${process.env.NEXT_PUBLIC_APP_URL || ''}/admin/submissions/${paperId}" style="background: #6d0202; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Submission & Feedback</a>
             </div>
-        `
+        `,
     }),
     paymentVerified: (authorName: string, paperTitle: string, paperId: string) => ({
         subject: `Payment Verified: ${paperId}`,
@@ -191,7 +201,7 @@ export const emailTemplates = {
                 <p>Thank you for choosing IJITEST.</p>
                 <p>Warm regards,<br>Editorial Office, IJITEST</p>
             </div>
-        `
+        `,
     }),
     manuscriptPublished: (authorName: string, paperTitle: string, paperId: string, volume: number, issue: number, year: number) => ({
         subject: `PAPER PUBLISHED: ${paperId}`,
@@ -212,6 +222,48 @@ export const emailTemplates = {
                 <p>Congratulations once again on your contribution to the field.</p>
                 <p>Highest regards,<br><strong>Editor-in-Chief, IJITEST</strong></p>
             </div>
+        `,
+    }),
+    // Author Portal Invitation — sent at reviewer assignment (same token flow as editor/reviewer)
+    authorInvitation: (authorName: string, paperTitle: string, paperId: string, setupUrl: string) => ({
+        subject: `Your Paper Is Under Review — Set Up Your Author Portal | IJITEST`,
+        html: `
+        <div style="font-family: serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
+            <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
+            <p>Dear <strong>${authorName}</strong>,</p>
+            <p>Great news — your manuscript <strong>"${paperTitle}"</strong> (Paper ID: <strong>${paperId}</strong>) has been accepted for peer review and assigned to our reviewer panel.</p>
+            <p>To track your manuscript's progress, receive reviewer feedback, and resubmit if needed, please activate your <strong>Author Portal</strong> account:</p>
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="${setupUrl}" style="background: #6d0202; color: white; padding: 18px 36px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 10px 20px -5px rgba(109,2,2,0.3);">Activate Author Portal</a>
+            </div>
+            <p style="color: #666; font-size: 12px;">This invitation link expires in 72 hours. If you did not submit to IJITEST, please ignore this email.</p>
+            <div style="background: #fdf2f2; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <p style="margin: 0; font-weight: bold;">Paper ID: ${paperId}</p>
+                <p style="margin: 5px 0 0 0;">Title: ${paperTitle}</p>
+            </div>
+            <p>Warm regards,<br><strong>Editorial Office, IJITEST</strong></p>
+        </div>
         `
-    })
+    }),
+
+    // Resubmission request email template (no login link, includes optional editor/reviewer comments)
+    resubmissionRequest: (authorName: string, paperTitle: string, paperId: string, comments?: string) => {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        return {
+            subject: `Resubmission Requested: ${paperId}`,
+            html: `
+            <div style="font-family: serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
+                <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
+                <p>Dear <strong>${authorName}</strong>,</p>
+                <p>Your manuscript "${paperTitle}" (Paper ID: ${paperId}) has been marked for resubmission.</p>
+                ${comments ? `<p><strong>Comments from editor/reviewer:</strong></p><blockquote style="border-left: 4px solid #6d0202; padding-left: 10px; margin: 10px 0;">${comments}</blockquote>` : ''}
+                <p>Please submit a revised version using the author portal:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${baseUrl}/author/submissions" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Go to Author Portal</a>
+                </div>
+                <p>Warm regards,<br>Editorial Office, IJITEST</p>
+            </div>
+            `
+        };
+    }
 };

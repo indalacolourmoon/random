@@ -36,7 +36,7 @@ export async function getPublishedPapers() {
             orderBy: [desc(publications.publishedAt)]
         });
 
-        return publishedRaw.map(pub => mapPublicationToUI(pub));
+        return publishedRaw.map((pub: any) => mapPublicationToUI(pub));
     } catch (error: any) {
         console.error("Get Published Papers Error:", error);
         return [];
@@ -75,7 +75,7 @@ export async function getLatestIssuePapers() {
             }
         });
 
-        return papersRaw.map(pub => mapPublicationToUI(pub));
+        return papersRaw.map((pub: any) => mapPublicationToUI(pub));
     } catch (error: any) {
         console.error("Get Latest Issue Papers Error:", error);
         return [];
@@ -106,7 +106,7 @@ export async function getArchivePapers() {
             orderBy: [desc(publications.publishedAt)]
         });
 
-        return archiveRaw.map(pub => mapPublicationToUI(pub));
+        return archiveRaw.map((pub: any) => mapPublicationToUI(pub));
     } catch (error) {
         console.error("Get Archive Papers Error:", error);
         return [];

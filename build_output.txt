@@ -1,0 +1,27 @@
+
+> ijitest@0.1.0 build C:\Users\Mohan Kumar Indala\OneDrive\Desktop\p2\goal ijitest\ijitest
+> next build
+
+⚠ turbopack.root should be absolute, using: C:\Users\Mohan Kumar Indala\OneDrive\Desktop\p2\goal ijitest\ijitest
+▲ Next.js 16.2.1 (Turbopack)
+- Environments: .env
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 22.3s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/(panel)/admin/reviews/page.tsx:295:47
+Type error: Property 'feedback' does not exist on type 'ReviewAssignment'.
+
+  [90m293 |[0m ...                                     </div>
+  [90m294 |[0m ...
+[31m[1m>[0m [90m295 |[0m ...                                     {item.feedback && (
+  [90m    |[0m                                               [31m[1m^[0m
+  [90m296 |[0m ...                                         <div className=[32m"mt-6 p-6 bg-primary/[0.02] ro...[0m
+  [90m297 |[0m ...                                             <span className=[32m"text-primary font-semibo...[0m
+  [90m298 |[0m ...[32m                                             {item.feedback}[0m
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

@@ -10,7 +10,15 @@ const nextConfig: NextConfig = {
     root: "./"
   },
   images: {
-    qualities: [75, 90, 100]
+    qualities: [75, 90, 100],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'flagcdn.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   }
 };
 
