@@ -32,3 +32,5 @@ export const db = globalForDb.db ?? drizzle(mysql.createPool(poolOptions), { sch
 if (process.env.NODE_ENV !== "production") {
     globalForDb.db = db;
 }
+
+export default db;

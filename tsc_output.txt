@@ -1,6 +1,0 @@
-src/app/(panel)/admin/components/ApplicationDecisionButtons.tsx(36,30): error TS2554: Expected 2 arguments, but got 1.
-src/app/(panel)/editor/applications/page.tsx(62,61): error TS2345: Argument of type 'number' is not assignable to parameter of type '{ id: number; reason: string; }'.
-src/app/(panel)/editor/messages/page.tsx(25,52): error TS2322: Type 'string' is not assignable to type '"resolved" | "archived"'.
-src/features/archives/components/PaperCard.tsx(78,42): error TS2304: Cannot find name 'Globe'.
-src/features/submissions/components/SubmissionContainer.tsx(100,22): error TS2552: Cannot find name 'motion'. Did you mean 'Option'?
-src/features/submissions/components/SubmissionContainer.tsx(171,23): error TS2552: Cannot find name 'motion'. Did you mean 'Option'?

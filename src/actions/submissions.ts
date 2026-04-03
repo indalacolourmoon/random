@@ -12,12 +12,14 @@ import {
     reviews,
     reviewAssignments,
     settings,
+    volumesIssues,
+    publications,
 } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import fs from 'fs/promises';
 import path from 'path';
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, sql } from "drizzle-orm";
 
 // ─── Helper: get APC from settings ────────────────────────────────────────────
 async function getApcAmount(): Promise<{ amount: string; currency: string }> {
@@ -34,27 +36,60 @@ async function getApcAmount(): Promise<{ amount: string; currency: string }> {
 // ─── Get full submission detail ────────────────────────────────────────────────
 export async function getSubmissionById(id: number) {
     try {
-        const result = await db.query.submissions.findFirst({
-            where: eq(submissions.id, id),
-            with: {
-                correspondingAuthor: { with: { profile: true } },
-                versions: {
-                    orderBy: [desc(submissionVersions.versionNumber)],
-                    limit: 1,
-                    with: { files: true }
-                },
-                authors: true,
-                payment: true,
-                reviewAssignments: {
-                    with: {
-                        reviewer: { with: { profile: true } },
-                        review: true,
-                    }
-                },
-                issue: true,
-                publication: true
-            }
-        });
+        const submissionRows = await db.select({
+            submission: submissions,
+            author: users,
+            authorProfile: userProfiles,
+            issue: volumesIssues,
+            publication: publications,
+            version: submissionVersions,
+            payment: payments
+        })
+        .from(submissions)
+        .where(eq(submissions.id, id))
+        .leftJoin(users, eq(submissions.correspondingAuthorId, users.id))
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .leftJoin(volumesIssues, eq(submissions.issueId, volumesIssues.id))
+        .leftJoin(publications, eq(submissions.id, publications.submissionId))
+        .leftJoin(payments, eq(submissions.id, payments.submissionId))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .limit(1);
+
+        const row = submissionRows[0];
+        if (!row) return null;
+
+        const authors = await db.select().from(submissionAuthors).where(eq(submissionAuthors.submissionId, id));
+        const assignments = await db.select({
+            ra: reviewAssignments,
+            reviewer: users,
+            profile: userProfiles,
+            review: reviews
+        })
+        .from(reviewAssignments)
+        .where(eq(reviewAssignments.submissionId, id))
+        .leftJoin(users, eq(reviewAssignments.reviewerId, users.id))
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .leftJoin(reviews, eq(reviewAssignments.id, reviews.assignmentId));
+
+        const submissionFilesList = row.version ? await db.select().from(submissionFiles).where(eq(submissionFiles.versionId, row.version.id)) : [];
+
+        const result = {
+            ...row.submission,
+            correspondingAuthor: { ...row.author, profile: row.authorProfile },
+            versions: row.version ? [{ ...row.version, files: submissionFilesList }] : [],
+            authors,
+            payment: row.payment,
+            reviewAssignments: assignments.map(a => ({
+                ...a.ra,
+                reviewer: { ...a.reviewer, profile: a.profile },
+                review: a.review
+            })),
+            issue: row.issue,
+            publication: row.publication
+        };
 
         if (!result) return null;
 
@@ -97,18 +132,20 @@ export async function getSubmissionById(id: number) {
 // ─── Update PDF URL ────────────────────────────────────────────────────────────
 export async function updateSubmissionPdfUrl(submissionId: number, pdfUrl: string) {
     try {
-        const latestVersion = await db.query.submissionVersions.findFirst({
-            where: eq(submissionVersions.submissionId, submissionId),
-            orderBy: [desc(submissionVersions.versionNumber)]
-        });
+        const versions = await db.select().from(submissionVersions)
+            .where(eq(submissionVersions.submissionId, submissionId))
+            .orderBy(desc(submissionVersions.versionNumber))
+            .limit(1);
+        const latestVersion = versions[0];
         if (!latestVersion) throw new Error("No version context found.");
 
-        const existingPdf = await db.query.submissionFiles.findFirst({
-            where: and(
+        const existingPdfs = await db.select().from(submissionFiles)
+            .where(and(
                 eq(submissionFiles.versionId, latestVersion.id),
                 eq(submissionFiles.fileType, 'pdf_version')
-            )
-        });
+            ))
+            .limit(1);
+        const existingPdf = existingPdfs[0];
 
         if (existingPdf) {
             await db.update(submissionFiles).set({ fileUrl: pdfUrl }).where(eq(submissionFiles.id, existingPdf.id));
@@ -205,14 +242,23 @@ export async function uploadManuscriptPdf(submissionId: number, formData: FormDa
         const file = formData.get("pdfFile") as File;
         if (!file || file.size === 0) return { error: "No PDF file selected." };
 
-        const submission = await db.query.submissions.findFirst({
-            where: eq(submissions.id, submissionId),
-            with: { versions: { orderBy: [desc(submissionVersions.versionNumber)], limit: 1 } }
-        });
+        const rows = await db.select({
+            submission: submissions,
+            version: submissionVersions
+        })
+        .from(submissions)
+        .where(eq(submissions.id, submissionId))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .limit(1);
 
-        if (!submission || !submission.versions?.[0]) return { error: "Version context not found." };
+        const submission = rows[0];
 
-        const versionId = submission.versions[0].id;
+        if (!submission || !submission.version) return { error: "Version context not found." };
+
+        const versionId = submission.version.id;
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         const fileName = `final-manuscript-${submissionId}-${Date.now()}.pdf`;
@@ -282,14 +328,22 @@ export async function requestResubmissionWithComments(
 // ─── Delete submission (full cleanup) ─────────────────────────────────────────
 export async function deleteSubmission(id: number) {
     try {
-        const submission = await db.query.submissions.findFirst({
-            where: eq(submissions.id, id),
-            with: { versions: { limit: 1, with: { files: true } } }
-        });
+        const rows = await db.select({
+            submission: submissions,
+            version: submissionVersions
+        })
+        .from(submissions)
+        .where(eq(submissions.id, id))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .limit(1);
 
+        const submission = rows[0];
         if (!submission) return { error: "Submission not found" };
 
-        const versionId = submission.versions?.[0]?.id;
+        const versionId = submission.version?.id;
 
         // 1. Physical file cleanup
         if (versionId) {

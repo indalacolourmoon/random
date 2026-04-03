@@ -9,7 +9,7 @@ import {
     userProfiles,
     users
 } from "@/db/schema";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, sql } from "drizzle-orm";
 
 /**
  * FETCH ALL PUBLISHED PAPERS
@@ -17,26 +17,32 @@ import { eq, desc, and, inArray } from "drizzle-orm";
  */
 export async function getPublishedPapers() {
     try {
-        const publishedRaw = await db.query.publications.findMany({
-            with: {
-                submission: {
-                    with: {
-                        versions: {
-                            orderBy: [desc(submissionVersions.versionNumber)],
-                            limit: 1
-                        },
-                        correspondingAuthor: {
-                            with: { profile: true }
-                        },
-                        authors: true
-                    }
-                },
-                issue: true
-            },
-            orderBy: [desc(publications.publishedAt)]
-        });
+        const rows = await db.select({
+            publication: publications,
+            submission: submissions,
+            version: submissionVersions,
+            issue: volumesIssues,
+            authorProfile: userProfiles
+        })
+        .from(publications)
+        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+        .orderBy(desc(publications.publishedAt));
 
-        return publishedRaw.map((pub: any) => mapPublicationToUI(pub));
+        return rows.map((row: any) => mapPublicationToUI({
+            ...row.publication,
+            submission: {
+                ...row.submission,
+                versions: [row.version],
+                correspondingAuthor: { profile: row.authorProfile }
+            },
+            issue: row.issue
+        }));
     } catch (error: any) {
         console.error("Get Published Papers Error:", error);
         return [];
@@ -48,34 +54,40 @@ export async function getPublishedPapers() {
  */
 export async function getLatestIssuePapers() {
     try {
-        // 1. Find the latest 'open' or most recently 'published' issue
-        const latestIssue = await db.query.volumesIssues.findFirst({
-            where: eq(volumesIssues.status, 'open'),
-            orderBy: [desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber)]
-        });
+        const latestIssue = await db.select()
+            .from(volumesIssues)
+            .where(eq(volumesIssues.status, 'open'))
+            .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
+            .limit(1);
 
-        if (!latestIssue) return [];
+        if (!latestIssue.length) return [];
 
-        const papersRaw = await db.query.publications.findMany({
-            where: eq(publications.issueId, latestIssue.id),
-            with: {
-                submission: {
-                    with: {
-                        versions: {
-                            orderBy: [desc(submissionVersions.versionNumber)],
-                            limit: 1
-                        },
-                        correspondingAuthor: {
-                            with: { profile: true }
-                        },
-                        authors: true
-                    }
-                },
-                issue: true
-            }
-        });
+        const rows = await db.select({
+            publication: publications,
+            submission: submissions,
+            version: submissionVersions,
+            issue: volumesIssues,
+            authorProfile: userProfiles
+        })
+        .from(publications)
+        .where(eq(publications.issueId, latestIssue[0].id))
+        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId));
 
-        return papersRaw.map((pub: any) => mapPublicationToUI(pub));
+        return rows.map((row: any) => mapPublicationToUI({
+            ...row.publication,
+            submission: {
+                ...row.submission,
+                versions: [row.version],
+                correspondingAuthor: { profile: row.authorProfile }
+            },
+            issue: row.issue
+        }));
     } catch (error: any) {
         console.error("Get Latest Issue Papers Error:", error);
         return [];
@@ -87,26 +99,32 @@ export async function getLatestIssuePapers() {
  */
 export async function getArchivePapers() {
     try {
-        const archiveRaw = await db.query.publications.findMany({
-            with: {
-                submission: {
-                    with: {
-                        versions: {
-                            orderBy: [desc(submissionVersions.versionNumber)],
-                            limit: 1
-                        },
-                        correspondingAuthor: {
-                            with: { profile: true }
-                        },
-                        authors: true
-                    }
-                },
-                issue: true
-            },
-            orderBy: [desc(publications.publishedAt)]
-        });
+        const rows = await db.select({
+            publication: publications,
+            submission: submissions,
+            version: submissionVersions,
+            issue: volumesIssues,
+            authorProfile: userProfiles
+        })
+        .from(publications)
+        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+        .orderBy(desc(publications.publishedAt));
 
-        return archiveRaw.map((pub: any) => mapPublicationToUI(pub));
+        return rows.map((row: any) => mapPublicationToUI({
+            ...row.publication,
+            submission: {
+                ...row.submission,
+                versions: [row.version],
+                correspondingAuthor: { profile: row.authorProfile }
+            },
+            issue: row.issue
+        }));
     } catch (error) {
         console.error("Get Archive Papers Error:", error);
         return [];
@@ -118,26 +136,36 @@ export async function getArchivePapers() {
  */
 export async function getPaperById(id: string) {
     try {
-        const pub = await db.query.publications.findFirst({
-            where: eq(publications.submissionId, parseInt(id)),
-            with: {
-                submission: {
-                    with: {
-                        versions: {
-                            orderBy: [desc(submissionVersions.versionNumber)],
-                            limit: 1
-                        },
-                        correspondingAuthor: {
-                            with: { profile: true }
-                        },
-                        authors: true
-                    }
-                },
-                issue: true
-            }
-        });
+        const rows = await db.select({
+            publication: publications,
+            submission: submissions,
+            version: submissionVersions,
+            issue: volumesIssues,
+            authorProfile: userProfiles
+        })
+        .from(publications)
+        .where(eq(publications.submissionId, parseInt(id)))
+        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+        ))
+        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+        .limit(1);
 
-        return pub ? mapPublicationToUI(pub) : null;
+        const row = rows[0];
+        if (!row) return null;
+
+        return mapPublicationToUI({
+            ...row.publication,
+            submission: {
+                ...row.submission,
+                versions: [row.version],
+                correspondingAuthor: { profile: row.authorProfile }
+            },
+            issue: row.issue
+        });
     } catch (error) {
         console.error("Get Paper By ID Error:", error);
         return null;

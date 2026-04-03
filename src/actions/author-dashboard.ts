@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from "@/db";
+import { db } from "@/lib/db";
 import { submissions, submissionVersions, users } from "@/db/schema";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
