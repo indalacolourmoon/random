@@ -273,7 +273,53 @@ export async function uploadManuscriptPdf(submissionId: number, formData: FormDa
     }
 }
 
-export async function deleteSubmissionPermanently(id: number) {
+export async function requestResubmission(submissionId: number) {
+    try {
+        const submission = await getSubmissionById(submissionId);
+        if (!submission) return { error: 'Submission not found' };
+        // Create new version duplicating latest version content
+        const latestVersion = await db.query.submissionVersions.findFirst({
+            where: eq(submissionVersions.submissionId, submissionId),
+            orderBy: [desc(submissionVersions.versionNumber)],
+        });
+        if (!latestVersion) return { error: 'No version to copy' };
+        // Insert new version with incremented number
+        const newVersionNumber = (latestVersion.versionNumber || 0) + 1;
+        const [newVersionInsert] = await db.insert(submissionVersions).values({
+            submissionId,
+            versionNumber: newVersionNumber,
+            title: latestVersion.title,
+            abstract: latestVersion.abstract,
+            keywords: latestVersion.keywords,
+        });
+        const newVersionId = (newVersionInsert as any).insertId;
+        // Copy files (manuscript) reference to new version
+        const files = await db.select().from(submissionFiles).where(eq(submissionFiles.versionId, latestVersion.id));
+        for (const f of files) {
+            await db.insert(submissionFiles).values({
+                versionId: newVersionId,
+                fileType: f.fileType,
+                fileUrl: f.fileUrl,
+                originalName: f.originalName,
+                fileSize: f.fileSize,
+            });
+        }
+        // Update submission status to submitted
+        await db.update(submissions).set({ status: 'submitted' }).where(eq(submissions.id, submissionId));
+        // Notify author
+        await sendEmail({
+            to: submission.author_email,
+            subject: `Resubmission Requested: ${submission.title}`,
+            html: `<p>Dear ${submission.author_name},</p><p>Your manuscript (ID ${submission.paperId}) has been marked for resubmission. Please submit a revised version through the author portal.</p>`
+        });
+        revalidatePath(`/editor/submissions/${submissionId}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error('Resubmission request error:', error);
+        return { error: error.message };
+    }
+}
+
     try {
         const submission = await db.query.submissions.findFirst({
             where: eq(submissions.id, id),
