@@ -1,35 +1,33 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 
 export async function trackManuscript(paperId: string, authorEmail?: string) {
     try {
-        let sql = `SELECT id, paper_id, title, author_name, status, submitted_at, updated_at,
+        let query = sql`SELECT id, paper_id, title, author_name, status, submitted_at, updated_at,
              (SELECT MIN(assigned_at) FROM reviews WHERE submission_id = submissions.id) as review_started_at
              FROM submissions 
-             WHERE paper_id = ?`;
-        const params: any[] = [paperId];
+             WHERE paper_id = ${paperId}`;
 
         if (authorEmail) {
-            sql += ` AND author_email = ?`;
-            params.push(authorEmail);
+            query = sql`${query} AND author_email = ${authorEmail}`;
         }
 
-        const [rows]: any = await pool.execute(sql, params);
+        const rows: any = await db.execute(query);
 
-        if (rows.length === 0) {
+        if (rows[0].length === 0) {
             return { error: "No manuscript found with these credentials. Please check your Paper ID and Email." };
         }
 
-        const manuscript = rows[0];
+        const manuscript = rows[0][0];
 
         // If rejected, fetch reviewer feedback
         if (manuscript.status === 'rejected') {
-            const [reviews]: any = await pool.execute(
-                'SELECT feedback FROM reviews WHERE submission_id = ? AND status = "completed"',
-                [manuscript.id]
+            const feedbackRows: any = await db.execute(
+                sql`SELECT feedback FROM reviews WHERE submission_id = ${manuscript.id} AND status = "completed"`
             );
-            manuscript.reviewer_feedback = reviews.map((r: any) => r.feedback);
+            manuscript.reviewer_feedback = (feedbackRows[0] || []).map((r: any) => r.feedback);
         }
 
         return { success: true, manuscript };

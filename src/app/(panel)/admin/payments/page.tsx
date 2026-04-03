@@ -79,7 +79,7 @@ export default function PaymentManagement() {
 
     if (loading) return <div className="p-40 text-center space-y-6">
         <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-        <p className="font-black text-muted-foreground tracking-widest text-xs animate-pulse uppercase">Verifying Financial Records...</p>
+        <p className="font-semibold text-muted-foreground tracking-widest text-xs animate-pulse uppercase">Verifying Financial Records...</p>
     </div>;
 
     const filteredPayments = payments.filter(p => {
@@ -102,10 +102,10 @@ export default function PaymentManagement() {
     };
 
     const stats = [
-        { label: 'Gross Revenue (Verified)', value: `₹${revenueStats.gross}`, variant: 'emerald', icon: <DollarSign className="w-4 h-4" /> },
-        { label: 'Verified Transactions', value: revenueStats.paid, variant: 'blue', icon: <CheckCircle className="w-4 h-4" /> },
-        { label: 'Projected Revenue', value: `₹${revenueStats.projected}`, variant: 'orange', icon: <History className="w-4 h-4" /> },
-        { label: 'Pending Requests', value: revenueStats.pending, variant: 'rose', icon: <Clock className="w-4 h-4" /> },
+        { label: 'Gross revenue (verified)', value: `₹${revenueStats.gross}`, variant: 'emerald', icon: <DollarSign className="w-4 h-4" /> },
+        { label: 'Verified transactions', value: revenueStats.paid, variant: 'blue', icon: <CheckCircle className="w-4 h-4" /> },
+        { label: 'Projected revenue', value: `₹${revenueStats.projected}`, variant: 'orange', icon: <History className="w-4 h-4" /> },
+        { label: 'Pending requests', value: revenueStats.pending, variant: 'rose', icon: <Clock className="w-4 h-4" /> },
     ];
 
     const getStatusVariant = (status: string) => {
@@ -122,35 +122,35 @@ export default function PaymentManagement() {
         <section className="space-y-8 pb-12">
             {/* Header Section */}
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-6 2xl:pb-12">
-                <div className="space-y-2 2xl:space-y-4">
-                    <h1 className="font-black text-foreground tracking-widest uppercase leading-none 2xl:text-3xl">Financial Oversight</h1>
-                    <p className="text-xs sm:text-sm 2xl:text-xl font-medium text-muted-foreground border-l-2 border-primary/10 pl-4">Article Processing Charge (APC) Management and Financial Protocol Enforcement.</p>
+                <div className="space-y-1 2xl:space-y-2">
+                    <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground tracking-tight capitalize leading-none">Financial oversight</h1>
+                    <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 capitalize tracking-wide">Article processing charge (APC) management and financial protocol enforcement.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Dialog open={showInitModal} onOpenChange={setShowInitModal}>
                         <DialogTrigger asChild>
-                            <Button className="h-12 2xl:h-16 px-6 2xl:px-10 gap-3 bg-primary text-white dark:text-slate-900 font-black text-xs 2xl:text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer">
-                                <Plus className="w-6 h-6 2xl:w-8 2xl:h-8" /> Initialize APC Request
+                            <Button className="h-10 xl:h-12 2xl:h-14 px-6 gap-3 bg-primary text-white dark:text-slate-900 font-semibold text-xs capitalize tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer">
+                                <Plus className="w-5 h-5 2xl:w-6 2xl:h-6" /> Initialize APC request
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md rounded-xl p-8 bg-card border-primary/5 shadow-2xl overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-2 bg-primary/10" />
                             <DialogHeader className="space-y-2">
-                                <DialogTitle className="text-xl sm:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black text-foreground tracking-wider uppercase">Manual Request</DialogTitle>
-                                <DialogDescription className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground uppercase tracking-widest leading-relaxed opacity-60">
+                                <DialogTitle className="text-xl sm:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground tracking-wider uppercase">Manual Request</DialogTitle>
+                                <DialogDescription className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground uppercase tracking-widest leading-relaxed opacity-60">
                                     Initialize a payment node for an accepted manuscript without automated triggers.
                                 </DialogDescription>
                             </DialogHeader>
                             <form action={handleInitPayment} className="space-y-6 pt-6">
                                 <div className="space-y-3">
-                                    <Label className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground tracking-widest px-1 uppercase">Accepted Paper</Label>
+                                    <Label className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground tracking-widest px-1 uppercase">Accepted Paper</Label>
                                     <Select name="submissionId" required>
-                                        <SelectTrigger className="h-16 w-full rounded-xl bg-muted border-none px-6 text-sm font-black text-foreground dark:text-primary focus:ring-4 focus:ring-primary/5">
+                                        <SelectTrigger className="h-16 w-full rounded-xl bg-muted border-none px-6 text-sm font-semibold text-foreground dark:text-primary focus:ring-4 focus:ring-primary/5">
                                             <SelectValue placeholder="Select target paper..." />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {unpaidPapers.map(paper => (
-                                                <SelectItem key={paper.id} value={paper.id.toString()} className="font-bold">
+                                                <SelectItem key={paper.id} value={paper.id.toString()} className="font-semibold">
                                                     {paper.paper_id} | {paper.title.slice(0, 50)}...
                                                 </SelectItem>
                                             ))}
@@ -159,24 +159,24 @@ export default function PaymentManagement() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black text-muted-foreground tracking-widest px-1 uppercase">Amount</Label>
-                                        <Input name="amount" type="number" step="0.01" required className="h-16 bg-primary/5 border-none focus-visible:ring-4 focus-visible:ring-primary/5 font-black text-sm rounded-xl px-6" placeholder="2500" defaultValue="2500" />
+                                        <Label className="text-xs font-semibold text-muted-foreground tracking-widest px-1 uppercase">Amount</Label>
+                                        <Input name="amount" type="number" step="0.01" required className="h-16 bg-primary/5 border-none focus-visible:ring-4 focus-visible:ring-primary/5 font-semibold text-sm rounded-xl px-6" placeholder="2500" defaultValue="2500" />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-xs font-black text-muted-foreground tracking-widest px-1 uppercase">Currency</Label>
+                                        <Label className="text-xs font-semibold text-muted-foreground tracking-widest px-1 uppercase">Currency</Label>
                                         <Select name="currency" defaultValue="INR">
-                                            <SelectTrigger className="h-16 w-full rounded-xl bg-muted border-none px-6 text-sm font-black text-foreground dark:text-primary focus:ring-4 focus:ring-primary/5">
+                                            <SelectTrigger className="h-16 w-full rounded-xl bg-muted border-none px-6 text-sm font-semibold text-foreground dark:text-primary focus:ring-4 focus:ring-primary/5">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-xl border-primary/5 bg-card">
-                                                <SelectItem value="INR" className="font-bold">INR</SelectItem>
-                                                <SelectItem value="USD" className="font-bold">USD</SelectItem>
+                                                <SelectItem value="INR" className="font-semibold">INR</SelectItem>
+                                                <SelectItem value="USD" className="font-semibold">USD</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
                                 <DialogFooter className="pt-4">
-                                    <Button type="submit" className="w-full h-14 bg-primary text-white dark:text-slate-900 font-bold shadow-vip hover:scale-[1.02] transition-transform rounded-xl cursor-pointer">
+                                    <Button type="submit" className="w-full h-14 bg-primary text-white dark:text-slate-900 font-semibold shadow-vip hover:scale-[1.02] transition-transform rounded-xl cursor-pointer">
                                         CREATE PAYMENT NODE
                                     </Button>
                                 </DialogFooter>
@@ -197,11 +197,11 @@ export default function PaymentManagement() {
                                         {stat.icon}
                                     </div>
                                 </div>
-                                <Badge variant="outline" className="h-6 2xl:h-9 px-2 2xl:px-4 text-[10px] 2xl:text-base font-black uppercase tracking-widest opacity-20 group-hover:opacity-100 transition-opacity">Live Metric</Badge>
+                                <Badge variant="outline" className="h-6 2xl:h-9 px-2 2xl:px-4 text-[10px] 2xl:text-base font-semibold uppercase tracking-widest opacity-20 group-hover:opacity-100 transition-opacity">Live Metric</Badge>
                             </div>
                             <div className="space-y-1 2xl:space-y-2">
-                                <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/40 uppercase tracking-widest leading-none transition-all duration-500">{stat.label}</p>
-                                <h3 className=" font-black text-foreground dark:text-white tracking-wider transition-all duration-500 text-xl 2xl:text-3xl">{stat.value}</h3>
+                                <p className="text-[9px] xl:text-xs font-semibold text-primary/40 capitalize tracking-widest leading-none transition-all duration-500">{stat.label}</p>
+                                <h3 className=" font-semibold text-foreground dark:text-white tracking-wider transition-all duration-500 text-lg xl:text-xl 2xl:text-2xl">{stat.value}</h3>
                             </div>
                         </CardContent>
                     </Card>
@@ -218,20 +218,20 @@ export default function PaymentManagement() {
                         placeholder="Search by Title, ID, Author, or Transaction..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-full px-6 2xl:px-12 font-bold text-sm 2xl:text-xl bg-transparent border-0 ring-0 focus-visible:ring-0 transition-all duration-500"
+                        className="h-full px-6 2xl:px-12 font-semibold text-sm 2xl:text-xl bg-transparent border-0 ring-0 focus-visible:ring-0 transition-all duration-500"
                     />
                 </InputGroup>
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-16 2xl:h-24 px-8 2xl:px-12 bg-card border border-primary/5 rounded-xl text-xs 2xl:text-lg font-black uppercase tracking-widest shadow-sm focus:ring-4 focus:ring-primary/5 transition-all text-foreground dark:text-primary min-w-[200px] 2xl:min-w-[350px]">
+                        <SelectTrigger className="h-16 2xl:h-24 px-8 2xl:px-12 bg-card border border-primary/5 rounded-xl text-xs 2xl:text-lg font-semibold uppercase tracking-widest shadow-sm focus:ring-4 focus:ring-primary/5 transition-all text-foreground dark:text-primary min-w-[200px] 2xl:min-w-[350px]">
                             <SelectValue placeholder="Global Status" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-primary/5 bg-card">
-                            <SelectItem value="all" className="font-black text-xs 2xl:text-base uppercase tracking-widest">Global Status</SelectItem>
-                            <SelectItem value="unpaid" className="font-black text-xs 2xl:text-base uppercase tracking-widest">Pending</SelectItem>
-                            <SelectItem value="paid" className="font-black text-xs 2xl:text-base uppercase tracking-widest">Remitted</SelectItem>
-                            <SelectItem value="verified" className="font-black text-xs 2xl:text-base uppercase tracking-widest">Verified</SelectItem>
-                            <SelectItem value="waived" className="font-black text-xs 2xl:text-base uppercase tracking-widest">Waived</SelectItem>
+                            <SelectItem value="all" className="font-semibold text-xs 2xl:text-base uppercase tracking-widest">Global Status</SelectItem>
+                            <SelectItem value="unpaid" className="font-semibold text-xs 2xl:text-base uppercase tracking-widest">Pending</SelectItem>
+                            <SelectItem value="paid" className="font-semibold text-xs 2xl:text-base uppercase tracking-widest">Remitted</SelectItem>
+                            <SelectItem value="verified" className="font-semibold text-xs 2xl:text-base uppercase tracking-widest">Verified</SelectItem>
+                            <SelectItem value="waived" className="font-semibold text-xs 2xl:text-base uppercase tracking-widest">Waived</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -241,8 +241,8 @@ export default function PaymentManagement() {
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-4">
                     <div className="flex items-center gap-3 transition-all duration-500">
-                        <h2 className=" font-black text-primary tracking-[0.4em] uppercase">Transaction Registry</h2>
-                        <span className="text-xs 2xl:text-base font-black text-primary/40 bg-primary/5 px-3 py-1 2xl:px-4 2xl:py-2 rounded-full">{filteredPayments.length}</span>
+                        <h2 className=" font-semibold text-primary tracking-widest capitalize">Transaction registry</h2>
+                        <span className="text-[9px] xl:text-xs font-semibold text-primary/40 bg-primary/5 px-3 py-1 rounded-full">{filteredPayments.length}</span>
                     </div>
                 </div>
 
@@ -254,29 +254,29 @@ export default function PaymentManagement() {
                                 <div className="p-8 2xl:p-14 flex flex-col xl:flex-row xl:items-center justify-between gap-8 2xl:gap-16">
                                     <div className="flex-1 space-y-4 2xl:space-y-8 min-w-0">
                                         <div className="flex items-center gap-4 2xl:gap-8">
-                                            <Badge className={`h-8 2xl:h-12 px-3 2xl:px-6 text-xs 2xl:text-lg font-black uppercase tracking-[0.2em] shadow-sm rounded-lg ${getStatusVariant(item.status)}`}>
+                                            <Badge className={`h-8 2xl:h-12 px-3 2xl:px-6 text-xs 2xl:text-lg font-semibold uppercase tracking-[0.2em] shadow-sm rounded-lg ${getStatusVariant(item.status)}`}>
                                                 {item.status === 'verified' ? 'Authorized' : item.status}
                                             </Badge>
                                             <div className="flex items-center gap-3 2xl:gap-5 bg-primary/5 px-4 2xl:px-7 py-1.5 2xl:py-3 rounded-full border border-primary/5 shadow-inner">
                                                 <ShieldCheck className="w-4 h-4 2xl:w-7 2xl:h-7 text-primary/30" />
-                                                <span className="text-[10px] 2xl:text-base font-black text-primary/60 tracking-widest uppercase">{item.paper_id}</span>
+                                                <span className="text-[10px] 2xl:text-base font-semibold text-primary/60 tracking-widest uppercase">{item.paper_id}</span>
                                             </div>
                                         </div>
-                                        <h3 className=" font-black text-foreground dark:text-white leading-wider tracking-wider line-clamp-1 group-hover:text-secondary transition-colors duration-500 2xl:text-xl">
+                                        <h3 className=" font-semibold text-foreground dark:text-white leading-wider tracking-wider line-clamp-1 group-hover:text-secondary transition-colors duration-500 2xl:text-xl">
                                             {item.title}
                                         </h3>
                                         <div className="flex flex-wrap gap-12 2xl:gap-20 items-center border-t border-primary/5 pt-6 2xl:pt-10">
                                             <div className="space-y-2 2xl:space-y-3">
-                                                <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/30 uppercase tracking-widest">Primary Investigator</p>
-                                                <div className="flex items-center gap-3 2xl:gap-5 text-sm 2xl:text-lg font-black text-primary uppercase">
+                                                <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary/30 uppercase tracking-widest">Primary Investigator</p>
+                                                <div className="flex items-center gap-3 2xl:gap-5 text-sm 2xl:text-lg font-semibold text-primary uppercase">
                                                     <User className="w-4.5 h-4.5 2xl:w-6 2xl:h-6 text-primary/40" />
                                                     <span>{item.author_name}</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2 2xl:space-y-3">
-                                                <p className="text-[10px] 2xl:text-xs font-black text-primary/30 uppercase tracking-widest">Remittance Value</p>
-                                                <div className="flex items-center gap-3 2xl:gap-5 text-lg 2xl:text-3xl font-black text-emerald-600">
-                                                    <CreditCard className="w-4.5 h-4.5 2xl:w-7 2xl:h-7 opacity-40" />
+                                                <p className="text-[9px] xl:text-xs font-semibold text-primary/30 capitalize tracking-widest">Remittance value</p>
+                                                <div className="flex items-center gap-3 2xl:gap-5 text-base xl:text-lg 2xl:text-xl font-semibold text-emerald-600">
+                                                    <CreditCard className="w-4.5 h-4.5 opacity-40" />
                                                     <span>{item.amount} {item.currency}</span>
                                                 </div>
                                             </div>
@@ -304,7 +304,7 @@ export default function PaymentManagement() {
                                                         await handleStatusUpdate(item.id, 'paid', txId);
                                                     }
                                                 }}
-                                                className="h-14 2xl:h-20 px-8 2xl:px-12 gap-3 2xl:gap-5 bg-card border-2 border-secondary text-secondary hover:text-white dark:hover:text-slate-900 font-black text-xs 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl hover:bg-secondary transition-all shadow-lg shadow-secondary/5 uppercase"
+                                                className="h-14 2xl:h-20 px-8 2xl:px-12 gap-3 2xl:gap-5 bg-card border-2 border-secondary text-secondary hover:text-white dark:hover:text-slate-900 font-semibold text-xs 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl hover:bg-secondary transition-all shadow-lg shadow-secondary/5 uppercase"
                                             >
                                                 <CheckCircle className="w-5 h-5 2xl:w-9 2xl:h-9" /> VERIFY REMITTANCE
                                             </Button>
@@ -315,19 +315,19 @@ export default function PaymentManagement() {
                                                         await handleStatusUpdate(item.id, 'verified', item.transaction_id);
                                                     }
                                                 }}
-                                                className="h-14 2xl:h-20 px-10 2xl:px-14 gap-3 2xl:gap-5 bg-emerald-600 text-white dark:text-slate-900 font-black text-xs 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 hover:scale-[1.02] transition-all uppercase"
+                                                className="h-14 2xl:h-20 px-10 2xl:px-14 gap-3 2xl:gap-5 bg-emerald-600 text-white dark:text-slate-900 font-semibold text-xs 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 hover:scale-[1.02] transition-all uppercase"
                                             >
                                                 <ShieldCheck className="w-5 h-5 2xl:w-9 2xl:h-9" /> AUTHORIZE ARCHIVE
                                             </Button>
                                         ) : item.status === 'verified' ? (
                                             <div className="flex items-center gap-4 2xl:gap-6 bg-emerald-500/10 px-8 2xl:px-12 py-4 2xl:py-7 rounded-xl 2xl:rounded-2xl text-emerald-600 border border-emerald-500/10 shadow-inner">
                                                 <Globe className="w-5 h-5 2xl:w-9 2xl:h-9" />
-                                                <span className="font-black text-xs 2xl:text-lg uppercase tracking-widest">Archive Active</span>
+                                                <span className="font-semibold text-xs 2xl:text-lg uppercase tracking-widest">Archive Active</span>
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-4 2xl:gap-6 bg-purple-500/10 px-8 2xl:px-12 py-4 2xl:py-7 rounded-xl 2xl:rounded-2xl text-purple-600 border border-purple-500/10 shadow-inner">
                                                 <Badge variant="ghost" className="p-0 hover:bg-transparent"><ArrowRight className="w-5 h-5 2xl:w-9 2xl:h-9" /></Badge>
-                                                <span className="font-black text-xs 2xl:text-lg uppercase tracking-widest">Fee Waived</span>
+                                                <span className="font-semibold text-xs 2xl:text-lg uppercase tracking-widest">Fee Waived</span>
                                             </div>
                                         )}
                                     </div>
@@ -342,7 +342,7 @@ export default function PaymentManagement() {
                                 <AlertTriangle className="w-10 h-10" />
                             </div>
                             <div className="text-center space-y-2">
-                                <h3 className=" font-black text-primary/60 dark:text-primary/80 uppercase tracking-[0.3em] ">Record Depth Null</h3>
+                                <h3 className=" font-semibold text-primary/60 dark:text-primary/80 uppercase tracking-[0.3em] ">Record Depth Null</h3>
                                 <p className="text-[10px] font-medium text-primary/40 dark:text-primary/60 tracking-widest ">No financial transactions correlate with your active query.</p>
                             </div>
                         </div>

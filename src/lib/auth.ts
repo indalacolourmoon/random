@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
@@ -17,12 +18,11 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
-                    const [rows]: any = await pool.execute(
-                        'SELECT * FROM users WHERE email = ?',
-                        [credentials.email]
+                    const rows: any = await db.execute(
+                        sql`SELECT * FROM users WHERE email = ${credentials.email}`
                     )
 
-                    const user = rows[0];
+                    const user = rows[0]?.[0];
 
                     if (!user) {
                         throw new Error("Invalid email or password");

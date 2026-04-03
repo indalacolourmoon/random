@@ -1,1 +1,0 @@
-ALTER TABLE `applications` ADD `nationality` varchar(100) DEFAULT 'India';

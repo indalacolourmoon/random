@@ -72,6 +72,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AuthProvider from "@/components/providers/AuthProvider";
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/lib/query-provider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -80,15 +81,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${poppins.variable} antialiased`}>
-        <AuthProvider>
-          <QueryProvider>
-            <TooltipProvider>
-              {children}
-              <Toaster position="top-right" richColors closeButton />
-            </TooltipProvider>
-          </QueryProvider>
-        </AuthProvider>
+      <body className={`${poppins.variable} antialiased font-sans`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <QueryProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster position="top-right" offset={50} richColors closeButton />
+              </TooltipProvider>
+            </QueryProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

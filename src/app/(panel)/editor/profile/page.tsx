@@ -21,14 +21,14 @@ export default async function EditorProfilePage() {
     return (
         <section className="space-y-10">
             <header className="space-y-2 border-b border-white/5 pb-8">
-                <h1 className="font-serif text-3xl font-black text-foreground tracking-tight uppercase leading-none">Editorial Identity</h1>
-                <p className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-widest opacity-60">Board Metadata and System Clearance Vault.</p>
+                <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground tracking-tight capitalize leading-none">Editorial identity</h1>
+                <p className="text-xs xl:text-sm font-semibold text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 capitalize tracking-wide transition-all duration-500">Board metadata and system clearance vault.</p>
             </header>
 
             <Suspense fallback={
                 <div className="h-96 flex flex-col items-center justify-center gap-4 text-muted-foreground">
                     <Loader2 className="w-8 h-8 animate-spin opacity-20" />
-                    <p className="font-mono text-[10px] uppercase tracking-widest animate-pulse">Decrypting Board Credentials...</p>
+                    <p className="text-[10px] font-semibold capitalize tracking-widest animate-pulse">Decrypting board credentials...</p>
                 </div>
             }>
                 <ProfileDossier role="editor" userId={parseInt((session.user as any).id)} />

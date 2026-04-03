@@ -40,26 +40,20 @@ export const staticEditorialBoardMembers: BoardMember[] = [
     },
     {
         full_name: "Dr. Oguz Kucur",
-        designation: "Prof. at Gebze Technical University of Turkey",
-        institute: "Turkey",
+        designation: "Professor",
+        institute: "Gebze Technical University of Turkey,Turkey",
         role: "editor"
     },
     {
         full_name: "Dr Somasekhar Borugadda",
-        designation: "Anil Neerukonda Institute of Technology and Sciences",
-        institute: "India",
+        designation: "Professor",
+        institute: "Anil Neerukonda Institute of Technology and Sciences,India",
         role: "editor"
     },
     {
-        full_name: "Dr. Norsuzila Ya'acob",
-        designation: "Dept. of Electrical Engineering",
-        institute: "University of Teknologi MARA, Shah Alam, Malaysia",
-        role: "editor"
-    },
-    {
-        full_name: "RAZALINGAH",
+        full_name: "Razalingah",
         designation: "Faculty of Electrical Engineering",
-        institute: "Universiti Teknologi Malaysia",
+        institute: "Universiti Teknologi Malaysia,Malaysia",
         role: "editor"
     },
     {
@@ -76,8 +70,8 @@ export const staticEditorialBoardMembers: BoardMember[] = [
     },
     {
         full_name: "Dr Appalabathula Venkatesh",
-        designation: "Anil Neerukonda Institute of Technology and Sciences",
-        institute: "India",
+        designation: "Professor",
+        institute: "Anil Neerukonda Institute of Technology and Sciences,India",
         role: "editor"
     },
     {

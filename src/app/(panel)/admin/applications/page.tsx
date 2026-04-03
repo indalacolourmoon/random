@@ -139,9 +139,9 @@ function ManageApplicationsContent() {
         <section className="space-y-8 pb-32">
             {/* Header Area */}
             <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-white/5 pb-8 backdrop-blur-sm sticky top-0 z-10 py-4 bg-background/80">
-                <div className="space-y-1">
-                    <h1 className="font-serif text-3xl 2xl:text-5xl font-black tracking-tight text-foreground uppercase">Reviewer Archive</h1>
-                    <p className="font-mono text-[10px] 2xl:text-xs text-muted-foreground uppercase tracking-widest opacity-60">Professional Vetting & Onboarding Command</p>
+                <div className="space-y-0.5 2xl:space-y-1">
+                    <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold tracking-tight text-foreground capitalize">Reviewer archive</h1>
+                    <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium text-muted-foreground capitalize tracking-widest opacity-60">Professional vetting & onboarding command</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
@@ -153,7 +153,7 @@ function ManageApplicationsContent() {
                                 variant={role === r ? 'secondary' : 'ghost'}
                                 size="sm"
                                 onClick={() => updateFilters({ role: r })}
-                                className={`rounded-full px-5 text-[10px] 2xl:text-sm font-black uppercase tracking-tighter h-8 2xl:h-10 ${role === r ? 'shadow-lg shadow-black/20' : 'text-muted-foreground'}`}
+                                className={`rounded-full px-5 text-[10px] 2xl:text-sm font-semibold uppercase tracking-tighter h-8 2xl:h-10 ${role === r ? 'shadow-lg shadow-black/20' : 'text-muted-foreground'}`}
                             >
                                 {r}
                             </Button>
@@ -168,7 +168,7 @@ function ManageApplicationsContent() {
                                 variant={status === s ? 'secondary' : 'ghost'}
                                 size="sm"
                                 onClick={() => updateFilters({ status: s })}
-                                className={`rounded-full px-5 text-[10px] 2xl:text-sm font-black uppercase tracking-tighter h-8 2xl:h-10 ${status === s ? 'shadow-lg shadow-black/20' : 'text-muted-foreground'}`}
+                                className={`rounded-full px-5 text-[10px] 2xl:text-sm font-semibold uppercase tracking-tighter h-8 2xl:h-10 ${status === s ? 'shadow-lg shadow-black/20' : 'text-muted-foreground'}`}
                             >
                                 {s}
                             </Button>
@@ -180,7 +180,7 @@ function ManageApplicationsContent() {
                             variant="ghost" 
                             size="sm" 
                             onClick={clearFilters}
-                            className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/5 text-[10px] font-black uppercase"
+                            className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/5 text-[10px] font-semibold uppercase"
                         >
                             <RotateCcw className="w-3 h-3 mr-2" /> Clear Filters
                         </Button>
@@ -195,7 +195,7 @@ function ManageApplicationsContent() {
                     placeholder="Search by Research Domain (e.g. VLSI, AI, Signal...)"
                     value={interest}
                     onChange={(e) => updateFilters({ interest: e.target.value })}
-                    className="h-14 2xl:h-16 pl-14 bg-muted/10 border-white/5 font-bold text-sm rounded-2xl focus-visible:ring-primary/20"
+                    className="h-14 2xl:h-16 pl-14 bg-muted/10 border-white/5 font-semibold text-sm rounded-2xl focus-visible:ring-primary/20"
                 />
             </div>
 
@@ -207,8 +207,8 @@ function ManageApplicationsContent() {
                         onCheckedChange={handleSelectAll}
                         id="select-all"
                     />
-                    <label htmlFor="select-all" className="text-[10px] font-black text-muted-foreground uppercase cursor-pointer">
-                        {selectedIds.length === 0 ? "Select Items for Batch Action" : `${selectedIds.length} Applicants Selected`}
+                    <label htmlFor="select-all" className="text-[9px] xl:text-xs font-semibold text-muted-foreground capitalize cursor-pointer">
+                        {selectedIds.length === 0 ? "Select items for batch action" : `${selectedIds.length} applicants selected`}
                     </label>
                 </div>
             )}
@@ -264,14 +264,14 @@ function ManageApplicationsContent() {
                                             {/* Info */}
                                             <div className="p-6 space-y-2 border-r border-white/5">
                                                 <div className="flex items-center gap-3">
-                                                    <h3 className="font-serif text-xl 2xl:text-2xl font-black text-foreground">{app.full_name}</h3>
-                                                    <Badge className={`rounded-full h-5 px-3 border-none text-[8px] font-black uppercase tracking-widest ${
+                                                    <h3 className="font-serif text-lg xl:text-xl 2xl:text-2xl font-semibold text-foreground">{app.full_name}</h3>
+                                                    <Badge className={`rounded-full h-5 px-3 border-none text-[8px] xl:text-[9px] font-semibold capitalize tracking-widest ${
                                                         app.application_type === 'editor' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
                                                     }`}>
                                                         {app.application_type}
                                                     </Badge>
                                                 </div>
-                                                <div className="flex flex-wrap gap-x-6 gap-y-1 text-muted-foreground text-[10px] 2xl:text-xs font-bold uppercase tracking-wide opacity-70">
+                                                <div className="flex flex-wrap gap-x-6 gap-y-1 text-muted-foreground text-[9px] xl:text-xs font-semibold capitalize tracking-wide opacity-70">
                                                     <span className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5" /> {app.institute}</span>
                                                     <span className="flex items-center gap-2"><Briefcase className="w-3.5 h-3.5" /> {app.designation}</span>
                                                     <span className="flex items-center gap-2 underline decoration-primary/20"><Mail className="w-3.5 h-3.5" /> {app.email}</span>
@@ -280,7 +280,7 @@ function ManageApplicationsContent() {
                                                 {/* Domain Tags */}
                                                 <div className="flex flex-wrap gap-2 pt-2">
                                                     {app.research_interests?.map((tag: string) => (
-                                                        <span key={tag} className="text-[8px] font-black uppercase text-primary px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
+                                                        <span key={tag} className="text-[8px] xl:text-[9px] font-semibold capitalize text-primary px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
                                                             {tag}
                                                         </span>
                                                     ))}
@@ -289,7 +289,7 @@ function ManageApplicationsContent() {
 
                                             {/* Status & Meta */}
                                             <div className="p-8 flex flex-col items-center md:items-end justify-center gap-4 bg-muted/10 h-full">
-                                                <Badge className={`h-8 px-6 text-xs font-black tracking-widest uppercase border-none rounded-xl ${
+                                                <Badge className={`h-8 px-6 text-xs font-semibold tracking-widest uppercase border-none rounded-xl ${
                                                     app.status === 'approved' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' :
                                                     app.status === 'rejected' ? 'bg-rose-700 text-white shadow-lg shadow-rose-700/30' :
                                                     'bg-amber-500 text-black shadow-lg shadow-amber-500/30'
@@ -321,7 +321,7 @@ function ManageApplicationsContent() {
                         <Card className="bg-black/80 backdrop-blur-2xl border-white/20 p-6 shadow-2xl rounded-3xl ring-4 ring-black/50">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col">
-                                    <span className="font-serif text-lg font-bold text-white">{selectedIds.length} Candidates</span>
+                                    <span className="font-serif text-lg font-semibold text-white">{selectedIds.length} Candidates</span>
                                     <span className="text-[9px] font-mono uppercase text-muted-foreground">Multiple Batch Operations Active</span>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -331,13 +331,13 @@ function ManageApplicationsContent() {
                                     <Button 
                                         variant="outline" 
                                         onClick={() => setBulkMode('reject')}
-                                        className="bg-rose-900/20 border-rose-500/50 text-rose-500 hover:bg-rose-500 hover:text-white font-black"
+                                        className="bg-rose-900/20 border-rose-500/50 text-rose-500 hover:bg-rose-500 hover:text-white font-semibold"
                                     >
                                         Batch Reject
                                     </Button>
                                     <Button 
                                         onClick={() => setBulkMode('approve')}
-                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black"
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
                                     >
                                         Batch Approve
                                     </Button>
@@ -364,7 +364,7 @@ function ManageApplicationsContent() {
                                         )}
                                     </div>
                                     <div className="space-y-1">
-                                        <h2 className="font-serif text-3xl 2xl:text-4xl font-bold">{inspectApp.full_name}</h2>
+                                        <h2 className="font-serif text-3xl 2xl:text-4xl font-semibold">{inspectApp.full_name}</h2>
                                         <p className="font-mono text-xs text-primary uppercase tracking-widest">{inspectApp.designation}</p>
                                     </div>
                                 </div>
@@ -375,19 +375,19 @@ function ManageApplicationsContent() {
                                     <div className="grid grid-cols-2 gap-6 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
                                         <div className="space-y-1">
                                             <span className="opacity-40">Institution</span>
-                                            <p className="text-[11px] text-foreground font-bold">{inspectApp.institute}</p>
+                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.institute}</p>
                                         </div>
                                         <div className="space-y-1">
                                             <span className="opacity-40">Nationality</span>
-                                            <p className="text-[11px] text-foreground font-bold">{inspectApp.nationality}</p>
+                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.nationality}</p>
                                         </div>
                                         <div className="space-y-1">
                                             <span className="opacity-40">Role Target</span>
-                                            <p className="text-[11px] text-foreground font-bold">{inspectApp.application_type}</p>
+                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.application_type}</p>
                                         </div>
                                         <div className="space-y-1">
                                             <span className="opacity-40">Status</span>
-                                            <p className={`text-[11px] font-black ${
+                                            <p className={`text-[11px] font-semibold ${
                                                  inspectApp.status === 'approved' ? 'text-emerald-500' : 
                                                  inspectApp.status === 'rejected' ? 'text-rose-500' : 'text-amber-500'
                                             }`}>{inspectApp.status}</p>
@@ -398,7 +398,7 @@ function ManageApplicationsContent() {
                                         <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground opacity-40">Expertise Tags</span>
                                         <div className="flex flex-wrap gap-2">
                                             {inspectApp.research_interests?.map((tag: string) => (
-                                                <span key={tag} className="text-[9px] font-black uppercase text-primary px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                                                <span key={tag} className="text-[9px] font-semibold uppercase text-primary px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -427,9 +427,9 @@ function ManageApplicationsContent() {
                                 <div className="p-6 border-b border-white/5 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <FileText className="text-primary w-5 h-5" />
-                                        <span className="font-black text-xs uppercase tracking-widest">Research Dossier</span>
+                                        <span className="font-semibold text-xs uppercase tracking-widest">Research Dossier</span>
                                     </div>
-                                    <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg border border-white/5 px-4 text-[10px] font-black uppercase">
+                                    <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg border border-white/5 px-4 text-[10px] font-semibold uppercase">
                                         <a href={inspectApp.cv_url} download>
                                             <Download className="w-3.5 h-3.5 mr-2" /> Download Original
                                         </a>
@@ -449,10 +449,10 @@ function ManageApplicationsContent() {
                                                 <FileText className="w-16 h-16" />
                                             </div>
                                             <div className="space-y-2">
-                                                <h4 className="font-serif text-2xl font-bold">Incompatible Preview</h4>
+                                                <h4 className="font-serif text-2xl font-semibold">Incompatible Preview</h4>
                                                 <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">Non-PDF Research Documentation Detected</p>
                                             </div>
-                                            <Button asChild className="rounded-2xl h-14 px-8 bg-white text-black font-black hover:bg-white/90">
+                                            <Button asChild className="rounded-2xl h-14 px-8 bg-white text-black font-semibold hover:bg-white/90">
                                                 <a href={inspectApp.cv_url} download>
                                                     Retrieve & Download Document
                                                 </a>
@@ -474,7 +474,7 @@ function ManageApplicationsContent() {
                                                 >
                                                     <div className="space-y-3">
                                                         <div className="flex justify-between items-end">
-                                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mandatory Vetting Reason (Audit Log)</label>
+                                                            <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mandatory Vetting Reason (Audit Log)</label>
                                                             <span className={`text-[10px] font-mono ${rejectionReason.length < 20 ? 'text-rose-500' : 'text-emerald-500'}`}>
                                                                 {rejectionReason.length}/20 min
                                                             </span>
@@ -490,14 +490,14 @@ function ManageApplicationsContent() {
                                                         <Button 
                                                             variant="ghost" 
                                                             onClick={() => setRejectionMode(false)}
-                                                            className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                                            className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest"
                                                         >
                                                             Cancel
                                                         </Button>
                                                         <Button 
                                                             disabled={rejectionReason.length < 20}
                                                             onClick={() => handleReject(inspectApp.id, rejectionReason)}
-                                                            className="flex-[2] h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-black uppercase tracking-widest shadow-xl shadow-rose-900/40"
+                                                            className="flex-[2] h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase tracking-widest shadow-xl shadow-rose-900/40"
                                                         >
                                                             Confirm Terminal Rejection
                                                         </Button>
@@ -511,7 +511,7 @@ function ManageApplicationsContent() {
                                                     className="space-y-6 text-center"
                                                 >
                                                     <div className="space-y-2">
-                                                        <h4 className="font-serif text-xl font-bold">Proceed with Onboarding?</h4>
+                                                        <h4 className="font-serif text-xl font-semibold">Proceed with Onboarding?</h4>
                                                         <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">
                                                             Approving {inspectApp.full_name} as {inspectApp.application_type}
                                                         </p>
@@ -520,13 +520,13 @@ function ManageApplicationsContent() {
                                                         <Button 
                                                             variant="ghost" 
                                                             onClick={() => setApproveConfirm(false)}
-                                                            className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                                            className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest"
                                                         >
                                                             Abort
                                                         </Button>
                                                         <Button 
                                                             onClick={() => handleApprove(inspectApp.id)}
-                                                            className="flex-[2] h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                            className="flex-[2] h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
                                                         >
                                                             Confirm Approval & Invite
                                                         </Button>
@@ -537,13 +537,13 @@ function ManageApplicationsContent() {
                                                     <Button 
                                                         variant="outline" 
                                                         onClick={() => setRejectionMode(true)}
-                                                        className="flex-1 h-16 rounded-2xl border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white font-black uppercase tracking-widest"
+                                                        className="flex-1 h-16 rounded-2xl border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white font-semibold uppercase tracking-widest"
                                                     >
                                                         Reject Candidate
                                                     </Button>
                                                     <Button 
                                                         onClick={() => setApproveConfirm(true)}
-                                                        className="flex-[2] h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                        className="flex-[2] h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
                                                     >
                                                         Approve Request
                                                     </Button>
@@ -562,7 +562,7 @@ function ManageApplicationsContent() {
             <Dialog open={bulkMode === 'approve'} onOpenChange={() => setBulkMode(null)}>
                 <DialogContent className="max-w-md bg-black border-white/10 p-8 rounded-3xl">
                     <DialogHeader>
-                        <DialogTitle className="font-serif text-2xl font-bold">Batch Onboarding</DialogTitle>
+                        <DialogTitle className="font-serif text-2xl font-semibold">Batch Onboarding</DialogTitle>
                         <DialogDescription className="font-mono text-[10px] uppercase tracking-widest py-2">
                             Awaiting confirmation for {selectedIds.length} candidate profiles.
                         </DialogDescription>
@@ -575,9 +575,9 @@ function ManageApplicationsContent() {
                         </div>
                     </div>
                     <DialogFooter className="flex gap-4">
-                        <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-black uppercase h-14 rounded-2xl flex-1">Abort</Button>
+                        <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-semibold uppercase h-14 rounded-2xl flex-1">Abort</Button>
                         <Button 
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase h-14 rounded-2xl flex-[2]"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase h-14 rounded-2xl flex-[2]"
                             onClick={() => {
                                 toast.promise(
                                     // Use individual approval for simplicity or a dedicated batch action if built
@@ -601,7 +601,7 @@ function ManageApplicationsContent() {
             <Dialog open={bulkMode === 'reject'} onOpenChange={() => setBulkMode(null)}>
                 <DialogContent className="max-w-md bg-black border-white/10 p-8 rounded-3xl">
                     <DialogHeader>
-                        <DialogTitle className="font-serif text-2xl font-bold">Terminal Batch Rejection</DialogTitle>
+                        <DialogTitle className="font-serif text-2xl font-semibold">Terminal Batch Rejection</DialogTitle>
                         <DialogDescription className="font-mono text-[10px] uppercase tracking-widest py-2">
                             Shared reasoning protocol for {selectedIds.length} profiles.
                         </DialogDescription>
@@ -609,7 +609,7 @@ function ManageApplicationsContent() {
                     <div className="py-6 space-y-6">
                         <div className="space-y-3">
                             <div className="flex justify-between items-end">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Audit Reason (Bulk Applied)</label>
+                                <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Audit Reason (Bulk Applied)</label>
                                 <span className={`text-[10px] font-mono ${bulkReason.length < 20 ? 'text-rose-500' : 'text-emerald-500'}`}>
                                     {bulkReason.length}/20 min
                                 </span>
@@ -623,10 +623,10 @@ function ManageApplicationsContent() {
                         </div>
                     </div>
                     <DialogFooter className="flex gap-4">
-                        <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-black uppercase h-14 rounded-2xl flex-1">Abort</Button>
+                        <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-semibold uppercase h-14 rounded-2xl flex-1">Abort</Button>
                         <Button 
                             disabled={bulkReason.length < 20}
-                            className="bg-rose-700 hover:bg-rose-800 text-white font-black uppercase h-14 rounded-2xl flex-[2]"
+                            className="bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase h-14 rounded-2xl flex-[2]"
                             onClick={() => {
                                 toast.promise(
                                     Promise.all(selectedIds.map(id => handleReject(id, bulkReason))),

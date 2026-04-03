@@ -53,22 +53,22 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
     return (
         <section ref={sectionRef} className="relative py-10 sm:py-14 bg-gradient-to-br from-primary via-primary/95 to-accent border-b border-white/5 overflow-hidden">
             {/* Background Decorative Elements */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] [background-size:32px_32px]" />
             <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-secondary/20 rounded-full blur-[100px] animate-pulse" />
             <div className="absolute -bottom-24 -left-24 w-[400px] h-[400px] bg-accent/20 rounded-full blur-[100px]" />
 
             <div className="container-responsive relative z-10">
-                <nav aria-label="Breadcrumb" className="mb-6">
-                    <motion.ol
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="flex items-center gap-2 list-none p-0"
-                    >
+                    <ol className="flex items-center gap-2 list-none p-0">
                         {breadcrumbs.map((crumb, idx) => {
                             const isLast = idx === breadcrumbs.length - 1;
                             return (
-                                <li key={idx} className="flex items-center gap-2">
+                                <motion.li 
+                                    key={idx} 
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.6, delay: idx * 0.1, ease: "easeOut" }}
+                                    className="flex items-center gap-2"
+                                >
                                     <Link
                                         href={crumb.href}
                                         aria-current={isLast ? "page" : undefined}
@@ -79,11 +79,10 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                                     {!isLast && (
                                         <ChevronRight className="w-3 h-3 text-secondary" />
                                     )}
-                                </li>
+                                </motion.li>
                             );
                         })}
-                    </motion.ol>
-                </nav>
+                    </ol>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end">
                     <motion.div
@@ -92,7 +91,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         onAnimationComplete={handleAnimationComplete}
                     >
-                        <h1 className=" font-black text-white mb-6 leading-none uppercase tracking-widest">
+                        <h1 className=" font-black text-white mb-6 leading-none  tracking-widest">
                             {title}
                         </h1>
                         {description && (

@@ -1,7 +1,6 @@
 import { getSubmissionById } from "@/actions/submissions";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import pool from "@/lib/db";
 import {
     Calendar,
     User,
@@ -55,11 +54,8 @@ export default async function ReviewerSubmissionView({ params }: { params: Promi
 
     // Verify assignment for reviewers
     if (user.role === 'reviewer') {
-        const [assignment]: any = await pool.execute(
-            'SELECT id FROM reviews WHERE submission_id = ? AND reviewer_id = ?',
-            [id, user.id]
-        );
-        if (assignment.length === 0) {
+        const isAssigned = (submission as any).allReviews?.some((r: any) => r.reviewerId === user.id);
+        if (!isAssigned) {
             return (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
                     <div className="w-24 h-24 rounded-xl bg-rose-500/10 flex items-center justify-center mb-8 shadow-inner shadow-rose-500/5">
@@ -105,11 +101,11 @@ export default async function ReviewerSubmissionView({ params }: { params: Promi
                                 <div className="flex flex-wrap items-center gap-6 2xl:gap-10 text-[10px] 2xl:text-lg font-black text-primary/40 dark:text-black tracking-[0.2em] uppercase">
                                     <div className="flex items-center gap-2 2xl:gap-4">
                                         <Shield className="w-4 h-4 2xl:w-7 2xl:h-7" />
-                                        <span>{submission.paper_id}</span>
+                                        <span>{(submission as any).paper_id}</span>
                                     </div>
                                     <div className="flex items-center gap-2 2xl:gap-4">
                                         <Clock className="w-4 h-4 2xl:w-7 2xl:h-7" />
-                                        <span>{new Date(submission.submitted_at).toLocaleDateString()}</span>
+                                        <span>{new Date((submission as any).submitted_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +137,7 @@ export default async function ReviewerSubmissionView({ params }: { params: Promi
                                 </div>
                             )}
 
-                            {submission.co_authors && (
+                            {(submission as any).co_authors && (
                                 <div className="space-y-4 pt-4 border-t border-primary/5">
                                     <h4 className=" font-black text-primary/40 dark:text-green-900 tracking-[0.2em] flex items-center gap-3 uppercase">
                                         <History className="w-5 h-5" /> Collaborating Authors
@@ -149,7 +145,7 @@ export default async function ReviewerSubmissionView({ params }: { params: Promi
                                     <div className="space-y-3">
                                         {(() => {
                                             try {
-                                                const coAuthors = JSON.parse(submission.co_authors);
+                                                const coAuthors = JSON.parse((submission as any).co_authors);
                                                 return coAuthors.map((author: any, idx: number) => (
                                                     <div key={idx} className="p-4 bg-primary/5 border border-primary/10 rounded-xl space-y-1 shadow-sm">
                                                         <p className="font-black text-xs text-primary dark:text-black tracking-wider uppercase leading-none">{author.name}</p>
@@ -165,10 +161,10 @@ export default async function ReviewerSubmissionView({ params }: { params: Promi
                             )}
 
                             <div className="pt-4 2xl:pt-8">
-                                {submission.pdf_url ? (
+                                {(submission as any).pdf_url ? (
                                     <>
                                         <Button asChild className="w-full h-12 2xl:h-20 gap-3 2xl:gap-5 font-bold text-[11px] 2xl:text-xl tracking-widest shadow-xl shadow-primary/20 rounded-xl 2xl:rounded-2xl bg-primary hover:opacity-90 transition-all uppercase cursor-pointer text-white dark:text-black">
-                                            <a href={submission.pdf_url} download>
+                                            <a href={(submission as any).pdf_url} download>
                                                 <Download className="w-4 h-4 2xl:w-8 2xl:h-8" /> Download PDF
                                             </a>
                                         </Button>

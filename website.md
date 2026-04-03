@@ -1,90 +1,111 @@
-# website.md
+Website Overview – What the site does for its users
+ 
+  Area: Public‑facing portal
+  Who uses it: Authors, readers, reviewers, anyone on the internet                         Core purpose: Provides information about the journal and a place to submit scholarly
+    work                                                                                 
+  Main capabilities (non‑technical): • Browse the journal’s About page, archive of past
+    issues, and published papers• Submit a manuscript – fill‑in a form, upload files, and
 
-## Overview
-This document captures the patterns and locations in the codebase that control the **branding** and **website‑specific information** for the IJITEST journal platform.
+    track the status of  the submission• View peer‑review feedback once a paper is       
+    accepted• Search and filter published content by topic, date, or author• Access      
+    contact /  help information
+  ────────────────────────────────────────
+  Area: Authentication & Account Management
+  Who uses it: All registered users
+  Core purpose: Secures the site and personalizes the experience
+  Main capabilities (non‑technical): • Sign‑up / log‑in via email (OAuth optional)•      
+  Manage
+    personal profile (name, avatar, contact details)• Reset password and manage session  
+    security
+  ────────────────────────────────────────
+  Area: Editor Dashboard (the “Panel” layout)
+  Who uses it: Editors (role = Editor)
+  Core purpose: Oversees the editorial workflow from submission to publication
+  Main capabilities (non‑technical): • Inbox of new submissions with quick‑view of author
 
----
+    details• Assign reviewers to each manuscript• Approve  or reject papers, add
+  editorial
+     notes• Schedule issues for publication and set release dates
+  ────────────────────────────────────────
+  Area: Reviewer Dashboard
+  Who uses it: Reviewers (role = Reviewer)
+  Core purpose: Provides a focused space to evaluate submissions
+  Main capabilities (non‑technical): • List of assigned manuscripts• Submit review       
+    reports, scores, and recommendations• View any previous comments from the author or  
+    editor
+  ────────────────────────────────────────
+  Area: Admin / Staff Management
+  Who uses it: Administrators (role = Admin)
+  Core purpose: Controls the whole system and its users
+  Main capabilities (non‑technical): • Invite new staff members (editors, reviewers,     
+  other
+     admins) with role‑based permissions• Edit or revoke staff accounts• See a role      
+    reference guide that explains what each staff level can do• Monitor overall system   
+    health and logs
+  ────────────────────────────────────────
+  Area: Payments & Applications
+  Who uses it: Authors, editors, finance staff
+  Core purpose: Handles any fees or grants linked to manuscript processing
+  Main capabilities (non‑technical): • Process payment transactions (e.g.,
+    article‑processing charges)• Track payment status and  generate receipts• Manage     
+    applications for special programs or funding
+  ────────────────────────────────────────
+  Area: Messaging & Communication
+  Who uses it: All logged‑in users
+  Core purpose: Keeps conversation flowing between authors, reviewers, and editors       
+  Main capabilities (non‑technical): • Internal messaging centre for direct communication
 
-## 1. Site‑wide static metadata (Open Graph, Twitter, favicons)
-- **File:** `src/app/layout.tsx`
-- The `metadata` export defines the core SEO and social‑media cards for the public site.
-- Key fields:
-  - `metadataBase` – base URL, defaults to `https://ijitest.org` (or the value of `NEXT_PUBLIC_APP_URL`).
-  - `title.default` / `title.template` – uses the short journal name *IJITEST*.
-  - `openGraph` and `twitter` sections contain the site URL, images, and descriptions.
-  - `icons` points to the favicon assets in `public/favicon_io/`.
-- Changing any of these values impacts the HTML `<head>` for **all** pages.
+    about a submission• Notification system for status changes, review requests, and     
+    payment alerts
+  ────────────────────────────────────────
+  Area: User Profile & Settings
+  Who uses it: Individual users
+  Core purpose: Lets people keep their personal information up‑to‑date
+  Main capabilities (non‑technical): • Edit personal details, change password, set       
+    notification preferences
+  ────────────────────────────────────────
+  Area: Analytics & Reporting (internal)
+  Who uses it: Admins & editors
+  Core purpose: Gives insight into the journal’s activity
+  Main capabilities (non‑technical): • Overview of submission counts, review turnaround  
+    times, and published articles• Exportable reports for internal review or stakeholder 
+    updates
 
----
+  How the experience hangs together
 
-## 2. Dynamic branding data stored in the database
-- **File:** `src/actions/settings.ts`
-- `getSettings()` reads the `settings` table and merges the rows with a hard‑coded default object.
-- Relevant keys (used elsewhere for branding):
-  - `journal_name` – Full journal title.
-  - `journal_short_name` – Short name shown in titles.
-  - `issn_number` – ISSN displayed on PDFs and citations.
-  - `journal_website` – Canonical website URL (default `https://ijitest.org`).
-  - `publisher_name`, `support_email`, `support_phone`, etc.
-- Updating these values via the admin UI calls `updateSettings()`, which writes to the DB and triggers a re‑validation of affected routes.
+  1. First contact – A visitor lands on the public site, learns about the journal, and   
+  can read past articles.
+  2. Submission – When ready, the visitor creates an account and submits a manuscript.   
+  The system stores the files and metadata.
+  3. Editorial triage – An editor sees the new submission, assigns one or more reviewers,
+   and can request revisions.
+  4. Peer review – Reviewers log in, evaluate the work, and submit their reports. Their  
+  feedback appears to the editor and, once the decision is made, to the author.
+  5. Decision & publication – The editor makes a final decision (accept, reject, request 
+  revision). Accepted papers move into the publishing pipeline, where they are scheduled 
+  for release and become part of the public archive.
+  6. Payments – If the journal charges processing fees, the author is prompted to pay;   
+  the system records the transaction and can issue receipts.
+  7. Ongoing management – Administrators keep the staff roster current, control
+  role‑based access, and monitor system health through the admin panel.
 
----
+  Key user‑centric benefits
 
-## 3. PDF branding (adding journal header/footer to PDFs)
-- **File:** `src/lib/pdf-branding.ts`
-- The exported `brandPdf(inputPath, outputPath, metadata)` inserts a logo, header lines, and a footer that includes:
-  - `metadata.website` – rendered in the footer as a blue link.
-  - `metadata.journalName`, `metadata.journalShortName`, and `metadata.issn` – shown in the header.
-- The function is invoked by the publication workflow to produce the final published PDF.
+  - Clear role separation: Authors only see the submission flow; reviewers see only their
+   assigned papers; editors have the full workflow control; admins manage people and     
+  system settings.
+  - Self‑service: Authors can track submission status, upload revised files, and receive 
+  notifications without needing to email the journal office.
+  - Transparency: Reviewers and editors can view the history of comments and decisions,  
+  building trust in the peer‑review process.
+  - Secure access: All authenticated areas are protected, and staff privileges are       
+  tightly scoped to prevent accidental data exposure.
+  - Integrated payments: Financial transactions are handled inline, eliminating the need 
+  for external invoicing tools.
+  - Responsive UI: Built with modern component libraries, the interface feels fast and   
+  consistent across all dashboards.
 
----
-
-## 4. Publication workflow that applies branding
-- **File:** `src/actions/publications.ts`
-- Inside `assignPaperToIssue()` the code builds a `metadata` object for `brandPdf`:
-  ```ts
-  await brandPdf(submission.pdf_url, brandedRelativePath, {
-    journalName: settings.journal_name,
-    journalShortName: settings.journal_short_name,
-    volume: issue.volume_number,
-    issue: issue.issue_number,
-    year: issue.year,
-    monthRange: issue.month_range,
-    issn: settings.issn_number,
-    website: settings.journal_website,
-    paperId: submission.paper_id,
-    startPage: finalStartPage,
-    endPage: finalEndPage,
-  });
-  ```
-- This ties the **dynamic settings** (section 2) to the **PDF branding** (section 3).
-
----
-
-## 5. Page‑level metadata for archived articles
-- **File:** `src/app/(main)/archives/[id]/page.tsx`
-- `generateMetadata()` builds Open Graph and citation meta tags using:
-  - `settings.journal_website` for absolute PDF URLs.
-  - `settings.journal_name` for citation fields (`citation_journal_title`).
-  - Author list, volume/issue numbers, and page range.
-- These tags are important for scholarly indexing (Google Scholar, CrossRef) and rely on the same branding settings as the PDFs.
-
----
-
-## 6. How to modify branding
-1. **Update via Admin UI** – edit the Settings page; the form posts to `updateSettings()` which persists changes to the `settings` table.
-2. **Direct DB edit** – run a SQL `UPDATE settings SET setting_value = 'new value' WHERE setting_key = 'journal_website';` and then re‑validate the site (`npm run dev` will pick up the change).
-3. **Static metadata** – to change favicons, Open Graph images, or default titles, edit `src/app/layout.tsx` and restart the dev server.
-
----
-
-## 7. Summary of branding touchpoints
-| Component | Purpose | Key branding fields |
-|----------|---------|----------------------|
-| `layout.tsx` | Global HTML `<head>` metadata | `metadataBase`, titles, OG/Twitter cards, icons |
-| `settings.ts` | Central source of truth in DB | `journal_name`, `journal_short_name`, `journal_website`, `issn_number` |
-| `pdf-branding.ts` | Visual branding on PDFs | `website`, `journalName`, `issn`, etc. |
-| `publications.ts` (assignPaperToIssue) | Applies PDF branding during publication |
-| `archives/[id]/page.tsx` | Generates article‑level meta tags for SEO and citation |
-
-Use this guide to locate and adjust any branding‑related logic across the repository.
+  In short, the site is a full‑service scholarly‑journal platform that lets authors      
+  submit, editors manage the editorial pipeline, reviewers provide expertise, and        
+  administrators keep the whole ecosystem running smoothly—all through a clean,
+  role‑aware web experience.

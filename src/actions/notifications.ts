@@ -1,6 +1,7 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -15,18 +16,18 @@ export async function getNotificationCounts() {
 
         // 1. Messages are relevant for Admins and Editors
         if (role === 'admin' || role === 'editor') {
-            const [msgRows]: any = await pool.execute(
-                "SELECT COUNT(*) as count FROM contact_messages WHERE status = 'unread'"
+            const msgRows: any = await db.execute(
+                sql`SELECT COUNT(*) as count FROM contact_messages WHERE status = 'unread'`
             );
-            messageCount = msgRows[0].count;
+            messageCount = msgRows[0][0].count;
         }
 
         // 2. New Submissions are primarily for Editors and Admins (awaiting desk screening)
         if (role === 'admin' || role === 'editor') {
-            const [subRows]: any = await pool.execute(
-                "SELECT COUNT(*) as count FROM submissions WHERE status = 'submitted'"
+            const subRows: any = await db.execute(
+                sql`SELECT COUNT(*) as count FROM submissions WHERE status = 'submitted'`
             );
-            submissionCount = subRows[0].count;
+            submissionCount = subRows[0][0].count;
         }
 
         return {

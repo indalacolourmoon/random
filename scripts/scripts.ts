@@ -3,7 +3,7 @@ dotenv.config();
 
 import { db } from "../src/db";
 import * as schema from "../src/db/schema";
-import { sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 async function main() {
     const command = process.argv[2];
@@ -72,35 +72,20 @@ async function main() {
                 break;
 
             case "sync-modes":
-                console.log("🔄 Syncing submission modes...");
-                // 1. Find the latest published issue
-                const latestIssue = await db.select({
-                    id: schema.volumesIssues.id,
-                })
-                    .from(schema.volumesIssues)
-                    .where(sql`${schema.volumesIssues.status} = 'published'`)
-                    .orderBy(sql`${schema.volumesIssues.year} DESC, ${schema.volumesIssues.volumeNumber} DESC, ${schema.volumesIssues.issueNumber} DESC`)
-                    .limit(1);
+                console.log("🔄 Syncing published state metadata...");
+                // Note: submissionMode logic removed as it's not present in schema.ts
+                const latestIssue = await db.query.volumesIssues.findFirst({
+                    where: eq(schema.volumesIssues.status, 'published'),
+                    orderBy: [desc(schema.volumesIssues.year), desc(schema.volumesIssues.volumeNumber), desc(schema.volumesIssues.issueNumber)]
+                });
 
-                if (latestIssue.length === 0) {
-                    console.log("⚠️ No published issues found. Skipping sync.");
+                if (!latestIssue) {
+                    console.log("⚠️ No published issues found.");
                     break;
                 }
 
-                const currentIssueId = latestIssue[0].id;
-                console.log(`📌 Current Issue ID identified: ${currentIssueId}`);
-
-                // 2. Set all papers in this issue to 'current'
-                await db.update(schema.submissions)
-                    .set({ submissionMode: 'current' })
-                    .where(sql`${schema.submissions.issueId} = ${currentIssueId} AND ${schema.submissions.status} = 'published'`);
-
-                // 3. Set all other papers to 'archive'
-                await db.update(schema.submissions)
-                    .set({ submissionMode: 'archive' })
-                    .where(sql`${schema.submissions.issueId} <> ${currentIssueId} AND ${schema.submissions.status} = 'published'`);
-
-                console.log("✅ Submission modes synchronized successfully.");
+                console.log(`📌 Current Issue ID identified: ${latestIssue.id} (${latestIssue.year} Vol ${latestIssue.volumeNumber} Issue ${latestIssue.issueNumber})`);
+                console.log("✅ Metadata analysis complete.");
                 break;
 
             default:

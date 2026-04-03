@@ -1,6 +1,7 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
@@ -38,31 +39,28 @@ export async function getProfileData(userId: number, role: 'admin' | 'editor' | 
         if (!session) throw new Error("Unauthorized");
 
         // 1. Fetch User Base Info
-        const [userRows]: any = await pool.execute(
-            "SELECT id, full_name as name, email, designation, photo_url, orcid_id FROM users WHERE id = ?",
-            [userId]
+        const userRows: any = await db.execute(
+            sql`SELECT id, full_name as name, email, designation, photo_url, orcid_id FROM users WHERE id = ${userId}`
         );
-        if (userRows.length === 0) throw new Error("User not found");
-        const userData = userRows[0];
+        if (userRows[0].length === 0) throw new Error("User not found");
+        const userData = userRows[0][0];
 
         let profileData: any = { ...userData };
 
         // 2. Fetch Application Data (if not admin)
         if (role !== 'admin') {
-            const [appRows]: any = await pool.execute(
-                "SELECT institute, nationality as country, status, rejection_reason, reviewed_at FROM applications WHERE email = ?",
-                [userData.email]
+            const appRows: any = await db.execute(
+                sql`SELECT institute, nationality as country, status, rejection_reason, reviewed_at FROM applications WHERE email = ${userData.email}`
             );
-            if (appRows.length > 0) {
-                profileData.application = appRows[0];
+            if (appRows[0].length > 0) {
+                profileData.application = appRows[0][0];
                 
                 // 3. Fetch Interests (if reviewer/editor)
                 if (role === 'reviewer' || role === 'editor') {
-                    const [interestRows]: any = await pool.execute(
-                        "SELECT interest FROM application_interests ai JOIN applications a ON ai.application_id = a.id WHERE a.email = ?",
-                        [userData.email]
+                    const interestRows: any = await db.execute(
+                        sql`SELECT interest FROM application_interests ai JOIN applications a ON ai.application_id = a.id WHERE a.email = ${userData.email}`
                     );
-                    profileData.research_interests = interestRows.map((r: any) => r.interest);
+                    profileData.research_interests = (interestRows[0] || []).map((r: any) => r.interest);
                 } else {
                     profileData.research_interests = [];
                 }
@@ -78,21 +76,19 @@ export async function getProfileData(userId: number, role: 'admin' | 'editor' | 
         const userEmail = session.user?.email;
 
         if (role === 'author' && userEmail) {
-            const [subRows]: any = await pool.execute(
-                "SELECT title, status, submitted_at as created_at FROM submissions WHERE author_email = ? ORDER BY submitted_at DESC LIMIT 10",
-                [userEmail]
+            const subRows: any = await db.execute(
+                sql`SELECT title, status, submitted_at as created_at FROM submissions WHERE author_email = ${userEmail} ORDER BY submitted_at DESC LIMIT 10`
             );
-            history = subRows;
+            history = subRows[0] || [];
         } else if (role === 'reviewer') {
-            const [revRows]: any = await pool.execute(
-                `SELECT s.title, r.status as decision, r.completed_at as updated_at 
+            const revRows: any = await db.execute(
+                sql`SELECT s.title, r.status as decision, r.completed_at as updated_at 
                  FROM reviews r 
                  JOIN submissions s ON r.submission_id = s.id 
-                 WHERE r.reviewer_id = ? AND r.status = 'completed'
-                 ORDER BY r.completed_at DESC LIMIT 10`,
-                [userId]
+                 WHERE r.reviewer_id = ${userId} AND r.status = 'completed'
+                 ORDER BY r.completed_at DESC LIMIT 10`
             );
-            history = revRows;
+            history = revRows[0] || [];
         }
         profileData.history = history;
 
@@ -120,10 +116,8 @@ export async function updateProfileField(userId: number, field: string, value: s
     const dbField = field === 'name' ? 'full_name' : field === 'orcid_id' ? 'orcid_id' : 'designation';
 
     try {
-        await pool.execute(
-            `UPDATE users SET ${dbField} = ? WHERE id = ?`,
-            [trimmedValue, userId]
-        );
+        const query = sql.raw(`UPDATE users SET ${dbField} = ${sql.placeholder('val')} WHERE id = ${sql.placeholder('id')}`);
+        await db.execute(sql`UPDATE users SET ${sql.raw(dbField)} = ${trimmedValue} WHERE id = ${userId}`);
         revalidatePath("/(panel)", "layout");
         return trimmedValue;
     } catch (error) {
@@ -136,39 +130,30 @@ export async function updateResearchInterests(userId: number, interests: string[
     if (!Array.isArray(interests)) throw new Error("Invalid interests format");
     const cleanInterests = interests.map(i => i.trim()).filter(Boolean).slice(0, 20);
 
-    const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
+        return await db.transaction(async (tx) => {
+            // Get Application ID first
+            const userRows: any = await tx.execute(sql`SELECT email FROM users WHERE id = ${userId}`);
+            const email = userRows[0][0]?.email;
+            if (!email) throw new Error("User not found");
 
-        // Get Application ID first
-        const [userRows]: any = await connection.execute("SELECT email FROM users WHERE id = ?", [userId]);
-        const email = userRows[0]?.email;
-        if (!email) throw new Error("User not found");
+            const appRows: any = await tx.execute(sql`SELECT id FROM applications WHERE email = ${email}`);
+            const applicationId = appRows[0][0]?.id;
 
-        const [appRows]: any = await connection.execute("SELECT id FROM applications WHERE email = ?", [email]);
-        const applicationId = appRows[0]?.id;
-
-        if (applicationId) {
-            await connection.execute("DELETE FROM application_interests WHERE application_id = ?", [applicationId]);
-            if (cleanInterests.length > 0) {
-                const placeholders = cleanInterests.map(() => "(?, ?)").join(", ");
-                const params = cleanInterests.flatMap(i => [applicationId, i]);
-                await connection.execute(
-                    `INSERT INTO application_interests (application_id, interest) VALUES ${placeholders}`,
-                    params
-                );
+            if (applicationId) {
+                await tx.execute(sql`DELETE FROM application_interests WHERE application_id = ${applicationId}`);
+                if (cleanInterests.length > 0) {
+                    const values = cleanInterests.map(i => sql`(${applicationId}, ${i})`);
+                    await tx.execute(sql`INSERT INTO application_interests (application_id, interest) VALUES ${sql.join(values, sql`, `)}`);
+                }
             }
-        }
 
-        await connection.commit();
-        revalidatePath("/(panel)", "layout");
-        return cleanInterests;
+            revalidatePath("/(panel)", "layout");
+            return cleanInterests;
+        });
     } catch (error) {
-        await connection.rollback();
         console.error("updateResearchInterests error:", error);
         throw error;
-    } finally {
-        connection.release();
     }
 }
 
@@ -195,12 +180,12 @@ export async function updateProfilePhoto(userId: number, formData: FormData) {
         const photoUrl = `/uploads/profiles/${fileName}`;
 
         // Get old photo to delete later
-        const [rows]: any = await pool.execute("SELECT photo_url FROM users WHERE id = ?", [userId]);
-        const oldPhoto = rows[0]?.photo_url;
+        const rows: any = await db.execute(sql`SELECT photo_url FROM users WHERE id = ${userId}`);
+        const oldPhoto = rows[0][0]?.photo_url;
 
         await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
         
-        await pool.execute("UPDATE users SET photo_url = ? WHERE id = ?", [photoUrl, userId]);
+        await db.execute(sql`UPDATE users SET photo_url = ${photoUrl} WHERE id = ${userId}`);
 
         if (oldPhoto && oldPhoto.startsWith('/uploads/profiles/')) {
             const oldPath = path.join(process.cwd(), "public", oldPhoto);

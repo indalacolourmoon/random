@@ -1,9 +1,90 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "aaa8f836-3872-4211-8da4-e7bf48d00128",
-  "prevId": "99d61561-5e84-4579-880b-af336dbeb905",
+  "id": "6dddfb5e-124c-477a-8dee-df759206c414",
+  "prevId": "fa1428f8-9ac7-490d-a5cf-0d4663ba7d53",
   "tables": {
+    "activity_logs": {
+      "name": "activity_logs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "performed_by": {
+          "name": "performed_by",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "activity_logs_performed_by_users_id_fk": {
+          "name": "activity_logs_performed_by_users_id_fk",
+          "tableFrom": "activity_logs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "performed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "activity_logs_id": {
+          "name": "activity_logs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "applications": {
       "name": "applications",
       "columns": {
@@ -14,16 +95,22 @@
           "notNull": true,
           "autoincrement": true
         },
-        "application_type": {
-          "name": "application_type",
+        "type": {
+          "name": "type",
           "type": "enum('reviewer','editor')",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'reviewer'"
+          "autoincrement": false
         },
         "full_name": {
           "name": "full_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
@@ -43,34 +130,27 @@
           "notNull": true,
           "autoincrement": false
         },
-        "email": {
-          "name": "email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "cv_url": {
-          "name": "cv_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "photo_url": {
-          "name": "photo_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "status": {
           "name": "status",
           "type": "enum('pending','approved','rejected')",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": "'pending'"
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -81,23 +161,22 @@
           "default": "(now())"
         }
       },
-      "indexes": {
-        "app_status_idx": {
-          "name": "app_status_idx",
-          "columns": [
-            "status"
+      "indexes": {},
+      "foreignKeys": {
+        "applications_reviewed_by_users_id_fk": {
+          "name": "applications_reviewed_by_users_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "reviewed_by"
           ],
-          "isUnique": false
-        },
-        "app_type_idx": {
-          "name": "app_type_idx",
-          "columns": [
-            "application_type"
+          "columnsTo": [
+            "id"
           ],
-          "isUnique": false
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
-      "foreignKeys": {},
       "compositePrimaryKeys": {
         "applications_id": {
           "name": "applications_id",
@@ -107,10 +186,11 @@
         }
       },
       "uniqueConstraints": {
-        "email": {
-          "name": "email",
+        "app_email_type_unique": {
+          "name": "app_email_type_unique",
           "columns": [
-            "email"
+            "email",
+            "type"
           ]
         }
       },
@@ -154,27 +234,13 @@
           "notNull": true,
           "autoincrement": false
         },
-        "reply_text": {
-          "name": "reply_text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "replied_at": {
-          "name": "replied_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "status": {
           "name": "status",
-          "type": "enum('unread','read','archived')",
+          "type": "enum('pending','resolved','archived')",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "'unread'"
+          "default": "'pending'"
         },
         "created_at": {
           "name": "created_at",
@@ -190,6 +256,97 @@
       "compositePrimaryKeys": {
         "contact_messages_id": {
           "name": "contact_messages_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "notifications": {
+      "name": "notifications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action_link": {
+          "name": "action_link",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_read": {
+          "name": "is_read",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "notif_user_idx": {
+          "name": "notif_user_idx",
+          "columns": [
+            "user_id",
+            "is_read"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "notifications_user_id_users_id_fk": {
+          "name": "notifications_user_id_users_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "notifications_id": {
+          "name": "notifications_id",
           "columns": [
             "id"
           ]
@@ -226,17 +383,24 @@
           "name": "currency",
           "type": "varchar(10)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": "'INR'"
         },
         "status": {
           "name": "status",
-          "type": "enum('unpaid','paid','verified')",
+          "type": "enum('pending','paid','verified','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": "'unpaid'"
+          "autoincrement": false
         },
         "transaction_id": {
           "name": "transaction_id",
@@ -261,15 +425,7 @@
           "default": "(now())"
         }
       },
-      "indexes": {
-        "submission_id": {
-          "name": "submission_id",
-          "columns": [
-            "submission_id"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "payments_submission_id_submissions_id_fk": {
           "name": "payments_submission_id_submissions_id_fk",
@@ -281,7 +437,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -293,11 +449,138 @@
           ]
         }
       },
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "payments_submission_id_unique": {
+          "name": "payments_submission_id_unique",
+          "columns": [
+            "submission_id"
+          ]
+        },
+        "payments_transaction_id_unique": {
+          "name": "payments_transaction_id_unique",
+          "columns": [
+            "transaction_id"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
-    "reviews": {
-      "name": "reviews",
+    "publications": {
+      "name": "publications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "issue_id": {
+          "name": "issue_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "final_pdf_url": {
+          "name": "final_pdf_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_page": {
+          "name": "start_page",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "end_page": {
+          "name": "end_page",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "doi": {
+          "name": "doi",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "publications_submission_id_submissions_id_fk": {
+          "name": "publications_submission_id_submissions_id_fk",
+          "tableFrom": "publications",
+          "tableTo": "submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "publications_issue_id_volumes_issues_id_fk": {
+          "name": "publications_issue_id_volumes_issues_id_fk",
+          "tableFrom": "publications",
+          "tableTo": "volumes_issues",
+          "columnsFrom": [
+            "issue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "publications_id": {
+          "name": "publications_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "publications_submission_id_unique": {
+          "name": "publications_submission_id_unique",
+          "columns": [
+            "submission_id"
+          ]
+        },
+        "publications_doi_unique": {
+          "name": "publications_doi_unique",
+          "columns": [
+            "doi"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "review_assignments": {
+      "name": "review_assignments",
       "columns": {
         "id": {
           "name": "id",
@@ -315,36 +598,44 @@
         },
         "reviewer_id": {
           "name": "reviewer_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version_id": {
+          "name": "version_id",
           "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
+        "assigned_by": {
+          "name": "assigned_by",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "review_round": {
+          "name": "review_round",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
         "status": {
           "name": "status",
-          "type": "enum('pending','in_progress','completed')",
+          "type": "enum('assigned','accepted','declined','completed')",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": "'pending'"
+          "default": "'assigned'"
         },
         "deadline": {
           "name": "deadline",
           "type": "date",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "feedback": {
-          "name": "feedback",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "feedback_file_path": {
-          "name": "feedback_file_path",
-          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -356,28 +647,20 @@
           "notNull": false,
           "autoincrement": false,
           "default": "(now())"
-        }
-      },
-      "indexes": {
-        "submission_id": {
-          "name": "submission_id",
-          "columns": [
-            "submission_id"
-          ],
-          "isUnique": false
         },
-        "reviewer_id": {
-          "name": "reviewer_id",
-          "columns": [
-            "reviewer_id"
-          ],
-          "isUnique": false
+        "responded_at": {
+          "name": "responded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
+      "indexes": {},
       "foreignKeys": {
-        "reviews_submission_id_submissions_id_fk": {
-          "name": "reviews_submission_id_submissions_id_fk",
-          "tableFrom": "reviews",
+        "review_assignments_submission_id_submissions_id_fk": {
+          "name": "review_assignments_submission_id_submissions_id_fk",
+          "tableFrom": "review_assignments",
           "tableTo": "submissions",
           "columnsFrom": [
             "submission_id"
@@ -385,12 +668,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "reviews_reviewer_id_users_id_fk": {
-          "name": "reviews_reviewer_id_users_id_fk",
-          "tableFrom": "reviews",
+        "review_assignments_reviewer_id_users_id_fk": {
+          "name": "review_assignments_reviewer_id_users_id_fk",
+          "tableFrom": "review_assignments",
           "tableTo": "users",
           "columnsFrom": [
             "reviewer_id"
@@ -399,6 +682,137 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "review_assignments_version_id_submission_versions_id_fk": {
+          "name": "review_assignments_version_id_submission_versions_id_fk",
+          "tableFrom": "review_assignments",
+          "tableTo": "submission_versions",
+          "columnsFrom": [
+            "version_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "review_assignments_assigned_by_users_id_fk": {
+          "name": "review_assignments_assigned_by_users_id_fk",
+          "tableFrom": "review_assignments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "assigned_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "review_assignments_id": {
+          "name": "review_assignments_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "unique_assignment": {
+          "name": "unique_assignment",
+          "columns": [
+            "submission_id",
+            "reviewer_id",
+            "version_id",
+            "review_round"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "reviews": {
+      "name": "reviews",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "assignment_id": {
+          "name": "assignment_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "decision": {
+          "name": "decision",
+          "type": "enum('accept','minor_revision','major_revision','reject')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "score": {
+          "name": "score",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "confidence": {
+          "name": "confidence",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comments_to_author": {
+          "name": "comments_to_author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comments_to_editor": {
+          "name": "comments_to_editor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "reviews_assignment_id_review_assignments_id_fk": {
+          "name": "reviews_assignment_id_review_assignments_id_fk",
+          "tableFrom": "reviews",
+          "tableTo": "review_assignments",
+          "columnsFrom": [
+            "assignment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -410,7 +824,14 @@
           ]
         }
       },
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "reviews_assignment_id_unique": {
+          "name": "reviews_assignment_id_unique",
+          "columns": [
+            "assignment_id"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
     "settings": {
@@ -453,8 +874,8 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
-    "submissions": {
-      "name": "submissions",
+    "submission_authors": {
+      "name": "submission_authors",
       "columns": {
         "id": {
           "name": "id",
@@ -463,12 +884,274 @@
           "notNull": true,
           "autoincrement": true
         },
-        "paper_id": {
-          "name": "paper_id",
-          "type": "varchar(50)",
+        "submission_id": {
+          "name": "submission_id",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "affiliation": {
+          "name": "affiliation",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_corresponding": {
+          "name": "is_corresponding",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "order_index": {
+          "name": "order_index",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "sub_author_idx": {
+          "name": "sub_author_idx",
+          "columns": [
+            "submission_id"
+          ],
+          "isUnique": false
+        },
+        "author_order_idx": {
+          "name": "author_order_idx",
+          "columns": [
+            "submission_id",
+            "order_index"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "submission_authors_submission_id_submissions_id_fk": {
+          "name": "submission_authors_submission_id_submissions_id_fk",
+          "tableFrom": "submission_authors",
+          "tableTo": "submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "submission_authors_id": {
+          "name": "submission_authors_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "submission_editors": {
+      "name": "submission_editors",
+      "columns": {
+        "submission_id": {
+          "name": "submission_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "editor_id": {
+          "name": "editor_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "submission_editors_submission_id_submissions_id_fk": {
+          "name": "submission_editors_submission_id_submissions_id_fk",
+          "tableFrom": "submission_editors",
+          "tableTo": "submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "submission_editors_editor_id_users_id_fk": {
+          "name": "submission_editors_editor_id_users_id_fk",
+          "tableFrom": "submission_editors",
+          "tableTo": "users",
+          "columnsFrom": [
+            "editor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "submission_editors_submission_id_editor_id_pk": {
+          "name": "submission_editors_submission_id_editor_id_pk",
+          "columns": [
+            "submission_id",
+            "editor_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "submission_files": {
+      "name": "submission_files",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "version_id": {
+          "name": "version_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "file_type": {
+          "name": "file_type",
+          "type": "enum('main_manuscript','pdf_version','copyright_form','supplementary','feedback','payment_proof')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "file_url": {
+          "name": "file_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "original_name": {
+          "name": "original_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "file_size": {
+          "name": "file_size",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "file_version_idx": {
+          "name": "file_version_idx",
+          "columns": [
+            "version_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "submission_files_version_id_submission_versions_id_fk": {
+          "name": "submission_files_version_id_submission_versions_id_fk",
+          "tableFrom": "submission_files",
+          "tableTo": "submission_versions",
+          "columnsFrom": [
+            "version_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "submission_files_id": {
+          "name": "submission_files_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "submission_versions": {
+      "name": "submission_versions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version_number": {
+          "name": "version_number",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
         },
         "title": {
           "name": "title",
@@ -491,45 +1174,127 @@
           "notNull": false,
           "autoincrement": false
         },
-        "author_name": {
-          "name": "author_name",
+        "subject_area": {
+          "name": "subject_area",
           "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "changelog": {
+          "name": "changelog",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "submission_versions_submission_id_submissions_id_fk": {
+          "name": "submission_versions_submission_id_submissions_id_fk",
+          "tableFrom": "submission_versions",
+          "tableTo": "submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "submission_versions_id": {
+          "name": "submission_versions_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "submission_version_unique": {
+          "name": "submission_version_unique",
+          "columns": [
+            "submission_id",
+            "version_number"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "submissions": {
+      "name": "submissions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "paper_id": {
+          "name": "paper_id",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "author_email": {
-          "name": "author_email",
+        "slug": {
+          "name": "slug",
           "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "affiliation": {
-          "name": "affiliation",
-          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "status": {
           "name": "status",
-          "type": "enum('submitted','under_review','accepted','rejected','published','paid')",
+          "type": "enum('submitted','editor_assigned','under_review','revision_requested','accepted','rejected','payment_pending','published')",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": "'submitted'"
         },
-        "file_path": {
-          "name": "file_path",
-          "type": "varchar(500)",
+        "final_decision": {
+          "name": "final_decision",
+          "type": "enum('accept','reject','withdrawn')",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "pdf_url": {
-          "name": "pdf_url",
-          "type": "varchar(500)",
+        "decision_at": {
+          "name": "decision_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "decision_by": {
+          "name": "decision_by",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "corresponding_author_id": {
+          "name": "corresponding_author_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "issue_id": {
+          "name": "issue_id",
+          "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -551,46 +1316,57 @@
           "onUpdate": true,
           "default": "(now())"
         },
-        "issue_id": {
-          "name": "issue_id",
-          "type": "int",
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "is_free_publish": {
-          "name": "is_free_publish",
-          "type": "tinyint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 0
         }
       },
       "indexes": {
-        "issue_id": {
-          "name": "issue_id",
-          "columns": [
-            "issue_id"
-          ],
-          "isUnique": false
-        },
-        "author_email_idx": {
-          "name": "author_email_idx",
-          "columns": [
-            "author_email"
-          ],
-          "isUnique": false
-        },
         "status_idx": {
           "name": "status_idx",
           "columns": [
             "status"
           ],
           "isUnique": false
+        },
+        "author_idx": {
+          "name": "author_idx",
+          "columns": [
+            "corresponding_author_id"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {
+        "submissions_decision_by_users_id_fk": {
+          "name": "submissions_decision_by_users_id_fk",
+          "tableFrom": "submissions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "decision_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "submissions_corresponding_author_id_users_id_fk": {
+          "name": "submissions_corresponding_author_id_users_id_fk",
+          "tableFrom": "submissions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "corresponding_author_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "submissions_issue_id_volumes_issues_id_fk": {
           "name": "submissions_issue_id_volumes_issues_id_fk",
           "tableFrom": "submissions",
@@ -601,8 +1377,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -614,17 +1390,23 @@
         }
       },
       "uniqueConstraints": {
-        "paper_id": {
-          "name": "paper_id",
+        "submissions_paper_id_unique": {
+          "name": "submissions_paper_id_unique",
           "columns": [
             "paper_id"
+          ]
+        },
+        "submissions_slug_unique": {
+          "name": "submissions_slug_unique",
+          "columns": [
+            "slug"
           ]
         }
       },
       "checkConstraint": {}
     },
-    "users": {
-      "name": "users",
+    "user_invitations": {
+      "name": "user_invitations",
       "columns": {
         "id": {
           "name": "id",
@@ -640,18 +1422,99 @@
           "notNull": true,
           "autoincrement": false
         },
-        "password_hash": {
-          "name": "password_hash",
+        "role": {
+          "name": "role",
+          "type": "enum('editor','reviewer')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
           "type": "varchar(255)",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "varchar(36)",
+          "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_invitations_invited_by_users_id_fk": {
+          "name": "user_invitations_invited_by_users_id_fk",
+          "tableFrom": "user_invitations",
+          "tableTo": "users",
+          "columnsFrom": [
+            "invited_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_invitations_id": {
+          "name": "user_invitations_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "user_invitations_token_unique": {
+          "name": "user_invitations_token_unique",
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "user_profiles": {
+      "name": "user_profiles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
         "full_name": {
           "name": "full_name",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "designation": {
@@ -675,6 +1538,21 @@
           "notNull": false,
           "autoincrement": false
         },
+        "orcid_id": {
+          "name": "orcid_id",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "nationality": {
+          "name": "nationality",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'India'"
+        },
         "bio": {
           "name": "bio",
           "type": "text",
@@ -689,13 +1567,112 @@
           "notNull": false,
           "autoincrement": false
         },
-        "role": {
-          "name": "role",
-          "type": "enum('admin','editor','reviewer')",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'admin'"
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_profiles_user_id_users_id_fk": {
+          "name": "user_profiles_user_id_users_id_fk",
+          "tableFrom": "user_profiles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_profiles_id": {
+          "name": "user_profiles_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "user_profiles_user_id_unique": {
+          "name": "user_profiles_user_id_unique",
+          "columns": [
+            "user_id"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "enum('admin','editor','reviewer','author')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'author'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "is_email_verified": {
+          "name": "is_email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "email_verified_at": {
+          "name": "email_verified_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -705,27 +1682,21 @@
           "autoincrement": false,
           "default": "(now())"
         },
-        "invitation_token": {
-          "name": "invitation_token",
-          "type": "varchar(255)",
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
         },
-        "invitation_expires": {
-          "name": "invitation_expires",
+        "deleted_at": {
+          "name": "deleted_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "nationality": {
-          "name": "nationality",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'India'"
         }
       },
       "indexes": {
@@ -747,16 +1718,10 @@
         }
       },
       "uniqueConstraints": {
-        "email": {
-          "name": "email",
+        "users_email_unique": {
+          "name": "users_email_unique",
           "columns": [
             "email"
-          ]
-        },
-        "invitation_token": {
-          "name": "invitation_token",
-          "columns": [
-            "invitation_token"
           ]
         }
       },
@@ -804,7 +1769,7 @@
           "name": "status",
           "type": "enum('open','published')",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": "'open'"
         },
@@ -827,7 +1792,16 @@
           ]
         }
       },
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "vol_issue_year": {
+          "name": "vol_issue_year",
+          "columns": [
+            "volume_number",
+            "issue_number",
+            "year"
+          ]
+        }
+      },
       "checkConstraint": {}
     }
   },

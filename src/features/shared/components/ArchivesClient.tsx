@@ -20,13 +20,13 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
     const currentIssueQuery = useLatestIssuePapers(mode === 'current' ? initialPapers : []);
     const archiveQuery = useArchivePapers(mode === 'archive' ? initialPapers : []);
     
-    const papers = mode === 'current' ? currentIssueQuery.data : archiveQuery.data;
+    const papers = (mode === 'current' ? currentIssueQuery.data : archiveQuery.data) || [];
     const isLoading = mode === 'current' ? currentIssueQuery.isLoading : archiveQuery.isLoading;
 
     const [searchQuery, setSearchQuery] = useState('');
     const journalShortName = settings.journal_short_name || "IJITEST";
 
-    const filteredPapers = papers.filter((p: any) =>
+    const filteredPapers = (papers || []).filter((p: any) =>
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.author_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.keywords?.toLowerCase().includes(searchQuery.toLowerCase()) ||

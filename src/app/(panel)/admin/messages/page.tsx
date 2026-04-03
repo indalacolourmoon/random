@@ -10,9 +10,9 @@ export const metadata = {
 export default function MessagesPage() {
     return (
         <section className="h-[calc(100vh-140px)] flex flex-col gap-8 p-0">
-            <header className="flex flex-col gap-2 px-8 py-2 shrink-0 border-l-2 border-primary/20">
-                <h1 className="font-serif text-3xl 2xl:text-5xl font-black tracking-tight leading-none uppercase">Communications Hub</h1>
-                <p className="text-[10px] 2xl:text-sm font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Decrypting Incoming Intelligence Streams</p>
+            <header className="flex flex-col gap-1 px-8 py-2 shrink-0 border-l-2 border-primary/20">
+                <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold tracking-tight leading-none capitalize">Communications hub</h1>
+                <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium capitalize tracking-widest text-muted-foreground opacity-40">Decrypting incoming intelligence streams</p>
             </header>
 
             <Suspense fallback={

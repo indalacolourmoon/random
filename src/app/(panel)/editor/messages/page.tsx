@@ -51,7 +51,7 @@ export default function Messages() {
         return (
             <div className="p-40 text-center space-y-6">
                 <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-                <p className="font-black text-muted-foreground tracking-widest text-xs uppercase animate-pulse">Connecting to Communication Server...</p>
+                <p className="font-semibold text-muted-foreground tracking-widest text-xs uppercase animate-pulse">Connecting to Communication Server...</p>
             </div>
         );
     }
@@ -73,10 +73,8 @@ export default function Messages() {
             {/* Header & Controls */}
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 shrink-0 border-b border-primary/5 pb-8">
                 <div className="space-y-2">
-                    <h1 className=" font-black text-foreground tracking-widest uppercase leading-none">Inbox Hub</h1>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 transition-all duration-500">
-                        Central Command for Editorial Inquiries & Peer Review Sync.
-                    </p>
+                    <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground tracking-tight capitalize leading-none">Inbox hub</h1>
+                    <p className="text-xs xl:text-sm font-semibold text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 capitalize tracking-wide transition-all duration-500">Central command for editorial inquiries & peer review sync.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -84,31 +82,31 @@ export default function Messages() {
                     <div className="flex items-center p-1 bg-muted/50 backdrop-blur-sm rounded-xl border border-primary/5 shadow-sm">
                         <button
                             onClick={() => setActiveTab('inbox')}
-                            className={`relative px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'inbox' ? 'text-primary-foreground bg-primary shadow-md dark:text-black' : 'text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary'}`}
+                            className={`relative px-8 py-3 rounded-xl text-xs font-semibold capitalize tracking-widest transition-all ${activeTab === 'inbox' ? 'text-primary-foreground bg-primary shadow-md dark:text-black' : 'text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary'}`}
                         >
-                            Active Inbox
+                            Active inbox
                             {unreadCount > 0 && activeTab !== 'inbox' && (
                                 <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
                             )}
                         </button>
                         <button
                             onClick={() => setActiveTab('archived')}
-                            className={`px-8 py-3 rounded-xl text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'archived' ? 'text-primary-foreground bg-primary shadow-md dark:text-black' : 'text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary'}`}
+                            className={`px-8 py-3 rounded-xl text-[10px] xl:text-[11px] 2xl:text-xs font-semibold capitalize tracking-widest transition-all ${activeTab === 'archived' ? 'text-primary-foreground bg-primary shadow-md dark:text-black' : 'text-muted-foreground hover:text-primary dark:text-muted-foreground dark:hover:text-primary'}`}
                         >
-                            Archived Comm
+                            Archived comm
                         </button>
                     </div>
 
-                    <InputGroup className="flex-1 w-full sm:w-80 h-14 bg-muted border-none rounded-xl shadow-inner overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+                    <InputGroup className="flex-1 w-full sm:w-80 h-12 bg-muted border-none rounded-xl shadow-inner overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-all">
                         <InputGroupAddon className="pl-6 group-focus-within/input-group:text-primary transition-colors pr-2">
-                            <Search className="w-5 h-5 text-primary/30" />
+                            <Search className="w-4 h-4 text-primary/30" />
                         </InputGroupAddon>
                         <InputGroupInput
                             type="text"
-                            placeholder="Query Intel..."
+                            placeholder="Query intel..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="h-full px-6 text-sm font-bold bg-transparent border-0 ring-0 focus-visible:ring-0 placeholder:text-muted-foreground/40 text-foreground"
+                            className="h-full px-6 text-sm font-semibold bg-transparent border-0 ring-0 focus-visible:ring-0 placeholder:text-muted-foreground/40 text-foreground capitalize"
                         />
                     </InputGroup>
                 </div>
@@ -119,11 +117,11 @@ export default function Messages() {
                 {/* Sidebar List */}
                 <Card className="lg:w-[380px] flex flex-col border-primary/5 shadow-vip overflow-hidden bg-card shrink-0 rounded-xl relative">
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-primary/10" />
-                    <CardHeader className="p-8 bg-primary/[0.02] border-b border-primary/5 space-y-2">
+                    <CardHeader className="p-6 bg-primary/[0.02] border-b border-primary/5 space-y-2">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm font-black text-primary tracking-[0.3em] uppercase">Communications</CardTitle>
-                            <Badge className="h-8 px-4 bg-primary/10 text-primary text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black border-none uppercase tracking-widest rounded-lg">
-                                {activeMessages.length} Records
+                            <CardTitle className="text-xs font-semibold text-primary tracking-widest capitalize">Communications</CardTitle>
+                            <Badge className="h-7 px-3 bg-primary/10 text-primary text-[10px] xl:text-[11px] 2xl:text-xs font-semibold border-none capitalize tracking-widest rounded-lg">
+                                {activeMessages.length} records
                             </Badge>
                         </div>
                     </CardHeader>
@@ -144,14 +142,14 @@ export default function Messages() {
                                     >
                                         <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all ${isSelected ? 'bg-primary' : isUnread ? 'bg-primary/30' : 'bg-transparent'}`} />
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest truncate max-w-[150px]">
-                                                {m.subject || 'No Subject'}
+                                            <span className="text-[10px] font-semibold text-muted-foreground/60 capitalize tracking-widest truncate max-w-[150px]">
+                                                {m.subject || 'No subject'}
                                             </span>
-                                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-muted-foreground/40 uppercase tracking-widest">
+                                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground/40 capitalize tracking-widest">
                                                 {new Date(m.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                             </span>
                                         </div>
-                                        <h3 className={` tracking-wider leading-wider mb-2 truncate uppercase ${isUnread ? 'font-black text-foreground' : 'font-bold text-muted-foreground'}`}>
+                                        <h3 className={`font-serif tracking-tight leading-tight mb-2 truncate capitalize ${isUnread ? 'text-lg font-semibold text-foreground' : 'text-base font-semibold text-muted-foreground'}`}>
                                             {m.name}
                                         </h3>
                                         <p className="text-xs text-muted-foreground/70 line-clamp-1 font-medium leading-relaxed group-hover:text-foreground transition-colors italic">
@@ -167,7 +165,7 @@ export default function Messages() {
                                     <MessageSquare className="w-6 h-6 text-primary/20" />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Queue Empty</p>
+                                    <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.3em]">Queue Empty</p>
                                     <p className="text-[9px] font-medium text-muted-foreground/40 tracking-widest">No matching records found.</p>
                                 </div>
                             </div>
@@ -186,9 +184,9 @@ export default function Messages() {
                                         <User className="w-8 h-8 text-muted-foreground/40" />
                                     </div>
                                     <div className="space-y-2">
-                                        <h2 className=" font-black text-foreground tracking-wider leading-none uppercase break-all sm:break-normal">{selectedMessage.name}</h2>
+                                        <h2 className="font-serif text-xl xl:text-2xl font-semibold text-foreground tracking-tight capitalize break-all sm:break-normal">{selectedMessage.name}</h2>
                                         <div className="flex items-center gap-4">
-                                            <a href={`mailto:${selectedMessage.email}`} className="text-xs sm:text-sm font-black text-secondary hover:underline tracking-widest flex items-center gap-2 uppercase break-all sm:break-normal">
+                                            <a href={`mailto:${selectedMessage.email}`} className="text-[11px] xl:text-xs font-semibold text-secondary hover:underline tracking-widest flex items-center gap-2 capitalize break-all sm:break-normal">
                                                 <Mail className="w-4 h-4 shrink-0" /> <span className="truncate max-w-[200px] sm:max-w-none">{selectedMessage.email}</span>
                                             </a>
                                         </div>
@@ -199,7 +197,7 @@ export default function Messages() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleStatusChange(selectedMessage.id, selectedMessage.status === 'archived' ? 'read' : 'archived')}
-                                        className={`flex-1 sm:flex-none h-12 px-2 sm:px-6 gap-2 sm:gap-3 font-black text-[10px] sm:text-xs uppercase tracking-widest rounded-xl transition-all ${selectedMessage.status === 'archived' ? 'border-primary bg-primary text-white dark:text-slate-900 hover:bg-primary/90' : 'border-primary/10 text-foreground hover:bg-muted font-black'}`}
+                                        className={`flex-1 sm:flex-none h-12 px-2 sm:px-6 gap-2 sm:gap-3 font-semibold text-[10px] sm:text-xs uppercase tracking-widest rounded-xl transition-all ${selectedMessage.status === 'archived' ? 'border-primary bg-primary text-white dark:text-slate-900 hover:bg-primary/90' : 'border-primary/10 text-foreground hover:bg-muted font-semibold'}`}
                                     >
                                         <Archive className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                                         <span className="truncate">{selectedMessage.status === 'archived' ? 'Restore Active' : 'Archive'}</span>
@@ -208,7 +206,7 @@ export default function Messages() {
                                         variant="outline"
                                         size="icon"
                                         onClick={() => handleDelete(selectedMessage.id)}
-                                        className="h-12 w-12 rounded-xl border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 transition-all font-black shrink-0"
+                                        className="h-12 w-12 rounded-xl border-rose-500/20 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 transition-all font-semibold shrink-0"
                                         title="Sever Record"
                                     >
                                         <Trash2 className="w-5 h-5" />
@@ -221,26 +219,26 @@ export default function Messages() {
                                     {/* Action Header */}
                                     <div className="flex flex-wrap items-center justify-between gap-6 py-5 px-8 bg-primary/[0.02] rounded-xl border border-primary/5 shadow-inner">
                                         <div className="flex items-center gap-8">
-                                            <div className="flex items-center gap-3 text-xs font-black text-muted-foreground/60 uppercase tracking-widest">
+                                            <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground/60 uppercase tracking-widest">
                                                 <Calendar className="w-5 h-5" />
                                                 <span>{new Date(selectedMessage.created_at).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
                                             </div>
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
-                                            <span className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground/60">
+                                            <span className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
                                                 Status:
-                                                <Badge variant="secondary" className="h-6 px-3 text-[10px] bg-primary/10 text-primary dark:text-primary dark:bg-primary/20 border-none shadow-sm font-black rounded-lg uppercase">{selectedMessage.status}</Badge>
+                                                <Badge variant="secondary" className="h-6 px-3 text-[10px] bg-primary/10 text-primary dark:text-primary dark:bg-primary/20 border-none shadow-sm font-semibold rounded-lg uppercase">{selectedMessage.status}</Badge>
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Message Body */}
                                     <div className="space-y-6">
-                                        <div className="flex items-center gap-3 text-xs font-black text-muted-foreground/50 uppercase tracking-[0.3em] pl-4">
+                                        <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground/50 uppercase tracking-[0.3em] pl-4">
                                             <MessageSquare className="w-5 h-5" /> Transmission Payload
                                         </div>
                                         <Card className="border-primary/10 bg-muted/30 shadow-inner overflow-hidden rounded-xl">
                                             <CardContent className="p-10">
-                                                <h3 className=" font-black text-foreground tracking-wider mb-8 pb-8 border-b border-primary/5 leading-snug uppercase">RE: {selectedMessage.subject || 'Editorial Inquiry'}</h3>
+                                                <h3 className=" font-semibold text-foreground tracking-wider mb-8 pb-8 border-b border-primary/5 leading-snug uppercase">RE: {selectedMessage.subject || 'Editorial Inquiry'}</h3>
                                                 <div className="text-sm font-medium text-foreground/80 leading-loose whitespace-pre-wrap selection:bg-primary/20 italic">
                                                     "{selectedMessage.message}"
                                                 </div>
@@ -252,7 +250,7 @@ export default function Messages() {
 
                             {/* Footer Actions */}
                             <div className="p-6 border-t border-primary/5 bg-primary/[0.02] flex justify-end gap-4 rounded-b-[2rem]">
-                                <Button asChild className="h-14 px-10 gap-3 font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:scale-[1.02] transition-all cursor-pointer">
+                                <Button asChild className="h-14 px-10 gap-3 font-semibold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:scale-[1.02] transition-all cursor-pointer">
                                     <a href={`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`}>
                                         <Send className="w-5 h-5" /> Dispatch Journal Reply
                                     </a>
@@ -265,7 +263,7 @@ export default function Messages() {
                                 <Mail className="w-10 h-10 text-primary/20" />
                             </div>
                             <div className="space-y-2 max-w-sm">
-                                <h3 className=" font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Standby Directive</h3>
+                                <h3 className=" font-semibold text-muted-foreground/60 uppercase tracking-[0.3em]">Standby Directive</h3>
                                 <p className="text-[10px] font-medium text-muted-foreground/40 tracking-widest leading-relaxed">Engage a communication node from the left registry to initialize the transmission matrix.</p>
                             </div>
                         </div>

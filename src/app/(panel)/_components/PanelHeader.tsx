@@ -1,13 +1,11 @@
 "use client";
 
-import { Menu, SeparatorVertical } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator";
 import NotificationCenter from '@/features/shared/components/NotificationCenter';
 import { UserNav } from './UserNav';
 
 interface PanelHeaderProps {
-    toggleMobileMenu: () => void;
     filteredItems: any[];
     pathname: string;
     user: any;
@@ -16,7 +14,6 @@ interface PanelHeaderProps {
 }
 
 export function PanelHeader({
-    toggleMobileMenu,
     filteredItems,
     pathname,
     user,
@@ -28,11 +25,9 @@ export function PanelHeader({
     return (
         <header className="bg-background/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-border dark:border-white/5 flex items-center justify-between px-6 lg:px-10 xl:px-12 2xl:px-20 h-20 xl:h-24 2xl:h-32 sticky top-0 z-30 transition-all duration-500">
             <div className="flex items-center gap-6 2xl:gap-10">
-                <Button variant="ghost" size="icon" onClick={toggleMobileMenu} className="lg:hidden h-10 w-10 cursor-pointer">
-                    <Menu className="w-6 h-6" />
-                </Button>
+                <SidebarTrigger className="lg:hidden h-10 w-10 cursor-pointer" />
                 <div className="flex flex-col">
-                    <h1 className=" font-black uppercase tracking-widest heading-v5 hidden sm:block text-base xl:text-lg 2xl:text-2xl">
+                    <h1 className="font-semibold capitalize tracking-widest heading-v5 hidden sm:block text-sm xl:text-base 2xl:text-xl">
                         {activeItem?.name || 'Dashboard Protocol'}
                     </h1>
                 </div>

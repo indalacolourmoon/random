@@ -1,14 +1,18 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { settings } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
+import { eq } from "drizzle-orm";
 
 export async function getSettings() {
     try {
-        const [rows]: any = await pool.execute('SELECT * FROM settings');
-        const settings: Record<string, string> = {
+        const rows = await db.select().from(settings);
+        
+        // Default values for robustness
+        const result: Record<string, string> = {
             journal_name: 'International Journal of Innovative Trends in Engineering Science and Technology',
             journal_short_name: 'IJITEST',
             issn_number: 'XXXX-XXXX',
@@ -24,69 +28,75 @@ export async function getSettings() {
             copyright_url: '/docs/copyright-form.docx',
             is_promotion_active: 'true'
         };
-        rows.forEach((row: any) => {
-            settings[row.setting_key] = row.setting_value;
+
+        rows.forEach((row) => {
+            if (row.settingValue) {
+                result[row.settingKey] = row.settingValue;
+            }
         });
-        return settings;
+
+        return result;
     } catch (error: any) {
-        if (error.code === 'ETIMEDOUT') {
-            console.error("Build-time DB Connection Timeout (Settings) - Skipping");
-        } else {
-            console.error("Get Settings Error:", error);
-        }
+        console.error("Get Settings Error:", error);
         return {};
     }
 }
 
 export async function updateSettings(formData: FormData) {
-    const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
         const entries = Array.from(formData.entries());
 
-        for (const [key, value] of entries) {
-            if (key.startsWith('$')) continue; // Skip Next.js internal fields
+        await db.transaction(async (tx) => {
+            for (const [key, value] of entries) {
+                if (key.startsWith('$')) continue; // Skip Next.js internal fields
 
-            let finalValue: any = value;
+                let finalValue: any = value;
 
-            // Handle File Uploads (Template & Copyright Form)
-            if (value instanceof File && value.size > 0) {
-                const bytes = await value.arrayBuffer();
-                const buffer = Buffer.from(bytes);
+                // Handle File Uploads (Template & Copyright Form)
+                if (value instanceof File && value.size > 0) {
+                    const bytes = await value.arrayBuffer();
+                    const buffer = Buffer.from(bytes);
 
-                const fileExt = value.name.split('.').pop();
-                const fileName = `${key.replace(/_/g, '-')}.${fileExt}`;
+                    const fileExt = value.name.split('.').pop();
+                    const fileName = `${key.replace(/_/g, '-')}.${fileExt}`;
 
-                const uploadDir = path.join(process.cwd(), "public/docs");
-                await fs.mkdir(uploadDir, { recursive: true });
+                    const uploadDir = path.join(process.cwd(), "public/docs");
+                    await fs.mkdir(uploadDir, { recursive: true });
 
-                const filePath = path.join(uploadDir, fileName);
-                await fs.writeFile(filePath, buffer);
+                    const filePath = path.join(uploadDir, fileName);
+                    await fs.writeFile(filePath, buffer);
 
-                finalValue = `/docs/${fileName}`;
-            } else if (value instanceof File && value.size === 0) {
-                continue;
+                    finalValue = `/docs/${fileName}`;
+                } else if (value instanceof File && value.size === 0) {
+                    // Skip empty file uploads (preserving existing values)
+                    continue;
+                }
+
+                // Standard checkbox handling or empty values
+                if (finalValue === null || finalValue === undefined) {
+                    finalValue = "";
+                }
+
+                await tx.insert(settings)
+                    .values({
+                        settingKey: key,
+                        settingValue: String(finalValue),
+                    })
+                    .onDuplicateKeyUpdate({
+                        set: { settingValue: String(finalValue) }
+                    });
             }
-
-            await connection.execute(
-                'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
-                [key, finalValue, finalValue]
-            );
-        }
-
-        await connection.commit();
+        });
 
         revalidatePath('/admin/settings');
-        revalidatePath('/');
+        revalidatePath('/', 'layout');
         revalidatePath('/guidelines');
         revalidatePath('/contact');
         revalidatePath('/about');
+        
         return { success: true };
     } catch (error: any) {
-        await connection.rollback();
         console.error("Update Settings Error:", error);
         return { error: "Failed to update settings: " + error.message };
-    } finally {
-        connection.release();
     }
 }

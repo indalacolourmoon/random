@@ -5,11 +5,11 @@ export default function TopBar({ settings }: { settings?: Record<string, string>
     const publisher = settings?.publisher || "FELIX ACADEMIC PUBLICATIONS";
 
     return (
-        <div className="bg-primary text-white py-4 px-4 sm:px-6 lg:px-8 border-b border-white/5 relative overflow-hidden">
+        <div className="bg-primary text-white py-2 sm:py-4 px-1  lg:px-1 border-b border-white/5 relative overflow-hidden">
             {/* Subtle background glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-linear-to-b from-primary/10 to-transparent pointer-events-none" />
 
-            <div className="container-responsive relative z-10">
+            <div className=" relative z-10">
                 <div className="flex flex-col items-center text-center space-y-3">
                     {/* Primary Title */}
                     <div className="text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-3xl   tracking-wider text-white font-mono font-bold">
@@ -17,7 +17,7 @@ export default function TopBar({ settings }: { settings?: Record<string, string>
                     </div>
 
                     {/* Journal Metadata Strip */}
-                    <div className="flex flex-wrap items-center justify-center gap-x-6 md:gap-x-10 gap-y-3 text-xs md:text-sm font-bold  tracking-[0.2em]">
+                    <div className="flex flex-wrap items-center justify-center gap-x-2 md:gap-x-10 2xl:gap-x-12 gap-y-3 text-xs md:text-sm font-bold  tracking-[0.2em]">
                         <div className="flex items-center gap-2.5">
                             <span className="text-white">ISSN:</span>
                             <span className="text-white/80">{issn}</span>

@@ -1,17 +1,30 @@
 "use client";
 
 import Link from 'next/link';
-import { ChevronRight, Layers, LogOut, X } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Layers, LogOut, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    useSidebar,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PanelSidebarProps {
     pathname: string;
     user: any;
     filteredItems: any[];
     handleLogout: () => Promise<void>;
-    isMobileMenuOpen: boolean;
-    setIsMobileMenuOpen: (open: boolean) => void;
 }
 
 export function PanelSidebar({
@@ -19,71 +32,132 @@ export function PanelSidebar({
     user,
     filteredItems,
     handleLogout,
-    isMobileMenuOpen,
-    setIsMobileMenuOpen
 }: PanelSidebarProps) {
+    const { state, open, setOpen, isMobile, setOpenMobile, toggleSidebar } = useSidebar();
+    const isCollapsed = state === "collapsed";
+
     return (
-        <>
-            <div
-                className={`fixed inset-0 bg-background/80 dark:bg-slate-950/80 backdrop-blur-sm z-40 lg:hidden transition-opacity ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-            />
+        <Sidebar collapsible="icon" className="border-r border-border dark:border-white/5 transition-all duration-300">
+            {/* Custom Toggle Button in the middle-right */}
+            {!isMobile && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn("absolute -right-4 top-1/2 -translate-y-1/2 z-50  rounded-full border border-border bg-background shadow-md hover:bg-accent transition-all hidden lg:flex items-center justify-center cursor-pointer", isCollapsed ? "bg-secondary" : "bg-primary")}
+                            onClick={toggleSidebar}
+                        >
+                            {isCollapsed ? (
+                                <ChevronRight className="size-8" />
+                            ) : (
+                                <ChevronLeft className="size-8" />
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="font-bold tracking-widest bg-primary text-white border-none">
+                        {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    </TooltipContent>
+                </Tooltip>
+            )}
 
-            <aside className={`w-64 2xl:w-96 bg-background dark:bg-slate-900 border-r border-border dark:border-white/5 flex flex-col fixed lg:sticky top-0 h-screen z-50 transition-all duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <div className="h-20 2xl:h-32 flex items-center justify-between px-8 2xl:px-12 border-b border-border">
-                    <Link href="/admin" className="flex items-center gap-3 2xl:gap-5 group cursor-pointer">
-                        <div className="bg-primary w-10 h-10 2xl:w-16 2xl:h-16 rounded-xl 2xl:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-transform">
-                            <Layers className="size-8 2xl:size-10 text-white stroke-[2.5] dark:text-dark dark:stroke-[2.5]" />
+            <SidebarHeader className="h-20 2xl:h-24 flex flex-row items-center justify-between px-4 2xl:px-6 border-b border-border overflow-hidden">
+                <Link href="/admin" className="flex items-center gap-3 2xl:gap-4 group cursor-pointer shrink-0">
+                    <div className="bg-primary size-10 2xl:size-14 rounded-xl 2xl:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-transform shrink-0">
+                        <Layers className="size-6 2xl:size-10 text-white stroke-[2.5]" />
+                    </div>
+                    {!isCollapsed && (
+                        <div className="space-y-0.5 2xl:space-y-1 whitespace-nowrap opacity-100 transition-opacity duration-300">
+                            <h2 className="font-bold text-foreground leading-none tracking-widest capitalize text-sm xl:text-base 2xl:text-lg">IJITEST</h2>
+                            <span className="text-[10px] 2xl:text-sm font-bold text-muted-foreground tracking-widest capitalize opacity-80">Admin Panel</span>
                         </div>
-                        <div className="space-y-0.5 2xl:space-y-1">
-                            <h2 className="font-black text-foreground leading-none tracking-wider uppercase 2xl:text-2xl">IJITEST</h2>
-                            <span className="text-xs 2xl:text-lg font-black text-muted-foreground tracking-widest uppercase opacity-60">Admin Panel</span>
-                        </div>
-                    </Link>
-                    <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden  text-muted-foreground">
-                        <X className="size-8" />
+                    )}
+                </Link>
+
+                {/* Mobile Close Button */}
+                {isMobile && (
+                    <Button
+                        variant="ghost" 
+                        size="icon"
+                        className="size-10 text-muted-foreground hover:text-foreground cursor-pointer"
+                        onClick={() => setOpenMobile(false)}
+                    >
+                        <X className="size-6" />
                     </Button>
-                </div>
+                )}
+            </SidebarHeader>
 
-                <nav className="flex-1 p-3 2xl:p-6 space-y-0.5 2xl:space-y-3 overflow-y-auto mt-2">
-                    {filteredItems.map((item: any) => {
+            <SidebarContent className="px-2 2xl:px-3 py-4 2xl:py-6">
+                <SidebarMenu className="space-y-1.5 2xl:space-y-4">
+                    {filteredItems.map((item) => {
                         const isActive = pathname === item.fullHref;
                         return (
-                            <Link
-                                key={item.name}
-                                href={item.fullHref}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className={`flex items-center justify-between px-4 2xl:px-6 py-3 2xl:py-5 rounded-xl 2xl:rounded-2xl group transition-all ${isActive
-                                    ? 'bg-primary/10 text-primary shadow-inner shadow-primary/5'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                    }`}
-                            >
-                                <div className="flex items-center gap-4 2xl:gap-6">
-                                    <div className={`w-11 h-11 2xl:w-16 2xl:h-16 rounded-xl 2xl:rounded-2xl flex items-center justify-center transition-all ${isActive ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105' : 'bg-muted text-muted-foreground group-hover:bg-background group-hover:text-foreground'
-                                        }`}>
-                                        {item.icon && <div className={cn("[&>svg]:w-6 [&>svg]:text-white [&>svg]:h-6 2xl:[&>svg]:w-9 2xl:[&>svg]:h-9", isActive ? "dark:[&>svg]:text-black" : "")}>{item.icon}</div>}
-                                    </div>
-                                    <span className="font-black text-sm 2xl:text-xl tracking-wide uppercase">
-                                        {item.labelOverrides?.[user?.role || ''] || item.name}
-                                    </span>
-                                </div>
-                                <ChevronRight className={`w-5 h-5 2xl:w-8 2xl:h-8 transition-all ${isActive ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0'}`} />
-                            </Link>
+                            <SidebarMenuItem key={item.name}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={isActive}
+                                    size="lg"
+                                    tooltip={item.name}
+                                    className={cn(
+                                        "h-12 2xl:h-16 w-full px-3 2xl:px-6 rounded-xl 2xl:rounded-2xl transition-all",
+                                        isActive ? "bg-primary/10 text-primary hover:bg-primary/15" : "text-foreground hover:bg-muted",
+                                        isCollapsed && "px-0 justify-center h-16 2xl:h-18"
+                                    )}
+                                >
+                                    <Link href={item.fullHref} className="flex items-center gap-4 2xl:gap-4 w-full justify-center lg:justify-start">
+                                        <div className={cn(
+                                            "size-10 2xl:size-14 rounded-xl 2xl:rounded-2xl flex items-center justify-center transition-all shrink-0 shadow-sm",
+                                            isCollapsed && "2xl:size-12",
+                                            isActive ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" : "bg-muted text-foreground group-hover:bg-background"
+                                        )}>
+                                            {item.icon && (
+                                                <div className={cn(
+                                                    "[&>svg]:size-5 2xl:[&>svg]:size-8",
+                                                    isActive ? "[&>svg]:text-white" : "text-primary"
+                                                )}>
+                                                    {item.icon}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {!isCollapsed && (
+                                            <span className={cn(
+                                                "font-bold text-xs xl:text-sm 2xl:text-base tracking-widest capitalize whitespace-nowrap transition-colors",
+                                                isActive ? "text-primary" : "text-foreground"
+                                            )}>
+                                                {item.labelOverrides?.[user?.role || ''] || item.name}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                         );
                     })}
-                </nav>
+                </SidebarMenu>
+            </SidebarContent>
 
-                <div className="p-4 2xl:p-8 border-t border-border mt-auto">
-                    <Button
-                        variant="destructive"
-                        className="w-full justify-start gap-4 h-14 2xl:h-20 px-5 2xl:px-8 bg-destructive/5 text-destructive hover:bg-destructive hover:text-white rounded-xl 2xl:rounded-[2rem] transition-all border-none font-black uppercase text-xs 2xl:text-xl tracking-widest dark:text-white cursor-pointer"
-                        onClick={handleLogout}
-                    >
-                        <LogOut className="w-6 h-6 2xl:w-9 2xl:h-9" />
-                        <span>Sign Out System</span>
-                    </Button>
-                </div>
-            </aside>
-        </>
+            <SidebarFooter className="p-4 2xl:p-6 border-t border-border mt-auto">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className={cn(
+                                "w-full justify-start gap-4 h-12 xl:h-14 2xl:h-16 px-3 2xl:px-6 text-destructive hover:bg-destructive/10 hover:text-white hover:bg-destructive rounded-xl 2xl:rounded-2xl transition-all font-bold capitalize text-xs 2xl:text-base tracking-widest overflow-hidden cursor-pointer",
+                                isCollapsed && "justify-center px-0"
+                            )}
+                            onClick={handleLogout}
+                        >
+                            <LogOut className="size-6 2xl:size-9 shrink-0" />
+                            {!isCollapsed && <span>Sign Out</span>}
+                        </Button>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                        <TooltipContent side="right" className="font-bold tracking-widest bg-destructive text-white border-none">
+                            Sign Out
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </SidebarFooter>
+        </Sidebar>
     );
 }
+

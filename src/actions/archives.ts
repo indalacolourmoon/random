@@ -1,98 +1,173 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { 
+    publications, 
+    submissions, 
+    submissionVersions, 
+    volumesIssues, 
+    userProfiles,
+    users
+} from "@/db/schema";
+import { eq, desc, and, inArray } from "drizzle-orm";
 
+/**
+ * FETCH ALL PUBLISHED PAPERS
+ * Used for the global archive list or sitemap
+ */
 export async function getPublishedPapers() {
     try {
-        const [rows]: any = await pool.execute(`
-            SELECT 
-                s.*, 
-                vi.volume_number, 
-                vi.issue_number, 
-                vi.year as publication_year, 
-                vi.month_range
-            FROM submissions s
-            JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.status IN ('published', 'retracted')
-            ORDER BY vi.year DESC, vi.volume_number DESC, vi.issue_number DESC, s.updated_at DESC
-        `);
-        return rows;
+        const publishedRaw = await db.query.publications.findMany({
+            with: {
+                submission: {
+                    with: {
+                        versions: {
+                            orderBy: [desc(submissionVersions.versionNumber)],
+                            limit: 1
+                        },
+                        correspondingAuthor: {
+                            with: { profile: true }
+                        },
+                        authors: true
+                    }
+                },
+                issue: true
+            },
+            orderBy: [desc(publications.publishedAt)]
+        });
+
+        return publishedRaw.map(pub => mapPublicationToUI(pub));
     } catch (error: any) {
-        if (error.code === 'ETIMEDOUT') {
-            console.error("Build-time DB Connection Timeout (Published Papers) - Skipping");
-        } else {
-            console.error("Get Published Papers Error:", error);
-        }
-        return [];
-    }
-}
-export async function getLatestIssuePapers() {
-    try {
-        const [rows]: any = await pool.execute(`
-            SELECT 
-                s.*, 
-                vi.volume_number, 
-                vi.issue_number, 
-                vi.year as publication_year, 
-                vi.month_range
-            FROM submissions s
-            JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.status IN ('published', 'retracted')
-            AND s.submission_mode = 'current'
-            ORDER BY s.published_at DESC
-        `);
-        
-        return rows;
-    } catch (error: any) {
-        if (error.code === 'ETIMEDOUT') {
-            console.error("Build-time DB Connection Timeout (Latest Issue Papers) - Skipping");
-        } else {
-            console.error("Get Latest Issue Papers Error:", error);
-        }
+        console.error("Get Published Papers Error:", error);
         return [];
     }
 }
 
+/**
+ * FETCH PAPERS FOR THE CURRENT/LATEST ISSUE
+ */
+export async function getLatestIssuePapers() {
+    try {
+        // 1. Find the latest 'open' or most recently 'published' issue
+        const latestIssue = await db.query.volumesIssues.findFirst({
+            where: eq(volumesIssues.status, 'open'),
+            orderBy: [desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber)]
+        });
+
+        if (!latestIssue) return [];
+
+        const papersRaw = await db.query.publications.findMany({
+            where: eq(publications.issueId, latestIssue.id),
+            with: {
+                submission: {
+                    with: {
+                        versions: {
+                            orderBy: [desc(submissionVersions.versionNumber)],
+                            limit: 1
+                        },
+                        correspondingAuthor: {
+                            with: { profile: true }
+                        },
+                        authors: true
+                    }
+                },
+                issue: true
+            }
+        });
+
+        return papersRaw.map(pub => mapPublicationToUI(pub));
+    } catch (error: any) {
+        console.error("Get Latest Issue Papers Error:", error);
+        return [];
+    }
+}
+
+/**
+ * FETCH PAPERS FOR THE ARCHIVE (Historical Issues)
+ */
 export async function getArchivePapers() {
     try {
-        const [rows]: any = await pool.execute(`
-            SELECT 
-                s.*, 
-                vi.volume_number, 
-                vi.issue_number, 
-                vi.year as publication_year, 
-                vi.month_range
-            FROM submissions s
-            JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.status IN ('published', 'retracted')
-            AND s.submission_mode = 'archive'
-            ORDER BY s.published_at DESC, vi.year DESC, vi.issue_number DESC
-        `);
-        return rows;
-    } catch (error: any) {
+        const archiveRaw = await db.query.publications.findMany({
+            with: {
+                submission: {
+                    with: {
+                        versions: {
+                            orderBy: [desc(submissionVersions.versionNumber)],
+                            limit: 1
+                        },
+                        correspondingAuthor: {
+                            with: { profile: true }
+                        },
+                        authors: true
+                    }
+                },
+                issue: true
+            },
+            orderBy: [desc(publications.publishedAt)]
+        });
+
+        return archiveRaw.map(pub => mapPublicationToUI(pub));
+    } catch (error) {
         console.error("Get Archive Papers Error:", error);
         return [];
     }
 }
 
+/**
+ * FETCH SINGLE PAPER BY UUID OR SLUG
+ */
 export async function getPaperById(id: string) {
     try {
-        const [rows]: any = await pool.execute(`
-            SELECT 
-                s.*, 
-                vi.volume_number, 
-                vi.issue_number, 
-                vi.year as publication_year, 
-                vi.month_range
-            FROM submissions s
-            JOIN volumes_issues vi ON s.issue_id = vi.id
-            WHERE s.id = ? AND s.status IN ('published', 'retracted')
-        `, [id]);
-        return rows[0] || null;
-    } catch (error: any) {
-        if (error.code !== 'ETIMEDOUT') {
-            console.error("Get Paper By ID Error:", error);
-        }
+        const pub = await db.query.publications.findFirst({
+            where: eq(publications.submissionId, parseInt(id)),
+            with: {
+                submission: {
+                    with: {
+                        versions: {
+                            orderBy: [desc(submissionVersions.versionNumber)],
+                            limit: 1
+                        },
+                        correspondingAuthor: {
+                            with: { profile: true }
+                        },
+                        authors: true
+                    }
+                },
+                issue: true
+            }
+        });
+
+        return pub ? mapPublicationToUI(pub) : null;
+    } catch (error) {
+        console.error("Get Paper By ID Error:", error);
         return null;
     }
+}
+
+/**
+ * HELPER: Map relational Drizzle structure to the flat structure the UI expects
+ */
+function mapPublicationToUI(pub: any) {
+    const latestVersion = pub.submission?.versions?.[0];
+    return {
+        id: pub.submissionId,
+        paper_id: pub.submission?.paperId,
+        title: latestVersion?.title || "Untitled Paper",
+        abstract: latestVersion?.abstract || "",
+        keywords: latestVersion?.keywords || "",
+        author_name: pub.submission?.correspondingAuthor?.profile?.fullName || "Anonymous Author",
+        status: pub.submission?.status,
+        doi: pub.doi,
+        file_path: pub.finalPdfUrl,
+        pdf_url: pub.finalPdfUrl,
+        start_page: pub.startPage,
+        end_page: pub.endPage,
+        page_range: pub.startPage && pub.endPage ? `${pub.startPage}-${pub.endPage}` : null,
+        published_at: pub.publishedAt,
+        volume_number: pub.issue?.volumeNumber,
+        issue_number: pub.issue?.issueNumber,
+        publication_year: pub.issue?.year,
+        month_range: pub.issue?.monthRange,
+        co_authors: pub.submission?.authors?.map((a: any) => a.name).join(', ')
+    };
 }

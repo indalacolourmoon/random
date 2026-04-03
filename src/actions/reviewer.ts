@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
@@ -56,12 +57,11 @@ export async function submitReviewerApplication(formData: FormData) {
         photoUrl = `/uploads/reviewer-apps/${photoName}`;
 
         // Save to Database
-        const [result] = await pool.execute(
-            `INSERT INTO applications (full_name, designation, institute, email, cv_url, photo_url, application_type, nationality) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [fullName, designation, institute, email, cvUrl, photoUrl, application_type, nationality]
+        const result: any = await db.execute(
+            sql`INSERT INTO applications (full_name, designation, institute, email, cv_url, photo_url, application_type, nationality) VALUES (${fullName}, ${designation}, ${institute}, ${email}, ${cvUrl}, ${photoUrl}, ${application_type}, ${nationality})`
         );
 
-        const applicationId = (result as any).insertId;
+        const applicationId = result[0].insertId;
 
         // Persist Normalized Research Interests
         if (researchInterestsStr && applicationId) {
@@ -69,11 +69,10 @@ export async function submitReviewerApplication(formData: FormData) {
                 const interests = JSON.parse(researchInterestsStr) as string[];
                 if (Array.isArray(interests) && interests.length > 0) {
                     // Optimized batch insert for MySQL
-                    const placeholders = interests.map(() => "(?, ?)").join(", ");
-                    const values = interests.flatMap(interest => [applicationId, interest]);
-                    await pool.execute(
-                        `INSERT INTO application_interests (application_id, interest) VALUES ${placeholders}`,
-                        values
+                    // Optimized batch insert for MySQL
+                    const values = interests.map(interest => sql`(${applicationId}, ${interest})`);
+                    await db.execute(
+                        sql`INSERT INTO application_interests (application_id, interest) VALUES ${sql.join(values, sql`, `)}`
                     );
                 }
             } catch (pErr) {

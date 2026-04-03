@@ -1,124 +1,225 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import {
+    submissions,
+    submissionVersions,
+    submissionFiles,
+    submissionAuthors,
+    users,
+    userProfiles,
+    payments,
+    reviews,
+    reviewAssignments
+} from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import fs from 'fs/promises';
 import path from 'path';
+import { eq, desc, and } from "drizzle-orm";
 
-export async function decideSubmission(id: number, decision: 'accepted' | 'rejected') {
-    const connection = await pool.getConnection();
+export async function getSubmissionById(id: number) {
     try {
-        await connection.beginTransaction();
-
-        // 1. Fetch deep details including reviewer feedback
-        const [subRows]: any = await connection.execute('SELECT * FROM submissions WHERE id = ?', [id]);
-        if (!subRows[0]) {
-            await connection.rollback();
-            connection.release();
-            return { error: "Submission not found" };
-        }
-
-        const submission = subRows[0];
-        const [reviewRows]: any = await connection.execute('SELECT feedback, feedback_file_path FROM reviews WHERE submission_id = ? AND status = "completed"', [id]);
-
-        // Aggregate feedback
-        const aggregatedFeedback = reviewRows.map((r: any, i: number) => `Reviewer ${i + 1}:\n${r.feedback}`).join('\n\n');
-
-        if (decision === 'accepted') {
-            await connection.execute('UPDATE submissions SET status = "accepted" WHERE id = ?', [id]);
-            const template = emailTemplates.manuscriptAcceptance(submission.author_name, submission.title, submission.paper_id);
-            sendEmail({
-                to: submission.author_email,
-                subject: template.subject,
-                html: template.html
-            });
-        } else {
-            // REJECTION LOGIC
-            // 1. Delete original file if exists
-            if (submission.file_path && submission.file_path.startsWith('/')) {
-                try {
-                    const fullPath = path.join(process.cwd(), 'public', submission.file_path);
-                    await fs.access(fullPath);
-                    await fs.unlink(fullPath);
-                } catch (e: any) {
-                    if (e.code !== 'ENOENT') console.error("Manuscript Cleanup Error:", e);
-                }
-            }
-
-            // 1.5 Delete reviewer feedback files
-            for (const review of reviewRows) {
-                if (review.feedback_file_path && review.feedback_file_path.startsWith('/')) {
-                    try {
-                        const fullPath = path.join(process.cwd(), 'public', review.feedback_file_path);
-                        await fs.access(fullPath);
-                        await fs.unlink(fullPath);
-                    } catch (e: any) {
-                        if (e.code !== 'ENOENT') console.error("Reviewer File Cleanup Error:", e);
+        const result = await db.query.submissions.findFirst({
+            where: eq(submissions.id, id),
+            with: {
+                correspondingAuthor: {
+                    with: {
+                        profile: true
                     }
-                }
+                },
+                versions: {
+                    orderBy: [desc(submissionVersions.versionNumber)],
+                    limit: 1,
+                    with: {
+                        files: true
+                    }
+                },
+                authors: true,
+                payment: true,
+                reviewAssignments: {
+                    with: {
+                        reviewer: {
+                            with: {
+                                profile: true
+                            }
+                        }
+                    }
+                },
+                issue: true,
+                publication: true
             }
+        });
 
-            // 2. Update status
-            await connection.execute('UPDATE submissions SET status = "rejected" WHERE id = ?', [id]);
+        if (!result) return null;
 
-            // 3. Send Rejection Email with feedback
-            const template = emailTemplates.manuscriptRejection(submission.author_name, submission.title, submission.paper_id, aggregatedFeedback);
-            sendEmail({
-                to: submission.author_email,
-                subject: template.subject,
-                html: template.html
-            });
-        }
+        const latestVersion = result.versions?.[0];
+        const files = latestVersion?.files || [];
 
-        if (decision === 'accepted') {
-            // Fetch APC setting or default
-            const [settings]: any = await connection.execute('SELECT setting_value FROM settings WHERE setting_key = "apc_inr"');
-            const amount = settings[0]?.setting_value || '2500';
+        const mainManuscript = files.find(f => f.fileType === 'main_manuscript');
+        const pdfVersion = files.find(f => f.fileType === 'pdf_version');
 
-            // Create payment record
-            await connection.execute(
-                'INSERT INTO payments (submission_id, amount, currency, status) VALUES (?, ?, ?, ?)',
-                [id, amount, 'INR', 'unpaid']
-            );
-        }
+        return {
+            ...result,
+            // Mapping for UI compatibility (Snake Case)
+            paper_id: result.paperId,
+            submitted_at: result.submittedAt,
+            updated_at: result.updatedAt,
+            title: latestVersion?.title || "Untitled",
+            abstract: latestVersion?.abstract || "",
+            keywords: latestVersion?.keywords || "",
+            file_path: mainManuscript?.fileUrl || "",
+            pdf_url: pdfVersion?.fileUrl || "",
+            author_name: result.correspondingAuthor?.profile?.fullName || "Unknown Author",
+            author_email: result.correspondingAuthor?.email || "",
 
-        await connection.commit();
-        
-        revalidatePath('/editor/submissions');
-        revalidatePath('/admin/submissions');
-        revalidatePath('/track');
-        return { success: true };
+            // Relational Flattening for UI
+            co_authors: JSON.stringify(result.authors.map(a => ({
+                name: a.name,
+                email: a.email,
+                phone: a.phone,
+                designation: a.designation,
+                institution: a.institution
+            }))),
+            volume_number: result.issue?.volumeNumber,
+            issue_number: result.issue?.issueNumber,
+            start_page: result.publication?.startPage,
+            end_page: result.publication?.endPage,
+            issue_id: result.issueId,
+
+            // Additional structure
+            latestVersion,
+            allFiles: files,
+            allReviews: result.reviewAssignments || []
+        };
     } catch (error: any) {
-        await connection.rollback();
-        console.error("Decision Workflow Error:", error);
-        return { error: "Failed to finalize decision: " + error.message };
-    } finally {
-        connection.release();
+        console.error("Get Submission Detail Error:", error);
+        return null;
     }
 }
 
-export async function updateSubmissionStatus(id: number, status: string) {
+export async function updateSubmissionPdfUrl(submissionId: number, pdfUrl: string) {
     try {
-        await pool.execute(
-            'UPDATE submissions SET status = ? WHERE id = ?',
-            [status, id]
-        );
+        const latestVersion = await db.query.submissionVersions.findFirst({
+            where: eq(submissionVersions.submissionId, submissionId),
+            orderBy: [desc(submissionVersions.versionNumber)]
+        });
 
-        // Fetch author details to send notification
-        const [rows]: any = await pool.execute('SELECT author_name, author_email, title, paper_id FROM submissions WHERE id = ?', [id]);
-        if (rows[0]) {
-            const { author_name, author_email, title, paper_id } = rows[0];
-            const template = emailTemplates.statusUpdate(author_name, title, status, paper_id);
-            sendEmail({
-                to: author_email,
+        if (!latestVersion) throw new Error("No version context found.");
+
+        const existingPdf = await db.query.submissionFiles.findFirst({
+            where: and(
+                eq(submissionFiles.versionId, latestVersion.id),
+                eq(submissionFiles.fileType, 'pdf_version')
+            )
+        });
+
+        if (existingPdf) {
+            await db.update(submissionFiles)
+                .set({ fileUrl: pdfUrl })
+                .where(eq(submissionFiles.id, existingPdf.id));
+        } else {
+            await db.insert(submissionFiles).values({
+                versionId: latestVersion.id,
+                fileType: 'pdf_version',
+                fileUrl: pdfUrl,
+                originalName: 'final-manuscript.pdf'
+            });
+        }
+
+        revalidatePath(`/admin/submissions/${submissionId}`);
+        revalidatePath(`/editor/submissions/${submissionId}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Update PDF Error:", error);
+        return { error: error.message };
+    }
+}
+
+export async function decideSubmission(id: number, decision: 'accepted' | 'rejected') {
+    try {
+        const submission = await getSubmissionById(id);
+        if (!submission) return { error: "Submission not found" };
+
+        await db.transaction(async (tx) => {
+            if (decision === 'accepted') {
+                await tx.update(submissions)
+                    .set({ status: 'accepted' })
+                    .where(eq(submissions.id, id));
+
+                await tx.insert(payments).values({
+                    submissionId: id,
+                    amount: "2500.00",
+                    currency: 'INR',
+                    status: 'pending'
+                }).onDuplicateKeyUpdate({
+                    set: { status: 'pending' }
+                });
+
+                const template = emailTemplates.manuscriptAcceptance(
+                    submission.author_name,
+                    submission.title,
+                    submission.paperId
+                );
+
+                await sendEmail({
+                    to: submission.author_email,
+                    subject: template.subject,
+                    html: template.html
+                });
+            } else {
+                await tx.update(submissions)
+                    .set({ status: 'rejected' })
+                    .where(eq(submissions.id, id));
+
+                const template = emailTemplates.manuscriptRejection(
+                    submission.author_name,
+                    submission.title,
+                    submission.paperId,
+                    "Editorial Board Decision: Does not meet current session criteria."
+                );
+
+                await sendEmail({
+                    to: submission.author_email,
+                    subject: template.subject,
+                    html: template.html
+                });
+            }
+        });
+
+        revalidatePath('/editor/submissions');
+        revalidatePath('/admin/submissions');
+        revalidatePath(`/admin/submissions/${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Decision Workflow Error:", error);
+        return { error: "Failed to finalize decision: " + error.message };
+    }
+}
+
+export async function updateSubmissionStatus(id: number, status: any) {
+    try {
+        await db.update(submissions)
+            .set({ status })
+            .where(eq(submissions.id, id));
+
+        const submission = await getSubmissionById(id);
+        if (submission) {
+            const template = emailTemplates.statusUpdate(
+                submission.author_name,
+                submission.title,
+                status,
+                submission.paperId
+            );
+            await sendEmail({
+                to: submission.author_email,
                 subject: template.subject,
                 html: template.html
             });
         }
 
         revalidatePath('/admin/submissions');
-        revalidatePath('/admin');
+        revalidatePath(`/admin/submissions/${id}`);
         return { success: true };
     } catch (error: any) {
         console.error("Update Status Error:", error);
@@ -126,121 +227,101 @@ export async function updateSubmissionStatus(id: number, status: string) {
     }
 }
 
-export async function getSubmissionById(id: number) {
-    try {
-        const [rows]: any = await pool.execute(
-            'SELECT * FROM submissions WHERE id = ?',
-            [id]
-        );
-        return rows[0] || null;
-    } catch (error: any) {
-        console.error("Get Submission Error:", error);
-        return null;
-    }
-}
-
-export async function updateSubmissionPdfUrl(id: number, pdfUrl: string) {
-    try {
-        await pool.execute(
-            'UPDATE submissions SET pdf_url = ? WHERE id = ?',
-            [pdfUrl, id]
-        );
-
-        revalidatePath('/admin/submissions');
-        revalidatePath('/admin/submissions/[id]', 'page');
-        revalidatePath('/reviewer/submissions/[id]', 'page');
-        revalidatePath('/admin');
-        return { success: true };
-    } catch (error: any) {
-        console.error("Update PDF URL Error:", error);
-        return { error: "Failed to update PDF URL: " + error.message };
-    }
-}
-
 export async function uploadManuscriptPdf(submissionId: number, formData: FormData) {
-    let relativePath: string | null = null;
     try {
         const file = formData.get("pdfFile") as File;
-        if (!file || file.size === 0) {
-            return { error: "No PDF file selected for upload." };
-        }
+        if (!file || file.size === 0) return { error: "No PDF file selected." };
 
+        const submission = await db.query.submissions.findFirst({
+            where: eq(submissions.id, submissionId),
+            with: {
+                versions: {
+                    orderBy: [desc(submissionVersions.versionNumber)],
+                    limit: 1
+                }
+            }
+        });
+
+        if (!submission || !submission.versions?.[0]) return { error: "Version context not found." };
+
+        const versionId = submission.versions[0].id;
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const fileName = `manuscript-${submissionId}-${Date.now()}.pdf`;
-        const uploadDir = path.join(process.cwd(), "public", "uploads", "submissions");
+        const fileName = `final-manuscript-${submissionId}-${Date.now()}.pdf`;
+        const uploadDir = path.join(process.cwd(), "public/uploads/submissions");
         await fs.mkdir(uploadDir, { recursive: true });
 
         const filePath = path.join(uploadDir, fileName);
         await fs.writeFile(filePath, buffer);
+        const relativePath = `/uploads/submissions/${fileName}`;
 
-        // Ensure strictly relative path for DB
-        // Ensure strictly relative path for DB
-        relativePath = `/uploads/submissions/${fileName}`;
-
-        await pool.execute(
-            'UPDATE submissions SET pdf_url = ? WHERE id = ?',
-            [relativePath, submissionId]
-        );
+        await db.insert(submissionFiles).values({
+            versionId,
+            fileType: 'pdf_version',
+            fileUrl: relativePath,
+            originalName: file.name,
+            fileSize: file.size
+        });
 
         revalidatePath('/admin/submissions');
         revalidatePath(`/admin/submissions/${submissionId}`);
         return { success: true, url: relativePath };
     } catch (error: any) {
-        console.error("Upload Manuscript PDF Error:", error);
-        return { error: "Failed to upload manuscript: " + error.message };
+        console.error("Upload PDF Error:", error);
+        return { error: "Failed to upload: " + error.message };
     }
 }
 
 export async function deleteSubmissionPermanently(id: number) {
-    const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
-
-        // 1. Fetch to get file path
-        const [rows]: any = await connection.execute('SELECT file_path FROM submissions WHERE id = ?', [id]);
-        if (rows[0]?.file_path && rows[0].file_path.startsWith('/')) {
-            try {
-                const fullPath = path.join(process.cwd(), 'public', rows[0].file_path);
-                await fs.access(fullPath);
-                await fs.unlink(fullPath);
-            } catch (e: any) {
-                if (e.code !== 'ENOENT') console.error("File deletion error:", e);
-            }
-        }
-
-        // 2. Delete reviewer files
-        const [reviews]: any = await connection.execute('SELECT feedback_file_path FROM reviews WHERE submission_id = ?', [id]);
-        for (const r of reviews) {
-            if (r.feedback_file_path && r.feedback_file_path.startsWith('/')) {
-                try {
-                    const fullPath = path.join(process.cwd(), 'public', r.feedback_file_path);
-                    await fs.access(fullPath);
-                    await fs.unlink(fullPath);
-                } catch (e: any) {
-                    if (e.code !== 'ENOENT') console.error("Reviewer file deletion error:", e);
+        const submission = await db.query.submissions.findFirst({
+            where: eq(submissions.id, id),
+            with: {
+                versions: {
+                    limit: 1,
+                    with: {
+                        files: true
+                    }
                 }
             }
+        });
+
+        if (!submission) return { error: "Submission not found" };
+
+        const versionId = submission.versions?.[0]?.id;
+
+        // 1. Physical File Cleanup
+        if (versionId) {
+            const allFiles = await db.select().from(submissionFiles).where(
+                eq(submissionFiles.versionId, versionId)
+            );
+
+            for (const file of allFiles) {
+                try {
+                    const fullPath = path.join(process.cwd(), 'public', file.fileUrl);
+                    await fs.unlink(fullPath);
+                } catch (e) { /* Ignore file not found */ }
+            }
         }
 
-        // 3. Delete from DB
-        await connection.execute('DELETE FROM reviews WHERE submission_id = ?', [id]);
-        await connection.execute('DELETE FROM payments WHERE submission_id = ?', [id]);
-        await connection.execute('DELETE FROM submissions WHERE id = ?', [id]);
-
-        await connection.commit();
+        // 2. Database Cleanup (Cascading if DB supports, or manual)
+        await db.transaction(async (tx) => {
+            // Delete co-authors
+            await tx.delete(submissionAuthors).where(eq(submissionAuthors.submissionId, id));
+            // Delete payments
+            await tx.delete(payments).where(eq(payments.submissionId, id));
+            // Delete reviews & assignments
+            await tx.delete(reviewAssignments).where(eq(reviewAssignments.submissionId, id));
+            // Versions and Files will cascade delete if schema is configured with references
+            await tx.delete(submissions).where(eq(submissions.id, id));
+        });
 
         revalidatePath('/admin/submissions');
-        revalidatePath('/editor/submissions');
         revalidatePath('/admin');
-        revalidatePath('/editor');
         return { success: true };
     } catch (error: any) {
-        await connection.rollback();
         console.error("Permanent Delete Error:", error);
-        return { error: "Failed to delete submission: " + error.message };
-    } finally {
-        connection.release();
+        return { error: "Failed to delete: " + error.message };
     }
 }

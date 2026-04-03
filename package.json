@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@ilovepdf/ilovepdf-nodejs": "^0.3.1",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@tanstack/react-query": "^5.95.2",
     "@tanstack/react-query-devtools": "^5.95.2",
@@ -39,6 +40,7 @@
     "react-hook-form": "^7.72.0",
     "react-icons": "^5.6.0",
     "sonner": "^2.0.7",
+    "sooner": "^1.1.4",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"

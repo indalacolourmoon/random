@@ -1,6 +1,7 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/mail";
 
@@ -9,7 +10,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function getMessages(filters?: { status?: string, search?: string }) {
     try {
-        let query = `
+        let query = sql`
             SELECT 
                 m.id, 
                 m.name, 
@@ -24,28 +25,26 @@ export async function getMessages(filters?: { status?: string, search?: string }
             FROM contact_messages m 
             LEFT JOIN users u ON m.resolved_by = u.id
         `;
-        const params: any[] = [];
-        const whereClauses: string[] = [];
+        
+        const whereClauses = [];
 
         if (filters?.status && filters.status !== 'all') {
-            whereClauses.push("m.status = ?");
-            params.push(filters.status);
+            whereClauses.push(sql`m.status = ${filters.status}`);
         }
 
         if (filters?.search) {
-            whereClauses.push("(m.name LIKE ? OR m.email LIKE ? OR m.subject LIKE ?)");
             const searchPattern = `%${filters.search}%`;
-            params.push(searchPattern, searchPattern, searchPattern);
+            whereClauses.push(sql`(m.name LIKE ${searchPattern} OR m.email LIKE ${searchPattern} OR m.subject LIKE ${searchPattern})`);
         }
 
         if (whereClauses.length > 0) {
-            query += " WHERE " + whereClauses.join(" AND ");
+            query = sql`${query} WHERE ${sql.join(whereClauses, sql` AND `)}`;
         }
 
-        query += " ORDER BY m.created_at DESC";
+        query = sql`${query} ORDER BY m.created_at DESC`;
 
-        const [rows]: any = await pool.execute(query, params);
-        return rows;
+        const rows: any = await db.execute(query);
+        return rows[0] || [];
     } catch (error: any) {
         console.error("Get Messages Error:", error);
         return [];
@@ -61,15 +60,13 @@ export async function updateMessageStatus(id: number, status: 'resolved' | 'arch
 
     try {
         if (status === 'resolved') {
-            await pool.execute(
-                'UPDATE contact_messages SET status = ?, resolved_at = NOW(), resolved_by = ? WHERE id = ?',
-                [status, adminId, id]
+            await db.execute(
+                sql`UPDATE contact_messages SET status = ${status}, resolved_at = NOW(), resolved_by = ${adminId} WHERE id = ${id}`
             );
         } else {
             // Archived or Read - don't overwrite resolved info if it exists
-            await pool.execute(
-                'UPDATE contact_messages SET status = ? WHERE id = ?',
-                [status, id]
+            await db.execute(
+                sql`UPDATE contact_messages SET status = ${status} WHERE id = ${id}`
             );
         }
         revalidatePath('/admin/messages');
@@ -87,41 +84,33 @@ export async function bulkUpdateMessageStatus(ids: number[], status: 'resolved' 
     }
     const adminId = (session.user as any).id;
 
-    const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction();
-
-        for (const id of ids) {
-            if (status === 'resolved') {
-                await connection.execute(
-                    'UPDATE contact_messages SET status = ?, resolved_at = NOW(), resolved_by = ? WHERE id = ?',
-                    [status, adminId, id]
-                );
-            } else {
-                await connection.execute(
-                    'UPDATE contact_messages SET status = ? WHERE id = ?',
-                    [status, id]
-                );
+        await db.transaction(async (tx) => {
+            for (const id of ids) {
+                if (status === 'resolved') {
+                    await tx.execute(
+                        sql`UPDATE contact_messages SET status = ${status}, resolved_at = NOW(), resolved_by = ${adminId} WHERE id = ${id}`
+                    );
+                } else {
+                    await tx.execute(
+                        sql`UPDATE contact_messages SET status = ${status} WHERE id = ${id}`
+                    );
+                }
             }
-        }
+        });
 
-        await connection.commit();
         revalidatePath('/admin/messages');
         return { success: true, count: ids.length };
     } catch (error: any) {
-        await connection.rollback();
         console.error("Bulk Update Message Error:", error);
         return { error: "Bulk operation failed" };
-    } finally {
-        connection.release();
     }
 }
 
 export async function revertMessageStatus(id: number) {
     try {
-        await pool.execute(
-            'UPDATE contact_messages SET status = "pending", resolved_at = NULL, resolved_by = NULL WHERE id = ?',
-            [id]
+        await db.execute(
+            sql`UPDATE contact_messages SET status = "pending", resolved_at = NULL, resolved_by = NULL WHERE id = ${id}`
         );
         revalidatePath('/admin/messages');
         return { success: true };
@@ -133,7 +122,7 @@ export async function revertMessageStatus(id: number) {
 
 export async function deleteMessage(id: number) {
     try {
-        await pool.execute('DELETE FROM contact_messages WHERE id = ?', [id]);
+        await db.execute(sql`DELETE FROM contact_messages WHERE id = ${id}`);
         revalidatePath('/admin/messages');
         return { success: true };
     } catch (error: any) {
@@ -149,9 +138,8 @@ export async function submitContactMessage(formData: FormData) {
     const message = formData.get('message') as string;
 
     try {
-        await pool.execute(
-            'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)',
-            [name, email, subject, message]
+        await db.execute(
+            sql`INSERT INTO contact_messages (name, email, subject, message) VALUES (${name}, ${email}, ${subject}, ${message})`
         );
 
         // 1. Auto-reply to visitor

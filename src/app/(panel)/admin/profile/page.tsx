@@ -20,9 +20,9 @@ export default async function AdminProfilePage() {
 
     return (
         <section className="space-y-10">
-            <header className="space-y-2 border-b border-white/5 pb-8">
-                <h1 className="font-serif text-3xl font-black text-foreground tracking-tight uppercase leading-none">Administrative Identity</h1>
-                <p className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-widest opacity-60">Manage your core credentials and architectural clearance.</p>
+            <header className="space-y-1 2xl:space-y-2 border-b border-white/5 pb-8">
+                <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground tracking-tight capitalize leading-none">Administrative identity</h1>
+                <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium text-muted-foreground capitalize tracking-widest opacity-60">Manage your core credentials and architectural clearance.</p>
             </header>
 
             <Suspense fallback={

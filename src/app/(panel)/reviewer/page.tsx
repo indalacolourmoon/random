@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import pool from '@/lib/db';
+import { db } from '@/db';
+import { sql } from 'drizzle-orm';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getMySubmissions } from '@/actions/my-submissions';
@@ -33,28 +34,30 @@ export default async function ReviewerDashboard() {
         const mySubmissions = await getMySubmissions();
 
         // Stats for Reviewer
-        const [pendingRows]: any = await pool.execute(
-            "SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ? AND status != 'completed'",
-            [user.id]
+        const pendingResult: any = await db.execute(
+            sql`SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ${user.id} AND status != 'completed'`
         );
-        const [completedRows]: any = await pool.execute(
-            "SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ? AND status = 'completed'",
-            [user.id]
+        const completedResult: any = await db.execute(
+            sql`SELECT COUNT(*) as count FROM reviews WHERE reviewer_id = ${user.id} AND status = 'completed'`
         );
+
+        const pendingCount = pendingResult[0][0].count;
+        const completedCount = completedResult[0][0].count;
 
         const stats = [
-            { label: 'Pending Reviews', value: String(pendingRows[0].count), icon: <ShieldCheck className="w-5 h-5 text-blue-500" />, variant: 'blue' },
-            { label: 'Completed', value: String(completedRows[0].count), icon: <CheckCircle className="w-5 h-5 text-emerald-500" />, variant: 'emerald' },
-            { label: 'Total Assignments', value: String(pendingRows[0].count + completedRows[0].count), icon: <FileStack className="w-5 h-5 text-indigo-500" />, variant: 'primary' },
+            { label: 'Pending Reviews', value: String(pendingCount), icon: <ShieldCheck className="w-5 h-5 text-blue-500" />, variant: 'blue' },
+            { label: 'Completed', value: String(completedCount), icon: <CheckCircle className="w-5 h-5 text-emerald-500" />, variant: 'emerald' },
+            { label: 'Total Assignments', value: String(Number(pendingCount) + Number(completedCount)), icon: <FileStack className="w-5 h-5 text-indigo-500" />, variant: 'primary' },
         ];
 
-        const [assignedRows]: any = await pool.execute(`
+        const assignedRowsResult: any = await db.execute(sql`
             SELECT r.id, s.paper_id, s.title, s.author_name, r.status, r.assigned_at 
             FROM reviews r 
             JOIN submissions s ON r.submission_id = s.id 
-            WHERE r.reviewer_id = ? 
+            WHERE r.reviewer_id = ${user.id} 
             ORDER BY r.assigned_at DESC LIMIT 5
-        `, [user.id]);
+        `);
+        const assignedRows = assignedRowsResult[0] || [];
 
         return (
             <section className="space-y-6 pb-20">

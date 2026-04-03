@@ -2,7 +2,8 @@
 
 import { razorpay } from "@/lib/razorpay";
 import crypto from "crypto";
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 
@@ -13,8 +14,8 @@ type CreateOrderResponse =
 export async function createRazorpayOrder(submissionId: number, paperId: string): Promise<CreateOrderResponse> {
     try {
         // 1. Fetch APC amount from settings (or use default from existing logic)
-        const [settings]: any = await pool.execute('SELECT setting_value FROM settings WHERE setting_key = "apc_inr"');
-        const amountInINR = settings[0]?.setting_value || '2500';
+        const settings: any = await db.execute(sql`SELECT setting_value FROM settings WHERE setting_key = "apc_inr"`);
+        const amountInINR = settings[0][0]?.setting_value || '2500';
         const amount = parseInt(amountInINR) * 100; // Razorpay expects amount in paise
 
         // 2. Create Razorpay order
@@ -32,17 +33,15 @@ export async function createRazorpayOrder(submissionId: number, paperId: string)
 
         // 3. Create/Update payment record in DB with the Razorpay order ID
         // First check if a payment record exists for this submission
-        const [existing]: any = await pool.execute('SELECT id FROM payments WHERE submission_id = ?', [submissionId]);
+        const existing: any = await db.execute(sql`SELECT id FROM payments WHERE submission_id = ${submissionId}`);
 
-        if (existing.length > 0) {
-            await pool.execute(
-                'UPDATE payments SET transaction_id = ?, currency = ?, amount = ? WHERE submission_id = ?',
-                [order.id, "INR", amountInINR, submissionId]
+        if (existing[0].length > 0) {
+            await db.execute(
+                sql`UPDATE payments SET transaction_id = ${order.id}, currency = 'INR', amount = ${amountInINR} WHERE submission_id = ${submissionId}`
             );
         } else {
-            await pool.execute(
-                'INSERT INTO payments (submission_id, amount, currency, status, transaction_id) VALUES (?, ?, ?, ?, ?)',
-                [submissionId, amountInINR, "INR", "unpaid", order.id]
+            await db.execute(
+                sql`INSERT INTO payments (submission_id, amount, currency, status, transaction_id) VALUES (${submissionId}, ${amountInINR}, 'INR', 'unpaid', ${order.id})`
             );
         }
 
@@ -82,21 +81,20 @@ export async function verifyRazorpayPayment(data: {
         }
 
         // 2. Update Payment Status in DB
-        await pool.execute(
-            "UPDATE payments SET status = 'paid', transaction_id = ?, paid_at = CURRENT_TIMESTAMP WHERE submission_id = ?",
-            [razorpay_payment_id, submissionId]
+        await db.execute(
+            sql`UPDATE payments SET status = 'paid', transaction_id = ${razorpay_payment_id}, paid_at = CURRENT_TIMESTAMP WHERE submission_id = ${submissionId}`
         );
 
         // 3. Update Submission Status
-        await pool.execute("UPDATE submissions SET status = 'paid' WHERE id = ?", [submissionId]);
+        await db.execute(sql`UPDATE submissions SET status = 'paid' WHERE id = ${submissionId}`);
 
         // 4. Notify Author
         try {
-            const [sub]: any = await pool.execute('SELECT author_name, author_email, title, paper_id FROM submissions WHERE id = ?', [submissionId]);
-            if (sub.length > 0) {
-                const template = emailTemplates.paymentVerified(sub[0].author_name, sub[0].title, sub[0].paper_id);
+            const sub: any = await db.execute(sql`SELECT author_name, author_email, title, paper_id FROM submissions WHERE id = ${submissionId}`);
+            if (sub[0].length > 0) {
+                const template = emailTemplates.paymentVerified(sub[0][0].author_name, sub[0][0].title, sub[0][0].paper_id);
                 sendEmail({
-                    to: sub[0].author_email,
+                    to: sub[0][0].author_email,
                     subject: template.subject,
                     html: template.html
                 });

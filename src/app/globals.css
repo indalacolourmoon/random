@@ -58,19 +58,19 @@
   }
 
   h1 {
-    @apply font-sans font-semibold text-primary leading-[1.1] tracking-widest uppercase text-xl sm:text-2xl 2xl:text-3xl;
+    @apply font-sans font-semibold text-primary leading-[1.1] tracking-widest  text-xl sm:text-2xl 2xl:text-3xl;
   }
 
   h2 {
-    @apply font-sans font-semibold text-primary tracking-wider uppercase text-lg sm:text-xl  2xl:text-2xl;
+    @apply font-sans font-semibold text-primary tracking-wider  text-lg sm:text-xl 2xl:text-2xl;
   }
 
   h3 {
-    @apply font-sans font-semibold text-primary tracking-wider uppercase text-base sm:text-lg 2xl:text-xl;
+    @apply font-sans font-semibold text-primary tracking-wider  text-base sm:text-lg 2xl:text-xl;
   }
 
   h4 {
-    @apply font-sans font-semibold text-primary tracking-wider uppercase text-sm sm:text-base 2xl:text-lg;
+    @apply font-sans font-semibold text-primary tracking-wider  text-sm sm:text-base 2xl:text-lg;
   }
 
   p {
@@ -120,7 +120,7 @@
 
   /* Panel Utilities */
   .text-panel-meta {
-    @apply text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black uppercase tracking-widest;
+    @apply text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black  tracking-widest;
   }
 
   .text-panel-header {
@@ -128,7 +128,7 @@
   }
 
   .badge-panel {
-    @apply text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest px-3 py-1 uppercase rounded-full;
+    @apply text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest px-3 py-1  rounded-full;
   }
 
 }
@@ -154,10 +154,6 @@
 .animate-wiggle {
   animation: wiggle 1s ease-in-out infinite;
 }
-
-
-
-
 
 :root {
   --radius: 0.75rem;
@@ -374,5 +370,50 @@
 
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Branded Gradient Scrollbar Styling */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(to top,
+      #1846c5,
+      #1e2899,
+      #322a63) !important;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom,
+      #1e3a8a,
+      #ec4899) !important;
+}
+
+/* Standard properties as fallback (Firefox) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1e3a8a transparent;
   }
 }

@@ -1,6 +1,7 @@
 "use server";
 
-import pool from "@/lib/db";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -13,9 +14,8 @@ export async function markPromotionAsSeen() {
         const userId = (session.user as any).id;
         if (!userId) return { error: "User ID not found" };
 
-        await pool.execute(
-            'UPDATE users SET has_seen_promotion = 1 WHERE id = ?',
-            [userId]
+        await db.execute(
+            sql`UPDATE users SET has_seen_promotion = 1 WHERE id = ${userId}`
         );
 
         return { success: true };

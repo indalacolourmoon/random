@@ -32,12 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-import NotificationCenter from '@/features/shared/components/NotificationCenter';
-import QueryProvider from '@/providers/QueryProvider';
-import { ThemeProvider } from '@/providers/ThemeProvider';
-import { useUIStore } from '@/store/useUIStore';
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import PreferencesDialog from '@/features/shared/components/PreferencesDialog';
 import { PanelSidebar } from './_components/PanelSidebar';
 import { PanelHeader } from './_components/PanelHeader';
@@ -50,7 +45,6 @@ export default function PanelLayout({
     const pathname = usePathname();
     const router = useRouter();
     const { data: session, status } = useSession();
-    const { isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu } = useUIStore();
     const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
@@ -82,46 +76,34 @@ export default function PanelLayout({
     };
 
     return (
-        <QueryProvider>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                enableSystem
-                disableTransitionOnChange
-            >
-                <TooltipProvider>
-                    <div className="min-h-screen bg-muted/30 dark:bg-slate-950/50 flex transition-colors duration-500">
-                        <PanelSidebar
-                            pathname={pathname}
-                            user={user}
-                            filteredItems={filteredItems}
-                            handleLogout={handleLogout}
-                            isMobileMenuOpen={isMobileMenuOpen}
-                            setIsMobileMenuOpen={setIsMobileMenuOpen}
-                        />
+        <SidebarProvider defaultOpen={true}>
+            <div className="flex min-h-screen bg-muted/30 dark:bg-slate-950/50 w-full transition-colors duration-500">
+                <PanelSidebar
+                    pathname={pathname}
+                    user={user}
+                    filteredItems={filteredItems}
+                    handleLogout={handleLogout}
+                />
 
-                        <main className="flex-1 flex flex-col min-w-0">
-                            <PanelHeader
-                                toggleMobileMenu={toggleMobileMenu}
-                                filteredItems={filteredItems}
-                                pathname={pathname}
-                                user={user}
-                                handleLogout={handleLogout}
-                                setShowPreferences={setIsPreferencesOpen}
-                            />
+                <SidebarInset className="flex flex-col min-w-0 bg-transparent">
+                    <PanelHeader
+                        filteredItems={filteredItems}
+                        pathname={pathname}
+                        user={user}
+                        handleLogout={handleLogout}
+                        setShowPreferences={setIsPreferencesOpen}
+                    />
 
-                            <section className="p-4 lg:p-8 2xl:p-12 max-w-screen-2xl 2xl:max-w-[1600px] mx-auto w-full transition-all duration-500">
-                                {children}
-                            </section>
-                        </main>
+                    <section className="p-4 lg:p-8 2xl:p-12 max-w-screen-2xl 2xl:max-w-[1600px] mx-auto w-full transition-all duration-500">
+                        {children}
+                    </section>
+                </SidebarInset>
 
-                        <PreferencesDialog
-                            open={isPreferencesOpen}
-                            onOpenChange={setIsPreferencesOpen}
-                        />
-                    </div>
-                </TooltipProvider>
-            </ThemeProvider>
-        </QueryProvider>
+                <PreferencesDialog
+                    open={isPreferencesOpen}
+                    onOpenChange={setIsPreferencesOpen}
+                />
+            </div>
+        </SidebarProvider>
     );
 }

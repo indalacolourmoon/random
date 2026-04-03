@@ -41,7 +41,7 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
     };
 
     return (
-        <ul className="hidden lg:flex items-center lg:space-x-1 xl:space-x-2 2xl:space-x-8 list-none p-0">
+        <ul className="hidden lg:flex items-center lg:space-x-1 xl:space-x-1 2xl:space-x-8 list-none p-0">
             {navigation.map((item) => {
                 const isActive = pathname === item.href || (item.children?.some(child => pathname === child.href));
                 const isHovered = hoveredIndex === item.name;
@@ -49,15 +49,15 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                 return (
                     <li
                         key={item.name}
-                        className={`relative group transition-all duration-500 ${isScrolled ? 'py-5' : 'py-7 2xl:py-12'}`}
+                        className={`relative group transition-all duration-500 ${isScrolled ? 'py-5' : 'py-7 2xl:py-10'}`}
                         onMouseEnter={() => handlePrefetch(item.name)}
                         onMouseLeave={() => setHoveredIndex(null)}
                     >
                         <Link
                             href={item.href}
-                            className={`transition-all duration-300 flex items-center gap-2 relative px-2 lg:px-3 ${isActive ? 'text-primary font-bold' : 'text-black font-semibold hover:text-primary'}`}
+                            className={`transition-all duration-300 flex items-center gap-2 relative px-2 lg:px-3 ${isActive ? 'text-primary font-bold' : 'text-black font-medium hover:text-primary'}`}
                         >
-                            <span className="relative  z-10 lg:text-md  xl:text-lg 2xl:text-xl">{item.name}</span>
+                            <span className="relative  z-10 lg:text-sm  xl:text-lg 2xl:text-xl">{item.name}</span>
                             {item.children && (
                                 <ChevronDown className={`w-3.5 h-3.5 2xl:w-5 2xl:h-5 transition-transform duration-500 text-secondary/50 group-hover:text-secondary ${isHovered ? 'rotate-180' : ''}`} />
                             )}
@@ -68,7 +68,7 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-secondary to-secondary/40 rounded-full"
+                                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-linear-to-r from-secondary to-secondary/40 rounded-full"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                 />
                             )}

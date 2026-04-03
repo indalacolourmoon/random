@@ -31,7 +31,7 @@ export default function HomeCarousel() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
                     className="absolute inset-0"
                 >
                     {/* Background Image with Ken Burns Effect */}
@@ -63,7 +63,7 @@ export default function HomeCarousel() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3, duration: 0.8 }}
                             >
-                                <h1 className="leading-[1.1] mb-6 drop-shadow-2xl text-white">
+                                <h1 className=" leading-[1.1] mb-6 drop-shadow-2xl text-white">
                                     {MAIN_TITLE}
                                 </h1>
                             </motion.div>

@@ -6,9 +6,9 @@ import Link from 'next/link';
 import SubmissionContainer from '@/features/submissions/components/SubmissionContainer';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import pool from '@/lib/db';
+import { db } from '@/db';
+import { sql } from 'drizzle-orm';
 import SubTabs from '@/features/submissions/components/SubmissionTabs';
-
 
 import SubmissionStats from '@/features/submissions/components/SubmissionStats';
 
@@ -23,7 +23,7 @@ export default async function Submissions({
     const currentStatus = status || 'all';
 
     // 1. Fetch Stats Aggregation
-    const [statRows]: any = await pool.execute(`
+    const statRows: any = await db.execute(sql`
         SELECT 
             COUNT(*) as total,
             SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) as submitted,
@@ -32,36 +32,36 @@ export default async function Submissions({
             SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
         FROM submissions
     `);
-    const statsResult = statRows[0];
+    const statsResult = statRows[0][0];
 
     // 2. Build SQL query dynamically
     const conditions = [];
-    const params: any[] = [];
 
     if (currentStatus === 'pending') {
-        conditions.push('s.status IN ("under_review", "accepted")');
+        conditions.push(sql`s.status IN ("under_review", "accepted")`);
     } else if (currentStatus !== 'all') {
-        conditions.push('s.status = ?');
-        params.push(currentStatus);
+        conditions.push(sql`s.status = ${currentStatus}`);
     }
 
     if (q) {
-        conditions.push('(s.paper_id LIKE ? OR s.title LIKE ? OR s.author_name LIKE ?)');
         const searchVal = `%${q}%`;
-        params.push(searchVal, searchVal, searchVal);
+        conditions.push(sql`(s.paper_id LIKE ${searchVal} OR s.title LIKE ${searchVal} OR s.author_name LIKE ${searchVal})`);
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    const query = `
+    let query = sql`
         SELECT s.*, 
         (SELECT COUNT(*) FROM reviews r WHERE r.submission_id = s.id AND r.status = 'completed') as completed_reviews 
         FROM submissions s
-        ${whereClause}
-        ORDER BY s.submitted_at DESC
     `;
 
-    const [rows]: any = await pool.execute(query, params);
-    const submissions = rows;
+    if (conditions.length > 0) {
+        query = sql`${query} WHERE ${sql.join(conditions, sql` AND `)}`;
+    }
+
+    query = sql`${query} ORDER BY s.submitted_at DESC`;
+
+    const rows: any = await db.execute(query);
+    const submissions = rows[0] || [];
 
     return (
         <section className="space-y-12 pb-20 max-w-7xl 2xl:max-w-[1900px] mx-auto overflow-visible">
@@ -72,18 +72,18 @@ export default async function Submissions({
                         <div className="w-10 h-10 2xl:w-16 2xl:h-16 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
                             <Plus className="w-6 h-6 2xl:w-10 2xl:h-10 text-primary" />
                         </div>
-                        <h1 className="font-serif font-black text-foreground tracking-tighter uppercase leading-none text-3xl xl:text-4xl 2xl:text-6xl">
-                            Manuscripts <span className="text-secondary opacity-50">Registry</span>
-                        </h1>
-                    </div>
-                    <p className="text-xs sm:text-sm 2xl:text-2xl font-bold text-muted-foreground border-l-4 border-secondary/50 pl-6 py-1 max-w-2xl leading-relaxed">
-                        Precision oversight of the global technical submission pipeline and peer-review integrity protocols.
-                    </p>
+                    <h1 className="font-serif font-semibold text-foreground tracking-tight capitalize leading-none text-2xl xl:text-3xl 2xl:text-4xl">
+                        Manuscripts <span className="text-secondary opacity-50">registry</span>
+                    </h1>
+                </div>
+                <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium text-muted-foreground border-l-4 border-secondary/50 pl-6 py-1 max-w-2xl leading-relaxed capitalize tracking-wide">
+                    Precision oversight of the global technical submission pipeline and peer-review integrity protocols.
+                </p>
                 </div>
                 <div className="flex gap-4">
-                    <Button asChild className="h-14 2xl:h-20 px-12 2xl:px-20 gap-4 bg-primary text-white dark:text-black font-black text-[10px] 2xl:text-2xl tracking-[0.3em] rounded-2xl 2xl:rounded-3xl shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-t border-white/20">
+                    <Button asChild className="h-10 xl:h-12 2xl:h-14 px-8 xl:px-12 gap-3 bg-primary text-white dark:text-black font-semibold text-xs xl:text-sm capitalize tracking-widest rounded-2xl shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-t border-white/20">
                         <Link className="cursor-pointer" href="/submit">
-                            <Plus className="w-6 h-6 2xl:w-10 2xl:h-10" /> New Submission
+                            <Plus className="w-5 h-5 xl:w-6 xl:h-6" /> New submission
                         </Link>
                     </Button>
                 </div>
@@ -109,8 +109,8 @@ export default async function Submissions({
 
                     {/* Footer Stats */}
                     <div className="p-8 border-t border-primary/5 flex items-center justify-center bg-primary/[0.01]">
-                        <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black text-primary/20 tracking-[0.4em] uppercase">
-                            Secure Data Segment End | {submissions.length} Total Records
+                        <p className="text-[9px] xl:text-xs font-semibold text-primary/20 tracking-widest capitalize">
+                            Secure data segment end | {submissions.length} total records
                         </p>
                     </div>
                 </CardContent>
@@ -119,7 +119,7 @@ export default async function Submissions({
             {submissions.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-40 bg-muted/20 border border-dashed border-border/50 rounded-xl space-y-6">
                     <AlertTriangle className="w-14 h-14 text-muted-foreground/20 mb-2" />
-                    <p className="text-xs font-black text-muted-foreground tracking-[0.2em] uppercase">No active records in this database segment</p>
+                    <p className="text-xs font-semibold text-muted-foreground tracking-[0.2em] uppercase">No active records in this database segment</p>
                 </div>
             )}
         </section>

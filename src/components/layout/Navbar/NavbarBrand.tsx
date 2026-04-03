@@ -14,7 +14,7 @@ export function NavbarBrand({ shortName, isScrolled }: NavbarBrandProps) {
                     <img
                         src="/logo.png"
                         alt={`${shortName} Logo`}
-                        className={`w-auto object-contain transition-all duration-500 ${isScrolled ? 'h-10 sm:h-12 2xl:h-20' : 'h-14 sm:h-16 2xl:h-32'} group-hover:scale-110 drop-shadow-sm`}
+                        className={`w-auto object-contain transition-all duration-500 ${isScrolled ? 'h-10 sm:h-12 2xl:h-20' : 'h-14 sm:h-16 2xl:h-24'} group-hover:scale-110 drop-shadow-sm`}
                     />
                     <div className="absolute inset-0 bg-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
                 </div>

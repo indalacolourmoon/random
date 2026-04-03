@@ -18,7 +18,9 @@ import {
     Download
 } from 'lucide-react';
 import Link from 'next/link';
-import pool from '@/lib/db';
+import { db } from '@/lib/db';
+import * as schema from "@/db/schema";
+import { eq, desc, sql, count, and, ne } from "drizzle-orm";
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
@@ -40,52 +42,68 @@ export default async function EditorDashboard() {
         const mySubmissions = await getMySubmissions();
 
         // 1. Data Fetching - Metrics & Stats
-        const [submissionRows]: any = await pool.execute('SELECT COUNT(*) as count FROM submissions');
-        const [reviewRows]: any = await pool.execute("SELECT COUNT(*) as count FROM submissions WHERE status = 'under_review'");
-        const [paymentRows]: any = await pool.execute("SELECT COUNT(*) as count FROM payments WHERE status = 'unpaid'");
+        const [totalSubmissions] = await db.select({ value: count() }).from(schema.submissions);
+        const [underReview] = await db.select({ value: count() }).from(schema.submissions).where(eq(schema.submissions.status, 'under_review'));
+        const [pendingPayments] = await db.select({ value: count() }).from(schema.payments).where(eq(schema.payments.status, 'pending'));
 
-        const totalSubmissions = submissionRows[0].count;
-        const underReview = reviewRows[0].count;
-        const pendingPayments = paymentRows[0].count;
-
-        const [issueRows]: any = await pool.execute(
-            "SELECT year FROM volumes_issues WHERE status = 'open' ORDER BY year DESC LIMIT 1"
-        );
-        const currentIssue = issueRows.length > 0
-            ? `${issueRows[0].year} Edition`
-            : '2026 Edition';
+        const latestIssue = await db.query.volumesIssues.findFirst({
+            where: eq(schema.volumesIssues.status, 'published'),
+            orderBy: [desc(schema.volumesIssues.year), desc(schema.volumesIssues.volumeNumber)]
+        });
+        
+        const currentIssue = latestIssue ? `${latestIssue.year} Edition` : '2026 Edition';
 
         const stats = [
-            { label: 'Manuscript Queue', value: String(totalSubmissions), icon: <FileStack className="w-4 h-4" />, variant: 'primary' },
-            { label: 'Under Review', value: String(underReview), icon: <ShieldCheck className="w-4 h-4" />, variant: 'blue' },
-            { label: 'Pending APC', value: String(pendingPayments), icon: <CreditCard className="w-4 h-4" />, variant: 'emerald' },
-            { label: 'Open Issue', value: currentIssue, icon: <BookOpen className="w-4 h-4" />, variant: 'amber' },
+            { label: 'Manuscript Queue', value: String(totalSubmissions.value), icon: <FileStack className="w-4 h-4" />, variant: 'primary' },
+            { label: 'Under Review', value: String(underReview.value), icon: <ShieldCheck className="w-4 h-4" />, variant: 'blue' },
+            { label: 'Pending APC', value: String(pendingPayments.value), icon: <CreditCard className="w-4 h-4" />, variant: 'emerald' },
+            { label: 'Published Edition', value: currentIssue, icon: <BookOpen className="w-4 h-4" />, variant: 'amber' },
         ];
 
-        // 2. Data Fetching - Lists
-        const [recentSubmissions]: any = await pool.execute(
-            'SELECT id, paper_id, title, author_name, status, submitted_at FROM submissions ORDER BY submitted_at DESC LIMIT 5'
-        );
+        // 2. Data Fetching - Recent Submissions (Relational Join)
+        const recentSubmissionsRaw = await db.query.submissions.findMany({
+            orderBy: [desc(schema.submissions.submittedAt)],
+            limit: 5,
+            with: {
+                correspondingAuthor: {
+                    with: {
+                        profile: true
+                    }
+                },
+                versions: {
+                    orderBy: [desc(schema.submissionVersions.versionNumber)],
+                    limit: 1
+                }
+            }
+        });
+
+        const recentSubmissions = recentSubmissionsRaw.map(sub => ({
+            id: sub.id,
+            paper_id: sub.paperId,
+            title: sub.versions?.[0]?.title || "Untitled",
+            author_name: sub.correspondingAuthor?.profile?.fullName || "Author",
+            status: sub.status,
+            submitted_at: sub.submittedAt
+        }));
 
         // 3. Status Distribution
-        const [publishedRows]: any = await pool.execute("SELECT COUNT(*) as count FROM submissions WHERE status = 'published'");
-        const [reviewStats]: any = await pool.execute(`
-            SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
-            FROM reviews
-        `);
+        const publishedResult = await db.select({ value: count() }).from(schema.submissions).where(eq(schema.submissions.status, 'published'));
+        const allReviewsResult = await db.select({ value: count() }).from(schema.reviews);
+        const completedReviewsResult = await db.select({ value: count() }).from(schema.reviewAssignments).where(eq(schema.reviewAssignments.status, 'completed'));
 
-        const pubCount = publishedRows[0].count;
-        const totalReviews = reviewStats[0].total || 0;
-        const completedReviews = reviewStats[0].completed || 0;
+        const totalSubmissionsVal = Number(totalSubmissions?.value || 0);
+        const publishedCountVal = Number(publishedResult[0]?.value || 0);
+        const allReviewsVal = Number(allReviewsResult[0]?.value || 0);
+        const completedReviewsVal = Number(completedReviewsResult[0]?.value || 0);
 
-        const pubPercent = totalSubmissions > 0 ? (pubCount / totalSubmissions) * 100 : 0;
-        const revPercent = totalReviews > 0 ? (completedReviews / totalReviews) * 100 : 0;
+        const pubPercent = totalSubmissionsVal > 0 ? (publishedCountVal / totalSubmissionsVal) * 100 : 0;
+        const revPercent = allReviewsVal > 0 ? (completedReviewsVal / allReviewsVal) * 100 : 0;
+        const totalPayments = await db.select({ value: count() }).from(schema.payments);
+        const totalPaymentsVal = Number(totalPayments[0]?.value || 0);
 
-        // 4. Infrastructure/Health (Adapted for Editor)
+        // 4. Infrastructure/Health
         const startDb = performance.now();
-        await pool.execute('SELECT 1');
+        await db.execute(sql`SELECT 1`);
         const dbLatency = (performance.now() - startDb).toFixed(2);
 
         const getDirSize = (dirPath: string): number => {
@@ -114,14 +132,14 @@ export default async function EditorDashboard() {
         return (
             <main className="space-y-6">
                 <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 py-8 2xl:py-16 border-b border-primary/5">
-                    <div className="space-y-2 2xl:space-y-4">
+                    <div className="space-y-1 2xl:space-y-2">
                         <div className="flex items-center gap-2">
-                            <Badge className="bg-primary/10 text-primary border-none text-[10px] 2xl:text-base font-black tracking-widest px-3 py-1 2xl:px-6 2xl:py-2 uppercase">Editorial Hub</Badge>
+                            <Badge className="bg-primary/10 text-primary border-none text-[10px] 2xl:text-base font-semibold tracking-widest px-3 py-1 capitalize">Editorial hub</Badge>
                             <div className="w-2 h-2 2xl:w-4 2xl:h-4 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] 2xl:text-base font-black text-muted-foreground uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}</span>
+                            <span className="text-[10px] 2xl:text-base font-semibold text-muted-foreground capitalize tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}</span>
                         </div>
-                        <h1 className=" font-black text-foreground tracking-widest uppercase leading-none text-2xl xl:text-3xl 2xl:text-3xl">Dashboard</h1>
-                        <p className="text-xs sm:text-sm 2xl:text-xl font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 transition-all duration-500">Managing journal lifecycle and content quality for {user?.fullName}.</p>
+                        <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-foreground tracking-tight capitalize leading-none">Dashboard</h1>
+                        <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 capitalize tracking-wide">Managing journal lifecycle and content quality for {user?.fullName}.</p>
                     </div>
                 </header>
 
@@ -132,15 +150,11 @@ export default async function EditorDashboard() {
                     </div>
                     <CardContent className="p-8 sm:p-10 2xl:p-20">
                         <div className="max-w-4xl 2xl:max-w-7xl space-y-4 2xl:space-y-8">
-                            <Badge className="bg-primary text-white text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-base font-black tracking-[0.2em] px-3 py-1 2xl:px-6 2xl:py-2 border-none shadow-sm rounded-lg uppercase">Editorial Control</Badge>
-                            <h2 className=" font-black text-foreground tracking-wider transition-all duration-500 text-xl xl:text-2xl 2xl:text-2xl">Focus: Pipeline Throughput & Integrity</h2>
-                            <div className="flex flex-wrap gap-2 2xl:gap-4 pt-2">
-                                {['Desk Screening', 'Expert Selection', 'Final Determinations'].map((action, i) => (
-                                    <div key={i} className="flex items-center gap-2 2xl:gap-4 bg-card/80 border border-primary/10 px-4 py-1.5 2xl:px-8 2xl:py-3 rounded-lg 2xl:rounded-2xl text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg font-bold text-primary/70 uppercase tracking-widest shadow-sm">
-                                        <div className="w-1.5 h-1.5 2xl:w-3 2xl:h-3 bg-primary/40 rounded-full" />
-                                        {action}
-                                    </div>
-                                ))}
+                            <Badge className="bg-primary text-white text-[9px] xl:text-xs 2xl:text-base font-semibold tracking-widest px-3 py-1 border-none shadow-sm rounded-lg capitalize">Editorial control</Badge>
+                            <h2 className=" font-semibold text-foreground tracking-tight 2xl:text-3xl capitalize">Focus: pipeline throughput & integrity</h2>
+                            <div className="flex items-center gap-2 bg-card/80 border border-primary/10 px-4 py-1.5 rounded-lg text-[9px] xl:text-xs 2xl:text-sm font-semibold text-primary/70 capitalize tracking-wide shadow-sm">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                All Editorial Protocols Active
                             </div>
                         </div>
                     </CardContent>
@@ -163,8 +177,8 @@ export default async function EditorDashboard() {
                                     </div>
                                 </div>
                                 <div className="space-y-1 2xl:space-y-3">
-                                    <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-sm font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                                    <h3 className=" font-black text-foreground transition-all duration-500 2xl:text-2xl">{stat.value}</h3>
+                                    <p className="text-[9px] xl:text-xs font-semibold text-muted-foreground capitalize tracking-widest">{stat.label}</p>
+                                    <h3 className=" font-semibold text-foreground transition-all duration-500 text-lg xl:text-xl 2xl:text-2xl">{stat.value}</h3>
                                 </div>
                             </CardContent>
                         </Card>
@@ -173,9 +187,9 @@ export default async function EditorDashboard() {
 
                 <Tabs defaultValue="queue" className="space-y-4">
                     <TabsList className="bg-muted/50 p-1 2xl:p-2 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 2xl:gap-3 rounded-xl 2xl:rounded-2xl">
-                        <TabsTrigger value="queue" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded-lg 2xl:rounded-xl">Editorial Queue</TabsTrigger>
-                        <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-4 text-[10px] 2xl:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded-lg 2xl:rounded-xl">My Papers</TabsTrigger>
-                        <TabsTrigger value="health" className="flex-1 sm:flex-none px-4 sm:px-8 2xl:px-12 py-2 2xl:py-4 text-[10px] 2xl:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded-lg 2xl:rounded-xl">Sector Status</TabsTrigger>
+                        <TabsTrigger value="queue" className="flex-1 sm:flex-none px-4 sm:px-8 py-2 text-[9px] xl:text-xs 2xl:text-sm font-semibold capitalize tracking-widest whitespace-nowrap rounded-lg">Editorial queue</TabsTrigger>
+                        <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 sm:px-8 py-2 text-[9px] xl:text-xs 2xl:text-sm font-semibold capitalize tracking-widest whitespace-nowrap rounded-lg">My papers</TabsTrigger>
+                        <TabsTrigger value="health" className="flex-1 sm:flex-none px-4 sm:px-8 py-2 text-[9px] xl:text-xs 2xl:text-sm font-semibold capitalize tracking-widest whitespace-nowrap rounded-lg">Sector status</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="queue" className="space-y-4">
@@ -184,12 +198,12 @@ export default async function EditorDashboard() {
                                 <Card className="border-border/40 shadow-sm bg-card">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-6">
                                         <div className="space-y-1">
-                                            <CardTitle className="text-sm sm:text-base lg:text-base xl:text-lg 2xl:text-xl font-bold uppercase tracking-wider flex items-center gap-2">
+                                            <CardTitle className="text-sm sm:text-base lg:text-base xl:text-lg 2xl:text-xl font-semibold uppercase tracking-wider flex items-center gap-2">
                                                 Active Assignments
                                             </CardTitle>
                                         </div>
                                         <Button asChild variant="ghost" size="sm" className="h-8 group text-primary hover:bg-primary/20 cursor-pointer">
-                                            <Link href="/editor/submissions" className="flex items-center gap-2 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase tracking-wider cursor-pointer">
+                                            <Link href="/editor/submissions" className="flex items-center gap-2 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase tracking-wider cursor-pointer">
                                                 Manage Pipeline <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                                             </Link>
                                         </Button>
@@ -205,14 +219,14 @@ export default async function EditorDashboard() {
                                                     <div className="flex items-center gap-4 min-w-0">
                                                         <div className="w-12 h-10 rounded bg-muted flex flex-col items-center justify-center font-mono text-[10px] text-muted-foreground border border-border shrink-0">
                                                             <span>ID</span>
-                                                            <span className="font-bold text-foreground">{sub.paper_id.split('-').pop()}</span>
+                                                            <span className="font-semibold text-foreground">{sub.paper_id.split('-').pop()}</span>
                                                         </div>
                                                         <div className="min-w-0">
                                                             <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors 2xl:text-lg">{sub.title}</h4>
                                                             <p className="text-[10px] 2xl:text-base text-muted-foreground uppercase font-medium">By {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
-                                                    <Badge className={`border-none text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase py-0.5 px-2 ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
+                                                    <Badge className={`border-none text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase py-0.5 px-2 ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
                                                         {sub.status.replace('_', ' ')}
                                                     </Badge>
                                                 </Link>
@@ -226,10 +240,10 @@ export default async function EditorDashboard() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Card className="p-6 border-border/40 bg-card">
-                                        <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-4">Quality Metrics</h4>
+                                        <h4 className="text-[10px] font-semibold uppercase text-muted-foreground tracking-widest mb-4">Quality Metrics</h4>
                                         <div className="space-y-4">
                                             <div>
-                                                <div className="flex justify-between text-[10px] font-bold uppercase mb-1.5">
+                                                <div className="flex justify-between text-[10px] font-semibold uppercase mb-1.5">
                                                     <span>Success Ratio</span>
                                                     <span>{pubPercent.toFixed(1)}%</span>
                                                 </div>
@@ -238,7 +252,7 @@ export default async function EditorDashboard() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="flex justify-between text-[10px] font-bold uppercase mb-1.5">
+                                                <div className="flex justify-between text-[10px] font-semibold uppercase mb-1.5">
                                                     <span>Review Saturation</span>
                                                     <span>{revPercent.toFixed(1)}%</span>
                                                 </div>
@@ -250,9 +264,9 @@ export default async function EditorDashboard() {
                                     </Card>
                                     <Card className="p-6 border-border/40 bg-card border-dashed flex flex-col items-center justify-center text-center">
                                         <TrendingUp className="w-8 h-8 text-primary/30 mb-2" />
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Expand Network</h4>
+                                        <h4 className="text-[10px] font-semibold uppercase tracking-widest text-primary">Expand Network</h4>
                                         <p className="text-[10px] text-muted-foreground mb-4 leading-wider">Need more experts for your specific research track?</p>
-                                        <Button asChild size="sm" variant="outline" className="h-8 text-[9px] font-bold uppercase tracking-widest text-primary border-primary/20 hover:bg-primary/20 rounded-lg cursor-pointer">
+                                        <Button asChild size="sm" variant="outline" className="h-8 text-[9px] font-semibold uppercase tracking-widest text-primary border-primary/20 hover:bg-primary/20 rounded-lg cursor-pointer">
                                             <Link href="/editor/messages" className="cursor-pointer">Contact Desk</Link>
                                         </Button>
                                     </Card>
@@ -262,7 +276,7 @@ export default async function EditorDashboard() {
                             <div className="space-y-4">
                                 <Card className="border-border/40 shadow-sm bg-card h-full">
                                     <CardHeader className="p-6 border-b border-border/30">
-                                        <CardTitle className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                                        <CardTitle className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
                                             <ClipboardList className="w-4 h-4 text-primary" /> Task Matrix
                                         </CardTitle>
                                     </CardHeader>
@@ -275,13 +289,13 @@ export default async function EditorDashboard() {
                                             ].map((task, i) => (
                                                 <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-muted/20 border border-border/30 hover:bg-muted/30 transition-colors cursor-default">
                                                     <task.icon className="w-5 h-5 text-primary/40 shrink-0" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{task.label}</span>
+                                                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{task.label}</span>
                                                 </div>
                                             ))}
                                         </div>
                                         <div className="mt-8 pt-8 border-t border-border/30 text-center">
                                             <p className="text-[10px] text-muted-foreground/60 font-medium italic mb-4 px-4 leading-relaxed">System monitoring protocol active. Maintain integrity of the review cycle.</p>
-                                            <Button asChild size="sm" className="w-full h-12 bg-primary text-white dark:text-black font-bold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] cursor-pointer">
+                                            <Button asChild size="sm" className="w-full h-12 bg-primary text-white dark:text-black font-semibold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] cursor-pointer">
                                                 <Link href="/editor/submissions" className="flex items-center gap-2 cursor-pointer">
                                                     Audit Queue <ArrowRight className="w-3 h-3" />
                                                 </Link>
@@ -313,7 +327,7 @@ export default async function EditorDashboard() {
                                         <div className="p-6 space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <Badge variant="outline" className="text-[9px] border-none bg-muted px-2 py-0.5">ID: {paper.paper_id}</Badge>
-                                                <Badge className={`text-[9px] font-bold uppercase py-0.5 px-2 border-none ${paper.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' :
+                                                <Badge className={`text-[9px] font-semibold uppercase py-0.5 px-2 border-none ${paper.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' :
                                                     paper.status === 'rejected' ? 'bg-rose-500/10 text-rose-600' :
                                                         'bg-indigo-500/10 text-indigo-600'
                                                     }`}>
@@ -323,7 +337,7 @@ export default async function EditorDashboard() {
                                             <h3 className=" font-semibold text-foreground line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
                                             <div className="flex items-center justify-between pt-4 border-t border-border/10">
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-medium tracking-wider"><Clock className="w-3 h-3" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
-                                                <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/20 rounded-md text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold uppercase cursor-pointer">
+                                                <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/20 rounded-md text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase cursor-pointer">
                                                     <Link href={`/track?id=${paper.paper_id}`} className="flex items-center gap-1.5 cursor-pointer">
                                                         Portal <ExternalLink className="w-3 h-3" />
                                                     </Link>
@@ -346,7 +360,7 @@ export default async function EditorDashboard() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <Card className="border-border/40 shadow-sm bg-card transition-colors rounded-xl">
                                 <CardHeader className="p-6 border-b border-border/30">
-                                    <CardTitle className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                                    <CardTitle className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
                                         <Activity className="w-4 h-4 text-primary" /> Sector Integrity
                                     </CardTitle>
                                 </CardHeader>
@@ -356,18 +370,18 @@ export default async function EditorDashboard() {
                                         { label: 'Asset Storage', value: `${storageMB}MB used`, status: storagePercent < 80 ? 'Healthy' : 'Near Limit', icon: HardDrive }
                                     ].map((metric, i) => (
                                         <div key={i} className="p-4 rounded-xl bg-muted/20 border border-border/30 space-y-1">
-                                            <div className="flex justify-between items-center text-[10px] uppercase font-bold text-muted-foreground">
+                                            <div className="flex justify-between items-center text-[10px] uppercase font-semibold text-muted-foreground">
                                                 <span className="flex items-center gap-1.5"> {metric.label}</span>
                                                 <span className={metric.status === 'Optimal' || metric.status === 'Healthy' ? 'text-emerald-600' : 'text-amber-600'}>{metric.status}</span>
                                             </div>
-                                            <p className="text-xl font-bold text-foreground">{metric.value}</p>
+                                            <p className="text-xl font-semibold text-foreground">{metric.value}</p>
                                         </div>
                                     ))}
                                 </CardContent>
                             </Card>
                             <Card className="border-border/40 shadow-sm bg-card transition-colors rounded-xl p-8 flex flex-col items-center justify-center text-center">
-                                <Badge className="bg-emerald-500/10 text-emerald-600 border-none mb-4 uppercase tracking-[0.2em] text-[9px] px-3 py-1 font-black">All Systems Nominal</Badge>
-                                <h4 className=" font-bold text-foreground mb-2 mt-2">Resource Utilization</h4>
+                                <Badge className="bg-emerald-500/10 text-emerald-600 border-none mb-4 uppercase tracking-[0.2em] text-[9px] px-3 py-1 font-semibold">All Systems Nominal</Badge>
+                                <h4 className=" font-semibold text-foreground mb-2 mt-2">Resource Utilization</h4>
                                 <p className="text-xs text-muted-foreground max-w-xs leading-relaxed font-medium">Monitoring data segment throughput and storage nodes. All editorial assets are secured and accessible.</p>
                             </Card>
                         </div>

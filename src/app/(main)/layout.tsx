@@ -6,7 +6,6 @@ import PromotionPopup from "@/features/home/components/PromotionPopup";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 
-import { ThemeProvider } from "@/providers/ThemeProvider";
 
 export default async function MainLayout({
     children,
@@ -17,7 +16,7 @@ export default async function MainLayout({
 
 
     return (
-        <ThemeProvider attribute="class" forcedTheme="light">
+        <>
             <PromotionPopup settings={settings} />
             <TopBar settings={settings} />
             <Navbar settings={settings} />
@@ -25,6 +24,6 @@ export default async function MainLayout({
                 {children}
             </main>
             <Footer settings={settings} />
-        </ThemeProvider>
+        </>
     );
 }
