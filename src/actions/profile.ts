@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 export type ProfileData = {
+    id: string;
     id: number;
     name: string;
     email: string;
@@ -33,7 +34,7 @@ export type ProfileData = {
     };
 };
 
-export async function getProfileData(userId: number, role: 'admin' | 'editor' | 'reviewer' | 'author') {
+export async function getProfileData(userId: string, role: 'admin' | 'editor' | 'reviewer' | 'author') {
     try {
         const session = await getServerSession(authOptions);
         if (!session) throw new Error("Unauthorized");
@@ -102,7 +103,7 @@ export async function getProfileData(userId: number, role: 'admin' | 'editor' | 
     }
 }
 
-export async function updateProfileField(userId: number, field: string, value: string) {
+export async function updateProfileField(userId: string, field: string, value: string) {
     const whitelist = ['name', 'designation', 'orcid_id'];
     if (!whitelist.includes(field)) {
         throw new Error('Field not permitted');
@@ -126,7 +127,7 @@ export async function updateProfileField(userId: number, field: string, value: s
     }
 }
 
-export async function updateResearchInterests(userId: number, interests: string[]) {
+export async function updateResearchInterests(userId: string, interests: string[]) {
     if (!Array.isArray(interests)) throw new Error("Invalid interests format");
     const cleanInterests = interests.map(i => i.trim()).filter(Boolean).slice(0, 20);
 
@@ -157,7 +158,7 @@ export async function updateResearchInterests(userId: number, interests: string[
     }
 }
 
-export async function updateProfilePhoto(userId: number, formData: FormData) {
+export async function updateProfilePhoto(userId: string, formData: FormData) {
     const file = formData.get("file") as File;
     if (!file) throw new Error("No file provided");
 

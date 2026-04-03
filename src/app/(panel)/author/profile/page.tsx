@@ -31,7 +31,7 @@ export default async function AuthorProfilePage() {
                     <p className="font-mono text-[10px] uppercase tracking-widest animate-pulse">Retrieving Researcher Dossier...</p>
                 </div>
             }>
-                <ProfileDossier role="author" userId={parseInt((session.user as any).id)} />
+                <ProfileDossier role="author" userId={(session.user as any).id} />
             </Suspense>
         </section>
     );

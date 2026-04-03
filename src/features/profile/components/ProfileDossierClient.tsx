@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils"
 interface ProfileDossierClientProps {
     data: ProfileData
     role: 'admin' | 'editor' | 'reviewer' | 'author'
-    userId: number
+    userId: string
 }
 
 const CATEGORIES = [

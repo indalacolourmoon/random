@@ -78,7 +78,7 @@ export async function submitPaper(formData: FormData) {
         if (!copyrightFile || copyrightFile.size === 0) return { error: "Copyright form is mandatory" };
 
         // 2. Transactional Database Orchestration
-        const result = await db.transaction(async (tx) => {
+        const result = await db.transaction(async (tx:any) => {
             
             // A. User Handling: Find or Create corresponding author
             let [user] = await tx.select().from(users).where(eq(users.email, validated.data.author_email));
@@ -96,6 +96,7 @@ export async function submitPaper(formData: FormData) {
                     fullName: validated.data.author_name,
                     institute: validated.data.affiliation,
                     phone: validated.data.author_phone,
+                    designation: validated.data.author_designation,
                 });
             } else {
                 userId = user.id;

@@ -31,7 +31,7 @@ export default async function ReviewerProfilePage() {
                     <p className="font-mono text-[10px] uppercase tracking-widest animate-pulse">Decrypting Identity Archive...</p>
                 </div>
             }>
-                <ProfileDossier role="reviewer" userId={parseInt((session.user as any).id)} />
+                <ProfileDossier role="reviewer" userId={(session.user as any).id} />
             </Suspense>
         </section>
     );

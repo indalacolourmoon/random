@@ -31,7 +31,7 @@ export default async function AdminProfilePage() {
                     <p className="font-mono text-[10px] uppercase tracking-widest animate-pulse">Initializing Identity Dossier...</p>
                 </div>
             }>
-                <ProfileDossier role="admin" userId={parseInt((session.user as any).id)} />
+                <ProfileDossier role="admin" userId={(session.user as any).id} />
             </Suspense>
         </section>
     );

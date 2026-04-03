@@ -72,7 +72,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                                     <Link
                                         href={crumb.href}
                                         aria-current={isLast ? "page" : undefined}
-                                        className={`text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-[0.2em] transition-all duration-300 ${isLast ? "text-white" : "text-white/50 hover:text-white"}`}
+                                        className={`text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold tracking-[0.2em] transition-all duration-300 ${isLast ? "text-white" : "text-white/50 hover:text-white"}`}
                                     >
                                         {crumb.name}
                                     </Link>
@@ -91,7 +91,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         onAnimationComplete={handleAnimationComplete}
                     >
-                        <h1 className=" font-black text-white mb-6 leading-none  tracking-widest">
+                        <h1 className=" font-bold text-white mb-6 leading-none  tracking-widest">
                             {title}
                         </h1>
                         {description && (

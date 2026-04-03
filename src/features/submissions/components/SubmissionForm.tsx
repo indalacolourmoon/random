@@ -165,17 +165,17 @@ export default function SubmissionForm() {
                                     <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm">
                                         <FileText className="w-5 h-5" />
                                     </div>
-                                    <FormLabel className="text-base font-black text-primary tracking-tight">Paper / Manuscript Title</FormLabel>
+                                    <FormLabel className="text-base 2xl:text-lg font-black text-primary tracking-tight">Paper / Manuscript Title</FormLabel>
                                 </div>
                                 <FormControl>
                                     <Input
                                         placeholder="Full title of your research paper..."
                                         {...field}
                                         value={field.value ?? ""}
-                                        className="h-12 md:h-14 bg-white border-slate-200 rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base md:text-lg placeholder:text-slate-500 placeholder:truncate"
+                                        className="h-12 md:h-14 bg-white border-slate-200 rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base md:text-lg 2xl:text-xl placeholder:text-slate-500 placeholder:truncate"
                                     />
                             </FormControl>
-                                <FormMessage className="text-[10px] font-black tracking-widest text-secondary px-4" />
+                                <FormMessage className="text-[10px] 2xl:text-xs font-black tracking-widest text-secondary px-4" />
                             </FormItem>
                         )}
                     />
@@ -190,17 +190,17 @@ export default function SubmissionForm() {
                                         <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
                                             <User className="w-4.5 h-4.5" />
                                         </div>
-                                         <FormLabel className="text-xs font-black text-primary tracking-widest">Lead Author Name</FormLabel>
+                                         <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Lead Author Name</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
                                             placeholder="Full Name"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-12 bg-white border-slate-200 rounded-xl font-bold text-primary placeholder:text-slate-500 placeholder:truncate focus-visible:ring-primary/20 shadow-sm px-5 text-base"
+                                            className="h-12 2xl:h-14 2xl:text-lg bg-white border-slate-200 rounded-xl font-bold text-primary placeholder:text-slate-500 placeholder:truncate focus-visible:ring-primary/20 shadow-sm px-5 text-base"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                    <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                                 </FormItem>
                             )}
                         />
@@ -213,7 +213,7 @@ export default function SubmissionForm() {
                                         <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
                                             <Mail className="w-4.5 h-4.5" />
                                         </div>
-                                        <FormLabel className="text-xs font-black text-primary tracking-widest">Email Address</FormLabel>
+                                        <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Email Address</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
@@ -221,10 +221,10 @@ export default function SubmissionForm() {
                                             placeholder="yourname@gmail.com"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-12 bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
+                                            className="h-12 2xl:h-14 2xl:text-lg bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                    <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                                 </FormItem>
                             )}
                         />
@@ -237,7 +237,7 @@ export default function SubmissionForm() {
                                         <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
                                             <Phone className="w-4.5 h-4.5" />
                                         </div>
-                                        <FormLabel className="text-xs font-black text-primary tracking-widest">Phone Number</FormLabel>
+                                        <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Phone Number</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
@@ -245,10 +245,10 @@ export default function SubmissionForm() {
                                             placeholder="Phone Number"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-12 bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
+                                            className="h-12 2xl:h-14 2xl:text-lg bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                    <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                                 </FormItem>
                             )}
                         />
@@ -264,17 +264,17 @@ export default function SubmissionForm() {
                                         <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
                                             <Briefcase className="w-4.5 h-4.5" />
                                         </div>
-                                        <FormLabel className="text-xs font-black text-primary tracking-widest">Designation</FormLabel>
+                                        <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Designation</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
                                             placeholder="e.g., Assistant Professor, Research Scholar"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-12 bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
+                                            className="h-12 2xl:h-14 2xl:text-lg bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                    <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                                 </FormItem>
                             )}
                         />
@@ -288,17 +288,17 @@ export default function SubmissionForm() {
                                         <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
                                             <School className="w-4.5 h-4.5" />
                                         </div>
-                                        <FormLabel className="text-xs font-black text-primary tracking-widest">Affiliation / College / Institute</FormLabel>
+                                        <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Affiliation / College / Institute</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
                                             placeholder="e.g., Department, University, City, Country"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-12 bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
+                                            className="h-12 2xl:h-14 2xl:text-lg bg-white border-slate-200 placeholder:text-slate-500 placeholder:truncate rounded-xl font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                    <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                                 </FormItem>
                             )}
                         />
@@ -313,21 +313,21 @@ export default function SubmissionForm() {
                                     <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shadow-sm">
                                         <BookOpen className="w-4.5 h-4.5" />
                                     </div>
-                                     <FormLabel className="text-xs font-black text-primary tracking-widest">Abstract</FormLabel>
+                                     <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Abstract</FormLabel>
                                 </div>
                                 <FormControl>
                                     <Textarea
                                         placeholder="Summarize your research paper here..."
-                                        className="bg-white border-slate-200 rounded-2xl font-medium placeholder:text-slate-500 placeholder:truncate text-primary focus-visible:ring-primary/20 shadow-sm p-5 resize-none min-h-[200px] text-base leading-relaxed"
+                                        className="bg-white border-slate-200 rounded-2xl font-medium placeholder:text-slate-500 placeholder:truncate text-primary focus-visible:ring-primary/20 shadow-sm p-5 resize-none min-h-[200px] text-base 2xl:text-lg leading-relaxed"
                                         {...field}
                                         value={field.value ?? ""}
                                     />
                                 </FormControl>
                                 <div className="flex justify-between items-center px-4">
-                                    <FormDescription className="text-[10px] font-black tracking-widest text-slate-500">Word Count: 100 - 500 Words</FormDescription>
+                                    <FormDescription className="text-[10px] 2xl:text-xs font-black tracking-widest text-slate-500">Word Count: 100 - 500 Words</FormDescription>
                                     <span className="text-[10px] font-black text-amber-600/60 tracking-widest">{field.value.length} CHARS</span>
                                 </div>
-                                <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                             </FormItem>
                         )}
                     />
@@ -341,18 +341,18 @@ export default function SubmissionForm() {
                                     <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
                                         <Tag className="w-4.5 h-4.5" />
                                     </div>
-                                     <FormLabel className="text-xs font-black text-primary tracking-widest">Keywords</FormLabel>
+                                     <FormLabel className="text-xs 2xl:text-sm font-black text-primary tracking-widest">Keywords</FormLabel>
                                 </div>
                                 <FormControl>
                                     <Input
                                         placeholder="e.g., AI, Machine Learning, Metallurgy..."
                                         {...field}
                                         value={field.value ?? ""}
-                                        className="h-12 bg-white border-slate-200 rounded-xl placeholder:text-slate-500 placeholder:truncate font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
+                                        className="h-12 2xl:h-14 2xl:text-lg bg-white border-slate-200 rounded-xl placeholder:text-slate-500 placeholder:truncate font-bold text-primary focus-visible:ring-primary/20 shadow-sm px-5 text-base"
                                     />
                                 </FormControl>
-                                <FormDescription className="text-[10px] font-black tracking-widest text-slate-500 px-4">Provide at least 5 keywords separated by commas.</FormDescription>
-                                <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                <FormDescription className="text-[10px] 2xl:text-xs font-black tracking-widest text-slate-500 px-4">Provide at least 5 keywords separated by commas.</FormDescription>
+                                <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                             </FormItem>
                         )}
                     />
@@ -407,7 +407,7 @@ export default function SubmissionForm() {
                                                 </div>
                                                 <div className="space-y-1">
                                                     <h4 className="font-black text-primary tracking-widest text-sm">Author Details</h4>
-                                                    <p className="text-[10px] font-bold text-slate-400">Enter co-author information</p>
+                                                    <p className="text-[10px] 2xl:text-xs font-bold text-slate-400">Enter co-author information</p>
                                                 </div>
                                             </div>
 
@@ -418,7 +418,7 @@ export default function SubmissionForm() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormControl>
-                                                                 <Input placeholder="Full Name" {...field} value={field.value ?? ""} className="h-11 bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
+                                                                 <Input placeholder="Full Name" {...field} value={field.value ?? ""} className="h-11 2xl:h-14 2xl:text-base bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -430,7 +430,7 @@ export default function SubmissionForm() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormControl>
-                                                                <Input type="email" placeholder="E-Mail Address" {...field} value={field.value ?? ""} className="h-11 bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
+                                                                <Input type="email" placeholder="E-Mail Address" {...field} value={field.value ?? ""} className="h-11 2xl:h-14 2xl:text-base bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -443,7 +443,7 @@ export default function SubmissionForm() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormControl>
-                                                                    <Input type="tel" placeholder="Phone no" {...field} value={field.value ?? ""} className="h-11 bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
+                                                                    <Input type="tel" placeholder="Phone no" {...field} value={field.value ?? ""} className="h-11 2xl:h-14 2xl:text-base bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
@@ -455,7 +455,7 @@ export default function SubmissionForm() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormControl>
-                                                                    <Input placeholder="Designation" {...field} value={field.value ?? ""} className="h-11 bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
+                                                                    <Input placeholder="Designation" {...field} value={field.value ?? ""} className="h-11 2xl:h-14 2xl:text-base bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
@@ -468,7 +468,7 @@ export default function SubmissionForm() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormControl>
-                                                                <Input placeholder="Institution / Organization" {...field} value={field.value ?? ""} className="h-11 bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
+                                                                <Input placeholder="Institution / Organization" {...field} value={field.value ?? ""} className="h-11 2xl:h-14 2xl:text-base bg-white border-slate-100 rounded-xl font-bold shadow-sm px-5 placeholder:truncate" />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -506,8 +506,8 @@ export default function SubmissionForm() {
                                         <FileText className="w-6 h-6" />
                                     </div>
                                     <div className="space-y-1">
-                                        <FormLabel className="text-base font-black text-primary tracking-tight"></FormLabel>
-                                        <p className="text-[10px] font-bold text-slate-400 tracking-widest">Upload your research paper file</p>
+                                        <FormLabel className="text-base 2xl:text-lg font-black text-primary tracking-tight"></FormLabel>
+                                        <p className="text-[10px] 2xl:text-xs font-bold text-slate-400 tracking-widest">Upload your research paper file</p>
                                     </div>
                                 </div>
                                 {settings.template_url && (
@@ -541,7 +541,7 @@ export default function SubmissionForm() {
                                                 <Check className="w-10 h-10" />
                                             </div>
                                             <p className="text-xl font-black text-primary truncate max-w-[280px] mb-2">{manuscriptFile.name}</p>
-                                            <p className="text-[10px] font-black text-blue-600/60 tracking-[0.2em] mb-4">File Selected • Manuscript</p>
+                                            <p className="text-[10px] 2xl:text-xs font-black text-blue-600/60 tracking-[0.2em] mb-4">File Selected • Manuscript</p>
                                             <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none px-4 py-2 rounded-xl text-[10px] font-black tracking-widest cursor-pointer">
                                                 Change File
                                             </Badge>
@@ -551,8 +551,8 @@ export default function SubmissionForm() {
                                             <div className="w-20 h-20 bg-white border border-slate-100 rounded-[1.5rem] shadow-xl flex items-center justify-center mx-auto mb-8 transition-all duration-700 group-hover/upload:shadow-blue-500/10 group-hover/upload:-translate-y-2">
                                                 <Upload className="w-8 h-8 text-blue-500" />
                                             </div>
-                                            <p className="text-sm font-black tracking-[0.2em] text-primary mb-2">Upload Manuscript</p>
-                                            <p className="text-[10px] font-black text-slate-500 tracking-widest">Word (.docx) or PDF format</p>
+                                            <p className="text-sm 2xl:text-base font-black tracking-[0.2em] text-primary mb-2">Upload Manuscript</p>
+                                            <p className="text-[10px] 2xl:text-xs font-black text-slate-500 tracking-widest">Word (.docx) or PDF format</p>
                                         </div>
                                     )}
                                     <div className="absolute bottom-0 left-0 w-full h-1.5 bg-blue-500/10" />
@@ -568,8 +568,8 @@ export default function SubmissionForm() {
                                         <Shield className="w-6 h-6" />
                                     </div>
                                     <div className="space-y-1">
-                                        <FormLabel className="text-base font-black text-primary tracking-tight"></FormLabel>
-                                        <p className="text-[10px] font-bold text-slate-400 tracking-widest">Signed copyright agreement</p>
+                                        <FormLabel className="text-base 2xl:text-lg font-black text-primary tracking-tight"></FormLabel>
+                                        <p className="text-[10px] 2xl:text-xs font-bold text-slate-400 tracking-widest">Signed copyright agreement</p>
                                     </div>
                                 </div>
                                 {settings.copyright_url && (
@@ -603,7 +603,7 @@ export default function SubmissionForm() {
                                                 <Shield className="w-10 h-10" />
                                             </div>
                                             <p className="text-xl font-black text-primary truncate max-w-[280px] mb-2">{copyrightFile.name}</p>
-                                            <p className="text-[10px] font-black text-indigo-600/60 tracking-[0.2em] mb-4">File Selected • Copyright Form</p>
+                                            <p className="text-[10px] 2xl:text-xs font-black text-indigo-600/60 tracking-[0.2em] mb-4">File Selected • Copyright Form</p>
                                             <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-none px-4 py-2 rounded-xl text-[10px] font-black tracking-widest cursor-pointer">
                                                 Change File
                                             </Badge>
@@ -613,8 +613,8 @@ export default function SubmissionForm() {
                                             <div className="w-20 h-20 bg-white border border-slate-100 rounded-[1.5rem] shadow-xl flex items-center justify-center mx-auto mb-8 transition-all duration-700 group-hover/upload:shadow-indigo-500/10 group-hover/upload:-translate-y-2">
                                                 <Upload className="w-8 h-8 text-indigo-500" />
                                             </div>
-                                            <p className="text-sm font-black tracking-[0.2em] text-primary mb-2">Upload Copyright Form</p>
-                                            <p className="text-[10px] font-black text-slate-500 tracking-widest">Signed Word or PDF file</p>
+                                            <p className="text-sm 2xl:text-base font-black tracking-[0.2em] text-primary mb-2">Upload Copyright Form</p>
+                                            <p className="text-[10px] 2xl:text-xs font-black text-slate-500 tracking-widest">Signed Word or PDF file</p>
                                         </div>
                                     )}
                                     <div className="absolute bottom-0 left-0 w-full h-1.5 bg-indigo-500/10" />
@@ -640,20 +640,20 @@ export default function SubmissionForm() {
                                 </FormControl>
                                 <div className="space-y-1.5 !m-0">
                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                        <span className="text-xs font-black text-primary tracking-tight">I hereby verify that I have read the</span>
-                                        <Link href="/guidelines" target="_blank" className="text-xs font-black text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">
+                                        <span className="text-xs 2xl:text-sm font-black text-primary tracking-tight">I hereby verify that I have read the</span>
+                                        <Link href="/guidelines" target="_blank" className="text-xs 2xl:text-sm font-black text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">
                                             Author Guidelines
                                             <ExternalLink className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
                                         </Link>
-                                        <span className="text-xs font-black text-primary tracking-tight">and the</span>
-                                        <Link href="/guidelines#terms" target="_blank" className="text-xs font-black text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">
+                                        <span className="text-xs 2xl:text-sm font-black text-primary tracking-tight">and the</span>
+                                        <Link href="/guidelines#terms" target="_blank" className="text-xs 2xl:text-sm font-black text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">
                                             Terms of Use.
                                             <ExternalLink className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
                                         </Link>
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-500 tracking-widest">I confirm that I am submitting original work and following all guidelines.</p>
+                                    <p className="text-[10px] 2xl:text-xs font-bold text-slate-500 tracking-widest">I confirm that I am submitting original work and following all guidelines.</p>
                                 </div>
-                                <FormMessage className="text-[10px] font-black text-secondary px-4" />
+                                <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
                             </FormItem>
                         )}
                     />
@@ -661,7 +661,7 @@ export default function SubmissionForm() {
                     <Button
                         type="submit"
                         disabled={submissionMutation.isPending}
-                        className="w-full h-14 md:h-16 bg-primary text-white font-black text-xs sm:text-sm tracking-[0.2em] rounded-xl md:rounded-2xl shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-[1.01] hover:shadow-primary/30 active:scale-[0.99] group/submit relative overflow-hidden"
+                        className="w-full h-14 md:h-16 2xl:h-20 bg-primary text-white font-black text-xs sm:text-sm 2xl:text-base tracking-[0.2em] 2xl:tracking-[0.3em] rounded-xl md:rounded-2xl shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-[1.01] hover:shadow-primary/30 active:scale-[0.99] group/submit relative overflow-hidden"
                     >
                         {submissionMutation.isPending ? (
                             <div className="flex items-center gap-4">
