@@ -1,10 +1,9 @@
 'use client';
 
-import { Mail, Phone, MapPin, ShieldAlert, ChevronRight, Globe, Clock, MessageSquare } from 'lucide-react';
+import { Mail, MapPin, ShieldAlert, ChevronRight, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import ContactForm from '@/features/contact/components/ContactForm';
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface ContactClientProps {

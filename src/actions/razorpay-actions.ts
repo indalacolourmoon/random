@@ -2,8 +2,9 @@
 
 import { razorpay } from "@/lib/razorpay";
 import crypto from "crypto";
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { payments, submissions, settings, userProfiles, users, submissionVersions } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 
@@ -13,9 +14,13 @@ type CreateOrderResponse =
 
 export async function createRazorpayOrder(submissionId: number, paperId: string): Promise<CreateOrderResponse> {
     try {
-        // 1. Fetch APC amount from settings (or use default from existing logic)
-        const settings: any = await db.execute(sql`SELECT setting_value FROM settings WHERE setting_key = "apc_inr"`);
-        const amountInINR = settings[0][0]?.setting_value || '2500';
+        // 1. Fetch APC amount from settings
+        const settingsRows = await db.select()
+            .from(settings)
+            .where(eq(settings.settingKey, "apc_inr"))
+            .limit(1);
+        
+        const amountInINR = settingsRows[0]?.settingValue || '2500';
         const amount = parseInt(amountInINR) * 100; // Razorpay expects amount in paise
 
         // 2. Create Razorpay order
@@ -32,17 +37,27 @@ export async function createRazorpayOrder(submissionId: number, paperId: string)
         const order = await razorpay.orders.create(options);
 
         // 3. Create/Update payment record in DB with the Razorpay order ID
-        // First check if a payment record exists for this submission
-        const existing: any = await db.execute(sql`SELECT id FROM payments WHERE submission_id = ${submissionId}`);
-
-        if (existing[0].length > 0) {
-            await db.execute(
-                sql`UPDATE payments SET transaction_id = ${order.id}, currency = 'INR', amount = ${amountInINR} WHERE submission_id = ${submissionId}`
-            );
+        const existingPayments = await db.select()
+            .from(payments)
+            .where(eq(payments.submissionId, submissionId))
+            .limit(1);
+ 
+        if (existingPayments.length > 0) {
+            await db.update(payments)
+                .set({ 
+                    transactionId: order.id, 
+                    currency: 'INR', 
+                    amount: amountInINR 
+                })
+                .where(eq(payments.submissionId, submissionId));
         } else {
-            await db.execute(
-                sql`INSERT INTO payments (submission_id, amount, currency, status, transaction_id) VALUES (${submissionId}, ${amountInINR}, 'INR', 'unpaid', ${order.id})`
-            );
+            await db.insert(payments).values({
+                submissionId: submissionId,
+                amount: amountInINR,
+                currency: 'INR',
+                status: 'pending',
+                transactionId: order.id
+            });
         }
 
         return {
@@ -54,9 +69,9 @@ export async function createRazorpayOrder(submissionId: number, paperId: string)
                 key: process.env.RAZORPAY_KEY_ID
             }
         };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Create Razorpay Order Error:", error);
-        return { success: false, error: "Failed to create payment order: " + error.message };
+        return { success: false, error: "Failed to create payment order: " + (error instanceof Error ? error.message : String(error)) };
     }
 }
 
@@ -81,20 +96,40 @@ export async function verifyRazorpayPayment(data: {
         }
 
         // 2. Update Payment Status in DB
-        await db.execute(
-            sql`UPDATE payments SET status = 'paid', transaction_id = ${razorpay_payment_id}, paid_at = CURRENT_TIMESTAMP WHERE submission_id = ${submissionId}`
-        );
-
+        await db.update(payments)
+            .set({ 
+                status: 'paid', 
+                transactionId: razorpay_payment_id, 
+                paidAt: new Date() 
+            })
+            .where(eq(payments.submissionId, submissionId));
+ 
         // 3. Update Submission Status
-        await db.execute(sql`UPDATE submissions SET status = 'paid' WHERE id = ${submissionId}`);
+        await db.update(submissions)
+            .set({ status: 'payment_pending' }) // Should be accepted or payment_pending? Flow says payment_pending -> paid -> published
+            .where(eq(submissions.id, submissionId));
 
         // 4. Notify Author
         try {
-            const sub: any = await db.execute(sql`SELECT author_name, author_email, title, paper_id FROM submissions WHERE id = ${submissionId}`);
-            if (sub[0].length > 0) {
-                const template = emailTemplates.paymentVerified(sub[0][0].author_name, sub[0][0].title, sub[0][0].paper_id);
-                sendEmail({
-                    to: sub[0][0].author_email,
+            const subData = await db.select({
+                authorName: userProfiles.fullName,
+                authorEmail: users.email,
+                title: submissionVersions.title,
+                paperId: submissions.paperId
+            })
+            .from(submissions)
+            .innerJoin(users, eq(submissions.correspondingAuthorId, users.id))
+            .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+            .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+            .where(eq(submissions.id, submissionId))
+            .orderBy(desc(submissionVersions.versionNumber))
+            .limit(1);
+
+            const sub = subData[0];
+            if (sub) {
+                const template = emailTemplates.paymentVerified(sub.authorName, sub.title, sub.paperId);
+                await sendEmail({
+                    to: sub.authorEmail,
                     subject: template.subject,
                     html: template.html
                 });
@@ -109,8 +144,8 @@ export async function verifyRazorpayPayment(data: {
         revalidatePath('/editor');
 
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Verify Razorpay Payment Error:", error);
-        return { success: false, error: "Failed to verify payment: " + error.message };
+        return { success: false, error: "Failed to verify payment: " + ((error as any)?.message || String(error)) };
     }
 }

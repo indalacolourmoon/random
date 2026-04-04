@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, FileText, ChevronRight, Download, Search, Info, Loader2 } from 'lucide-react';
+import { FileText, ChevronRight, Search, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import PaperCard from '@/features/archives/components/PaperCard';
@@ -83,7 +83,7 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
                         </div>
                     ) : (
                         <div className="p-20 2xl:p-32 bg-card border border-primary/5 rounded-[4rem] shadow-3xl text-center space-y-12 relative overflow-hidden group">
-                           <div className="absolute inset-0 bg-primary/[0.01] -z-10 group-hover:bg-primary/[0.03] transition-colors" />
+                           <div className="absolute inset-0 bg-primary/1 -z-10 group-hover:bg-primary/3 transition-colors" />
                             <div className="w-24 h-24 2xl:w-40 2xl:h-40 bg-primary/5 rounded-[3rem] flex items-center justify-center mx-auto text-primary/10 group-hover:scale-110 transition-transform shadow-inner">
                                 <FileText className="w-12 h-12 2xl:w-20 2xl:h-20" />
                             </div>
@@ -116,7 +116,7 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
                         </div>
                         <article className="p-10 2xl:p-16 bg-card border border-primary/5 rounded-[3rem] shadow-2xl relative overflow-hidden group hover:border-secondary/20 transition-all">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-secondary/10 transition-colors" />
-                            <div className="w-14 h-14 2xl:w-24 2xl:h-24 bg-primary/5 rounded-2xl 2xl:rounded-[2rem] flex items-center justify-center mb-10 text-primary group-hover:bg-secondary group-hover:text-white transition-all shadow-inner group-hover:rotate-6">
+                            <div className="w-14 h-14 2xl:w-24 2xl:h-24 bg-primary/5 rounded-2xl 2xl:rounded-4xl flex items-center justify-center mb-10 text-primary group-hover:bg-secondary group-hover:text-white transition-all shadow-inner group-hover:rotate-6">
                                 <Info className="w-7 h-7 2xl:w-12 2xl:h-12" />
                             </div>
                             <h3 className="font-serif font-black text-foreground tracking-tight mb-4 text-2xl 2xl:text-4xl uppercase">Digital Permanent <span className="text-secondary opacity-50">Sovereignty</span></h3>

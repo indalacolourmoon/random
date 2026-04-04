@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUsers, createUser, deleteUser } from '@/actions/users';
+import { UserWithProfile } from '@/db/types';
 
 export function useUsers(role?: string) {
-    return useQuery<any[]>({
+    return useQuery<UserWithProfile[]>({
         queryKey: ['users', role],
         queryFn: async () => {
-            const data = await getUsers();
-            if (role) return data.filter((u: any) => u.role === role);
+            const res = await getUsers();
+            if (!res.success) return [];
+            const data = res.data || [];
+            if (role) return data.filter((u: { role: string }) => u.role === role);
             return data;
         },
     });
@@ -29,7 +32,7 @@ export function useCreateUser() {
 export function useDeleteUser() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (id: number) => {
+        mutationFn: async (id: string) => {
             return await deleteUser(id);
         },
         onSuccess: (data) => {

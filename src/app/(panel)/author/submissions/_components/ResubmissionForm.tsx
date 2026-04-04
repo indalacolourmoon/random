@@ -60,7 +60,7 @@ export function ResubmissionForm({ submissionId, paperId, daysRemaining }: Resub
 
     return (
         <Card className="border-primary/10 shadow-xl shadow-primary/5">
-            <CardHeader className="border-b border-primary/5 bg-primary/[0.01]">
+            <CardHeader className="border-b border-primary/5 bg-primary/1">
                 <div className="flex items-center justify-between">
                     <div>
                         <CardTitle className="text-xl font-black tracking-tight text-primary">Submit Revised Manuscript</CardTitle>
@@ -88,7 +88,7 @@ export function ResubmissionForm({ submissionId, paperId, daysRemaining }: Resub
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="manuscript" className="text-sm font-bold text-primary/60">Revised Manuscript (Main File)</Label>
-                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/10 rounded-2xl cursor-pointer hover:bg-primary/[0.02] hover:border-secondary/30 transition-all">
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/10 rounded-2xl cursor-pointer hover:bg-primary/2 hover:border-secondary/30 transition-all">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                     <Upload className="w-8 h-8 text-primary/20 mb-2" />
                                     <p className="text-xs text-primary/40 font-bold">DOCX, PDF (Max 20MB)</p>
@@ -99,7 +99,7 @@ export function ResubmissionForm({ submissionId, paperId, daysRemaining }: Resub
 
                         <div className="space-y-2">
                             <Label htmlFor="copyright_form" className="text-sm font-bold text-primary/60">Updated Copyright Form</Label>
-                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/10 rounded-2xl cursor-pointer hover:bg-primary/[0.02] hover:border-secondary/30 transition-all">
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/10 rounded-2xl cursor-pointer hover:bg-primary/2 hover:border-secondary/30 transition-all">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                     <FileText className="w-8 h-8 text-primary/20 mb-2" />
                                     <p className="text-xs text-primary/40 font-bold">PDF Only (Max 5MB)</p>
@@ -109,7 +109,7 @@ export function ResubmissionForm({ submissionId, paperId, daysRemaining }: Resub
                         </div>
                     </div>
 
-                    <Alert className="bg-primary/[0.02] border-primary/10 rounded-2xl">
+                    <Alert className="bg-primary/5 border-primary/10 rounded-2xl">
                         <Info className="w-4 h-4" />
                         <AlertTitle className="text-xs font-black uppercase tracking-widest text-primary/40">Important Note</AlertTitle>
                         <AlertDescription className="text-sm text-primary/60 italic">

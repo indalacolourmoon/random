@@ -52,8 +52,8 @@ export default function HomeCarousel() {
                     </motion.div>
 
                     {/* Overlays */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/60 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/60 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent" />
 
                     {/* Content Container */}
                     <div className="container-responsive h-full relative z-10 flex items-center">

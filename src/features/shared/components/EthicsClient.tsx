@@ -1,7 +1,5 @@
 'use client';
 
-import { ShieldCheck, Mail, Globe, BookMarked, RefreshCw, Scale, Users, FileText, Lock, Archive, AlertTriangle, UserCheck, Gavel, FileSignature, HelpCircle, Cpu } from 'lucide-react';
-import Link from 'next/link';
 
 interface EthicsClientProps {
     settings: Record<string, string>;

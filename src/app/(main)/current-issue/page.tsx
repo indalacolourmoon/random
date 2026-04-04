@@ -2,12 +2,12 @@ import PageHeader from "@/components/layout/PageHeader";
 import { getLatestIssuePapers } from '@/actions/archives';
 import ArchivesClient from '@/features/shared/components/ArchivesClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export const revalidate = 3600; // 1 hour
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Current Issue | ${settings.journal_name}`,
         description: `Explore the latest research and technical papers published in the current issue of ${settings.journal_short_name}.`,
@@ -20,8 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CurrentIssue() {
-    const papers = await getLatestIssuePapers();
-    const settings = await getSettings();
+    const res = await getLatestIssuePapers();
+    const papers = res.data || [];
+    const settings = await getSettingsData();
 
     return (
         <div className="bg-background min-h-screen">

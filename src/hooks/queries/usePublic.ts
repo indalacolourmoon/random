@@ -5,6 +5,7 @@ import { getPublishedPapers, getLatestIssuePapers, getArchivePapers } from '@/ac
 import { trackManuscript } from '@/actions/track';
 import { getLatestPublishedIssue } from '@/actions/publications';
 import { getEditorialBoard } from '@/actions/users';
+import { type PublishedPaperUI, type UserWithProfile } from '@/db/types';
 
 export const publicKeys = {
     all: ['public'] as const,
@@ -16,41 +17,41 @@ export const publicKeys = {
     track: (paperId: string, email: string) => [...publicKeys.all, 'track', paperId, email] as const,
 };
 
-export function useEditorialBoard(initialData?: any[]) {
+export function useEditorialBoard(initialData?: UserWithProfile[]) {
     return useQuery({
         queryKey: publicKeys.editorialBoard(),
         queryFn: () => getEditorialBoard(),
-        initialData: initialData,
+        select: (res) => res.success ? res.data : [],
         staleTime: 1000 * 60 * 30, // 30 minutes
         gcTime: 1000 * 60 * 60, // Keep in memory for 1 hour
     });
 }
 
-export function usePublicArchives(initialData?: any[]) {
+export function usePublicArchives(initialData?: PublishedPaperUI[]) {
     return useQuery({
         queryKey: publicKeys.archives(),
         queryFn: () => getPublishedPapers(),
-        initialData: initialData,
+        select: (res) => res.success ? res.data : [],
         staleTime: 1000 * 60 * 10, // 10 minutes for public archives
         gcTime: 1000 * 60 * 30, // Keep in memory for 30 mins
     });
 }
 
-export function useLatestIssuePapers(initialData?: any[]) {
+export function useLatestIssuePapers(initialData?: PublishedPaperUI[]) {
     return useQuery({
         queryKey: publicKeys.currentIssue(),
         queryFn: () => getLatestIssuePapers(),
-        initialData: initialData,
+        select: (res) => res.success ? res.data : [],
         staleTime: 1000 * 60 * 10,
         gcTime: 1000 * 60 * 30,
     });
 }
 
-export function useArchivePapers(initialData?: any[]) {
+export function useArchivePapers(initialData?: PublishedPaperUI[]) {
     return useQuery({
         queryKey: publicKeys.archivePapers(),
         queryFn: () => getArchivePapers(),
-        initialData: initialData,
+        select: (res) => res.success ? res.data : [],
         staleTime: 1000 * 60 * 10,
         gcTime: 1000 * 60 * 30,
     });
@@ -60,6 +61,7 @@ export function useLatestIssue() {
     return useQuery({
         queryKey: publicKeys.latestIssue(),
         queryFn: () => getLatestPublishedIssue(),
+        select: (res) => res.success ? res.data : null,
         staleTime: 1000 * 60 * 5, // 5 minutes
         gcTime: 1000 * 60 * 15, // Keep in memory for 15 mins
     });

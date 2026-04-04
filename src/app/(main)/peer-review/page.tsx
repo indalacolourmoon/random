@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import PeerReviewClient from '@/features/shared/components/PeerReviewClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Peer Review Process | ${settings.journal_name}`,
         description: `Explore the rigorous double-blind peer review process at ${settings.journal_short_name}. We ensure technical accuracy, originality, and scientific impact in all published research.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function PeerReview() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

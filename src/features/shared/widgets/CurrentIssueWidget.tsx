@@ -14,22 +14,16 @@ function CurrentIssueWidget() {
     const currentStatus = useMemo(() => {
         if (dbIssue) {
             return {
-                volume: dbIssue.volume_number,
-                issue: dbIssue.issue_number,
-                date: `${dbIssue.month_range} ${dbIssue.year}`
+                volume: dbIssue.volumeNumber,
+                issue: dbIssue.issueNumber,
+                date: `${dbIssue.monthRange} ${dbIssue.year}`
             };
         }
 
-        // Fallback dynamic estimation
-        const now = new Date();
-        const year = now.getFullYear();
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        return {
-            volume: year - 2025,
-            issue: now.getMonth() + 1,
-            date: `${monthNames[now.getMonth()]} ${year}`
-        };
+        return null;
     }, [dbIssue]);
+
+    if (!currentStatus) return null;
 
     if (isLoading) return (
         <Card className="border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden bg-white group rounded-[2.5rem]">

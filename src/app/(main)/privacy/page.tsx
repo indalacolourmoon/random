@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import PrivacyClient from '@/features/shared/components/PrivacyClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Privacy Policy | ${settings.journal_name}`,
         description: `Learn how ${settings.journal_short_name} protects your personal data and scholarly contributions. Our privacy protocols ensure a secure and confidential research environment.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function PrivacyPolicy() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

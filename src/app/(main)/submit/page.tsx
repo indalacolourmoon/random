@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import SubmitClient from '@/features/shared/components/SubmitClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Submit Manuscript | ${settings.journal_name}`,
         description: `Submit your original research technical papers to ${settings.journal_short_name} for high-impact peer review and fast-track publication.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function SubmitPaper() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

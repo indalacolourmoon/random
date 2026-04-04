@@ -71,7 +71,7 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
                     )}
                 </div>
 
-                <div className={`relative group border-2 border-dashed rounded-xl p-8 transition-all duration-300 flex flex-col items-center justify-center gap-4 ${isUploading ? 'bg-primary/5 border-primary/20 cursor-wait' : 'bg-muted/30 border-primary/10 hover:bg-primary/[0.03] hover:border-primary/30 cursor-pointer'}`}>
+                <div className={`relative group border-2 border-dashed rounded-xl p-8 transition-all duration-300 flex flex-col items-center justify-center gap-4 ${isUploading ? 'bg-primary/5 border-primary/20 cursor-wait' : 'bg-muted/30 border-primary/10 hover:bg-primary/3 hover:border-primary/30 cursor-pointer'}`}>
                     <input
                         title="pdfFile"
                         name="pdfFile"

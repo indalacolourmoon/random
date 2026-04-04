@@ -18,12 +18,14 @@ export default async function ResubmitPage({ params }: { params: { id: string } 
     const submissionId = parseInt(params.id);
     if (isNaN(submissionId)) notFound();
 
-    const [submission, eligibility] = await Promise.all([
+    const [submissionRes, eligibilityRes] = await Promise.all([
         getAuthorSubmission(submissionId),
         checkResubmissionEligibility(submissionId),
     ]);
 
-    if (!submission) notFound();
+    if (!submissionRes.success || !submissionRes.data) notFound();
+    const submission = submissionRes.data;
+    const eligibility = eligibilityRes.data || { eligible: false, daysRemaining: 0 };
 
     return (
         <section className="max-w-2xl mx-auto space-y-6 pb-20">
@@ -44,7 +46,7 @@ export default async function ResubmitPage({ params }: { params: { id: string } 
                     <CardContent className="p-10 flex flex-col items-center gap-4 text-center">
                         <XCircle className="w-12 h-12 text-rose-500" />
                         <h3 className="font-black text-xl uppercase tracking-widest text-foreground">Not Eligible</h3>
-                        <p className="text-sm text-muted-foreground max-w-sm">{eligibility.reason}</p>
+                        <p className="text-sm text-muted-foreground max-w-sm">{eligibilityRes.error || "Window Expired"}</p>
                         <Button asChild variant="outline" size="sm" className="rounded-xl font-bold uppercase text-xs">
                             <Link href="/author">Back to Dashboard</Link>
                         </Button>
@@ -53,7 +55,7 @@ export default async function ResubmitPage({ params }: { params: { id: string } 
             ) : (
                 <ResubmitForm
                     submissionId={submissionId}
-                    paperId={submission.paper_id}
+                    paperId={submission.paperId}
                     title={submission.title}
                     daysRemaining={eligibility.daysRemaining || 0}
                     currentStatus={submission.status}

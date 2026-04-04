@@ -185,8 +185,8 @@ export async function brandPdf(inputPath: string, outputPath: string, metadata: 
         await fs.writeFile(fullOutputPath, brandedBytes);
 
         return { success: true, path: outputPath };
-    } catch (error: any) {
+    } catch (error) {
         console.error("PDF Branding Error:", error);
-        throw new Error(`Failed to replace metadata: ${error.message}`);
+        throw new Error(`Failed to replace metadata: ${error instanceof Error ? error.message : String(error)}`);
     }
 }

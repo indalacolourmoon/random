@@ -1,10 +1,9 @@
 'use client';
 
-import { ShieldCheck, Gavel, ChevronRight, FileText, Info, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, HelpCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import SubmissionForm from '@/features/submissions/components/SubmissionForm';
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface SubmitClientProps {

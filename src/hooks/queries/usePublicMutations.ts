@@ -15,7 +15,7 @@ export function useContactMutation() {
         },
         onError: (error: Error) => {
             toast.error('Transmission Error', {
-                description: error.message
+                description: error instanceof Error ? error.message : String(error)
             });
         }
     });
@@ -35,7 +35,7 @@ export function useSubmissionMutation() {
         },
         onError: (error: Error) => {
             toast.error('Submission Failed', {
-                description: error.message
+                description: error instanceof Error ? error.message : String(error)
             });
         }
     });
@@ -50,7 +50,7 @@ export function useReviewerApplicationMutation() {
         },
         onError: (error: Error) => {
             toast.error('Application Error', {
-                description: error.message
+                description: error instanceof Error ? error.message : String(error)
             });
         }
     });

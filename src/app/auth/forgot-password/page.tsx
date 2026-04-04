@@ -92,7 +92,7 @@ export default function ForgotPassword() {
                                     <button
                                         type="submit"
                                         disabled={status === 'loading'}
-                                        className="w-full bg-primary text-white py-5 rounded-[1.5rem] font-black text-xs  tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="w-full bg-primary text-white py-5 rounded-3xl font-black text-xs  tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
                                         {status === 'loading' ? 'Processing...' : 'Send Recovery Link'}
                                         <ArrowRight className="w-5 h-5" />

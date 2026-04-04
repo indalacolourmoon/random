@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck, UserCheck, BookOpen, ChevronRight, ShieldAlert, MessageCircle, Mail, FileText, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, BookOpen, ChevronRight, ShieldAlert, MessageCircle, Mail, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export default function ReviewerGuidelinesClient({ settings }: ReviewerGuideline
                     <section className="bg-primary p-10 sm:p-14 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                         <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
-                            <div className="w-20 h-20 bg-white/10 rounded-[2rem] flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+                            <div className="w-20 h-20 bg-white/10 rounded-4xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
                                 <ShieldAlert className="w-10 h-10 text-secondary" />
                             </div>
                             <div className="space-y-4">
@@ -81,10 +81,10 @@ export default function ReviewerGuidelinesClient({ settings }: ReviewerGuideline
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-6 w-full">
-                                <Button asChild size="lg" className="h-14 px-10 bg-white text-primary hover:bg-white/90 font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all flex-1 sm:flex-none uppercase font-black">
+                                <Button asChild size="lg" className="h-14 px-10 bg-white text-primary hover:bg-white/90 text-xs tracking-widest rounded-2xl shadow-xl transition-all flex-1 sm:flex-none uppercase font-black">
                                     <a href={`mailto:${supportEmail}`}><Mail className="w-5 h-5 mr-3" /> {supportEmail}</a>
                                 </Button>
-                                <Button asChild size="lg" className="h-14 px-10 bg-secondary text-white hover:bg-secondary/90 font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all flex-1 sm:flex-none uppercase font-black">
+                                <Button asChild size="lg" className="h-14 px-10 bg-secondary text-white hover:bg-secondary/90 text-xs tracking-widest rounded-2xl shadow-xl transition-all flex-1 sm:flex-none uppercase font-black">
                                     <a href={`https://wa.me/${supportPhone.replace(/[\s+]/g, '')}`} className="flex items-center"><MessageCircle className="w-5 h-5 mr-3" /> WhatsApp Support</a>
                                 </Button>
                             </div>

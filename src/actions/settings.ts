@@ -5,29 +5,30 @@ import { settings } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
-import { eq } from "drizzle-orm";
+import { ActionResponse } from "@/db/types";
 
-export async function getSettings() {
+const DEFAULT_SETTINGS: Record<string, string> = {
+    journal_name: 'International Journal of Innovative Trends in Engineering Science and Technology',
+    journal_short_name: 'IJITEST',
+    issn_number: 'XXXX-XXXX',
+    apc_inr: '2500',
+    apc_usd: '50',
+    support_email: 'editor@ijitest.org',
+    support_phone: '+91 8919643590',
+    office_address: 'Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India',
+    publisher_name: 'Felix Academic Publications',
+    journal_website: 'https://ijitest.org',
+    apc_description: 'APC covers SJIF impact evaluation, long-term hosting, indexing maintenance, and editorial handling. There are no submission or processing charges before acceptance.',
+    template_url: '/docs/template.docx',
+    copyright_url: '/docs/copyright-form.docx',
+    is_promotion_active: 'true'
+};
+
+export async function getSettings(): Promise<ActionResponse<Record<string, string>>> {
     try {
         const rows = await db.select().from(settings);
         
-        // Default values for robustness
-        const result: Record<string, string> = {
-            journal_name: 'International Journal of Innovative Trends in Engineering Science and Technology',
-            journal_short_name: 'IJITEST',
-            issn_number: 'XXXX-XXXX',
-            apc_inr: '2500',
-            apc_usd: '50',
-            support_email: 'editor@ijitest.org',
-            support_phone: '+91 8919643590',
-            office_address: 'Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India',
-            publisher_name: 'Felix Academic Publications',
-            journal_website: 'https://ijitest.org',
-            apc_description: 'APC covers SJIF impact evaluation, long-term hosting, indexing maintenance, and editorial handling. There are no submission or processing charges before acceptance.',
-            template_url: '/docs/template.docx',
-            copyright_url: '/docs/copyright-form.docx',
-            is_promotion_active: 'true'
-        };
+        const result: Record<string, string> = { ...DEFAULT_SETTINGS };
 
         rows.forEach((row) => {
             if (row.settingValue) {
@@ -35,14 +36,22 @@ export async function getSettings() {
             }
         });
 
-        return result;
-    } catch (error: any) {
+        return { success: true, data: result };
+    } catch (error) {
         console.error("Get Settings Error:", error);
-        return {};
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
-export async function updateSettings(formData: FormData) {
+/**
+ * Utility for Server Components to get raw settings directly.
+ */
+export async function getSettingsData(): Promise<Record<string, string>> {
+    const res = await getSettings();
+    return res.data || DEFAULT_SETTINGS;
+}
+
+export async function updateSettings(formData: FormData): Promise<ActionResponse> {
     try {
         const entries = Array.from(formData.entries());
 
@@ -95,8 +104,8 @@ export async function updateSettings(formData: FormData) {
         revalidatePath('/about');
         
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Update Settings Error:", error);
-        return { error: "Failed to update settings: " + error.message };
+        return { success: false, error: "Failed to update settings: " + (error instanceof Error ? error.message : String(error)) };
     }
 }

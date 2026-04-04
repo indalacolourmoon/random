@@ -1,52 +1,37 @@
-import { getSubmissionById, decideSubmission, requestResubmissionWithComments } from "@/actions/submissions";
-import { assignPaperToIssue } from "@/actions/publications";
+import { getSubmissionById, decideSubmission } from "@/actions/submissions";
 import { waivePayment } from "@/actions/payments";
 import DeleteSubmissionButton from "@/features/submissions/components/DeleteSubmissionButton";
 import AdminPdfUpload from "@/features/submissions/components/AdminPdfUpload";
 import PublicationAssignment from "@/features/submissions/components/PublicationAssignment";
 import {
-    RefreshCw,
-    ChevronDown,
     User,
     Mail,
     FileText,
     Download,
-    ArrowLeft,
     CheckCircle,
     XCircle,
-    Clock,
     Calendar,
     Shield,
-    BookOpen,
-    FileCheck,
     AlertCircle,
-    ChevronRight,
     Globe,
-    Edit3,
-    Eye,
-    History,
-    MoreVertical,
-    Share2,
-    Lock,
-    ArrowUpRight,
     MessageSquare,
     ExternalLink,
-    Briefcase,
     Tag,
     ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
 import type { Metadata } from 'next';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
-    const submission = await getSubmissionById(parseInt(id));
-    if (!submission) return { title: 'Submission Not Found | Editor' };
+    const response = await getSubmissionById(parseInt(id));
+    if (!response.success || !response.data) return { title: 'Submission Not Found | Editor' };
+
+    const submission = response.data;
 
     return {
         title: `Editorial: ${submission.paper_id} | IJITEST`,
@@ -71,9 +56,9 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
         );
     }
 
-    const submission = await getSubmissionById(id);
+    const response = await getSubmissionById(id);
 
-    if (!submission) {
+    if (!response.success || !response.data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-6">
@@ -87,6 +72,8 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
             </div>
         );
     }
+
+    const submission = response.data;
 
     const getStatusVariant = (status: string) => {
         switch (status) {
@@ -124,16 +111,16 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                             <div className="flex flex-wrap items-center gap-6 text-[10px] xl:text-[11px] font-semibold text-muted-foreground tracking-widest capitalize">
                                 <div className="flex items-center gap-2">
                                     <Calendar className="w-3.5 h-3.5 opacity-50" />
-                                    <span>{new Date((submission as any).submitted_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                                    <span>{submission.submitted_at ? new Date(submission.submitted_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : 'Unknown Date'}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-primary/80">
                                     <Shield className="w-3.5 h-3.5" />
-                                    <span className="uppercase">{(submission as any).paper_id}</span>
+                                    <span className="uppercase">{submission.paper_id}</span>
                                 </div>
-                                {(submission as any).keywords && (
+                                {submission.keywords && (
                                     <div className="flex items-center gap-2">
                                         <Tag className="w-3.5 h-3.5 opacity-50" />
-                                        <span className="truncate max-w-[200px]">{(submission as any).keywords}</span>
+                                        <span className="truncate max-w-[200px]">{submission.keywords}</span>
                                     </div>
                                 )}
                             </div>
@@ -174,12 +161,12 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
-                                        {(submission as any).allReviews?.length === 0 ? (
+                                        {submission.allReviews?.length === 0 ? (
                                             <div className="p-8 text-center bg-muted/10 rounded-xl border border-dashed border-border/50">
                                                 <p className="text-[10px] font-semibold text-muted-foreground tracking-widest capitalize">Awaiting technical evaluation from assigned reviewers</p>
                                             </div>
                                         ) : (
-                                            (submission as any).allReviews?.map((r: any, i: number) => (
+                                            submission.allReviews?.map((r, i) => (
                                                 <Card key={r.id} className="border-border/50 shadow-none bg-muted/5 overflow-hidden">
                                                     <CardHeader className="p-4 bg-muted/20 border-b border-border/30 flex flex-row items-center justify-between">
                                                         <div className="flex items-center gap-2">
@@ -340,7 +327,7 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                                     <div className="space-y-3">
                                                         <div className="flex items-center justify-between">
                                                             <p className="text-[10px] font-semibold  text-white/40 tracking-widest">Volume Node</p>
-                                                            <p className="text-xs font-semibold">{(submission as any).volume_number && `Vol ${(submission as any).volume_number}, Issue ${(submission as any).issue_number}`}</p>
+                                                            <p className="text-xs font-semibold">{submission.volume_number && `Vol ${submission.volume_number}, Issue ${submission.issue_number}`}</p>
                                                         </div>
                                                         <Button asChild variant="ghost" className="w-full h-10 gap-2 bg-white/5 hover:bg-white/10 text-white font-semibold text-[10px]  tracking-widest border border-white/10 rounded-xl cursor-pointer">
                                                             <Link className="cursor-pointer" href="/archives">
@@ -353,7 +340,7 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                         </div>
                                     )}
 
-                                    {(submission as any).payment?.status === 'paid' && (
+                                    {submission.payment?.status === 'paid' && (
                                         <div className="space-y-4">
                                             <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-6">
                                                 <div className="flex items-center gap-3">
@@ -368,14 +355,14 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
 
                                                 <PublicationAssignment
                                                     submissionId={submission.id}
-                                                    currentIssueId={(submission as any).issue_id}
+                                                    currentIssueId={submission.issue_id}
                                                 />
                                             </div>
                                         </div>
                                     )}
 
                                     <div className="pt-4 mt-6 border-t border-border/50">
-                                        {(submission as any).payment?.status !== 'paid' && submission.status !== 'published' ? (
+                                        {submission.payment?.status !== 'paid' && submission.status !== 'published' ? (
                                             <div className="space-y-3">
                                                 <h4 className="text-[10px] font-semibold text-muted-foreground tracking-widest opacity-50 px-1">Infrastructure Control</h4>
                                                 <DeleteSubmissionButton submissionId={submission.id} status={submission.status} variant="full" />

@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useTransition, useEffect, useState, useRef } from 'react';
+import { useTransition, useState } from 'react';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Button } from '@/components/ui/button';
 

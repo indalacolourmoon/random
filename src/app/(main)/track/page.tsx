@@ -3,10 +3,10 @@ import TrackClient from '@/features/shared/components/TrackClient';
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Track Your Manuscript | ${settings.journal_name}`,
         description: `Check the real-time status of your research submission at ${settings.journal_short_name}. Transparent tracking of editorial screening, peer review, and publication journey.`,
@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function TrackManuscript() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

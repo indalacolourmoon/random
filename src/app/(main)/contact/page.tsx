@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import ContactClient from '@/features/shared/components/ContactClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Contact Us | ${settings.journal_name}`,
         description: `Get in touch with the editorial team of ${settings.journal_short_name}. We are available 24/7 for technical support and general inquiries regarding manuscript submissions.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function Contact() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

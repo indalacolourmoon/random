@@ -1,10 +1,7 @@
 'use client';
 
 import ReviewerApplicationForm from "@/features/reviewer/components/ReviewerApplicationForm";
-import { CheckCircle2, Globe, Users, Award, ShieldCheck, ChevronRight } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from 'next/link';
+import { CheckCircle2, Globe, Users, Award, ShieldCheck } from 'lucide-react';
 
 interface JoinUsClientProps {
     settings: Record<string, string>;
@@ -48,7 +45,7 @@ export default function JoinUsClient({ settings }: JoinUsClientProps) {
                             Contribute to Scholarly Excellence
                         </h2>
                         <p className="text-primary/70 leading-relaxed font-medium text-base sm:text-lg border-l-4 border-secondary/20 pl-6 ">
-                            "Joining the {journalShortName} Editorial Board is a commitment to precision and integrity, helping shape the trajectory of global engineering discourse."
+                             "Joining the {journalShortName} Peer Reviewer database is a commitment to precision and integrity, helping shape the trajectory of global engineering research."
                         </p>
                     </header>
 
@@ -56,7 +53,7 @@ export default function JoinUsClient({ settings }: JoinUsClientProps) {
                         {benefits.map((benefit, i) => (
                             <article key={i} role="listitem" className="p-6 sm:p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary group">
                                 <div className="flex gap-6 items-center">
-                                    <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center flex-shrink-0 text-primary group-hover:bg-primary group-hover:text-white transition-colors" aria-hidden="true">
+                                    <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center shrink-0 text-primary group-hover:bg-primary group-hover:text-white transition-colors" aria-hidden="true">
                                         <benefit.icon className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -97,7 +94,7 @@ export default function JoinUsClient({ settings }: JoinUsClientProps) {
 
                 {/* Right Column: Application Form */}
                 <div className="lg:col-span-12 xl:col-span-7">
-                    <div className="p-1 sm:p-2 bg-gradient-to-br from-primary/10 to-transparent rounded-[3rem] shadow-2xl">
+                    <div className="p-1 sm:p-2 bg-linear-to-br from-primary/10 to-transparent rounded-[3rem] shadow-2xl">
                         <div className="bg-white p-2 sm:p-5 lg:p-12 rounded-[2.9rem]">
                             <ReviewerApplicationForm />
                         </div>

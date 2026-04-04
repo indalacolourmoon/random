@@ -5,11 +5,11 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import EditorialBoardClient from '@/features/shared/components/EditorialBoardClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 import { getEditorialBoard } from '@/actions/users';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Editorial Board | ${settings.journal_name}`,
         description: `Meet the esteemed editorial board of ${settings.journal_short_name}. Our panel of global academic experts is committed to scientific excellence and rigorous peer review in engineering and technology.`,
@@ -27,8 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function EditorialBoard() {
-    const settings = await getSettings();
-    const initialMembers = await getEditorialBoard();
+    const settings = await getSettingsData();
+    const res = await getEditorialBoard();
+    const initialMembers = res.success ? res.data || [] : [];
 
     return (
         <main className="bg-background min-h-screen">

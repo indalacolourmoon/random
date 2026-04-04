@@ -1,26 +1,17 @@
 "use client"
 
 import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
 
-interface Message {
-    id: number
-    name: string
-    email: string
-    subject: string
-    message: string
-    status: 'pending' | 'resolved' | 'archived'
-    createdAt: string
-}
+import { ContactMessageRow } from "@/actions/messages"
 
 interface MessageListProps {
-    messages: Message[]
+    messages: ContactMessageRow[]
     selectedId?: number
-    onSelect: (message: Message) => void
+    onSelect: (message: ContactMessageRow) => void
     selectedIds: number[]
     onToggleSelect: (id: number) => void
     loading?: boolean
@@ -65,7 +56,7 @@ export function MessageList({
 
     return (
         <ScrollArea className="h-full">
-            <div className="flex flex-col divide-y divide-white/[0.03]">
+            <div className="flex flex-col divide-y divide-white/3">
                 {messages.map((message) => {
                     const isSelected = selectedId === message.id
                     const isChecked = selectedIds.includes(message.id)
@@ -101,7 +92,7 @@ export function MessageList({
                                         {message.name}
                                     </h3>
                                     <span className="text-[9px] font-mono font-black text-muted-foreground/40 uppercase tracking-tighter shrink-0">
-                                        {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                                        {formatDistanceToNow(message.createdAt ? new Date(message.createdAt) : new Date(), { addSuffix: true })}
                                     </span>
                                 </div>
 

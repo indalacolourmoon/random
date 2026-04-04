@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, Calendar, User, Clock, CheckCircle, Archive, Trash2, RotateCcw, ExternalLink, Send } from "lucide-react"
+import { Mail, User, Clock, CheckCircle, Archive, Trash2, RotateCcw, Send } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -56,7 +56,7 @@ export function MessageDetail({
         <div className="h-full flex flex-col relative group">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-primary/10 transition-all group-hover:bg-primary/20" />
             
-            <header className="p-8 sm:p-10 border-b border-white/[0.03] bg-muted/5 space-y-8">
+            <header className="p-8 sm:p-10 border-b border-white/3 bg-muted/5 space-y-8">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-8">
                     <div className="flex items-start gap-6">
                         <div className="w-16 h-16 rounded-2xl bg-muted border border-white/5 flex items-center justify-center shadow-md shrink-0">
@@ -115,7 +115,7 @@ export function MessageDetail({
                         <div className="flex items-center gap-4 text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] pl-6 before:content-[''] before:w-2 before:h-2 before:bg-primary/20 before:rounded-full">
                             Decrypted Payload
                         </div>
-                        <div className="p-10 2xl:p-14 bg-muted/10 border border-white/5 rounded-[2rem] 2xl:rounded-[3rem] shadow-inner selection:bg-primary/15">
+                        <div className="p-10 2xl:p-14 bg-muted/10 border border-white/5 rounded-4xl 2xl:rounded-[3rem] shadow-inner selection:bg-primary/15">
                             <p className="text-sm 2xl:text-xl font-medium text-foreground/90 leading-loose whitespace-pre-wrap font-sans opacity-95">
                                 {message.message}
                             </p>
@@ -123,7 +123,7 @@ export function MessageDetail({
                     </div>
 
                     {(isResolved || isArchived) && (
-                        <div className="p-8 border border-emerald-500/10 bg-emerald-500/[0.02] rounded-3xl space-y-5 animate-in slide-in-from-bottom-4 duration-500">
+                        <div className="p-8 border border-emerald-500/10 bg-emerald-500/2 rounded-3xl space-y-5 animate-in slide-in-from-bottom-4 duration-500">
                             <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 leading-none">
                                 <CheckCircle className="w-4 h-4" /> 
                                 {isArchived ? "Archival Fingerprint" : "Resolution Verification"}

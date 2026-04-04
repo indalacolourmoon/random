@@ -17,9 +17,9 @@ function ResourceDeskWidget({ settings }: ResourceDeskWidgetProps) {
             <h3 className="mb-6 m-0">Resource Desk</h3>
             <div className="grid gap-3 2xl:gap-6">
                 {resources.map((doc, i) => (
-                    <Link key={i} href={doc.link} className="flex items-center justify-between p-5 2xl:p-10 bg-white rounded-2xl 2xl:rounded-[2rem] border border-gray-400 hover:border-primary group transition-all">
+                    <Link key={i} href={doc.link} className="flex items-center justify-between p-5 2xl:p-10 bg-white rounded-2xl 2xl:rounded-4xl border border-gray-400 hover:border-primary group transition-all">
                         <div>
-                            <p className="text-primary mb-0.5 m-0 m-0">{doc.type}</p>
+                            <p className="text-primary mb-0.5 m-0">{doc.type}</p>
                             <p className="font-bold text-gray-900 group-hover:text-primary transition-colors m-0">{doc.label}</p>
                         </div>
                         <Download className="w-4 h-4 2xl:w-8 2xl:h-8 text-gray-900 group-hover:text-primary transition-colors animate-bounce " />

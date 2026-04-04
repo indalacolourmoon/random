@@ -4,7 +4,6 @@ import {
     BookOpen,
     Layout,
     Archive,
-    Hash,
     Mail,
     FileText,
     Users,

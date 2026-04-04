@@ -1,279 +1,448 @@
 "use server";
 
+import { and, eq, sql, desc, inArray, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sql } from "drizzle-orm";
-import { eq, desc, and } from "drizzle-orm";
-import {
-    submissions,
-    submissionVersions,
-    submissionFiles,
-    submissionAuthors,
-    users,
-    userProfiles,
+import { 
+    submissions, 
+    submissionVersions, 
+    submissionFiles, 
+    submissionAuthors, 
+    publications, 
+    volumesIssues, 
+    payments, 
+    users, 
+    userProfiles 
 } from "@/db/schema";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { sendEmail } from "@/lib/mail";
-import { inArray } from "drizzle-orm";
+import { sendEmail, emailTemplates } from "@/lib/mail";
 import fs from "fs/promises";
 import path from "path";
+import { ActionResponse } from "@/db/types";
 
-// ─── Get session user (author) ─────────────────────────────────────────────────
+/**
+ * Utility to get the current authenticated author.
+ */
 async function getAuthorSession() {
-    const session: any = await getServerSession(authOptions);
-    if (!session?.user?.id) return null;
-    if (session.user.role !== 'author') return null;
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.role !== 'author') return null;
     return session.user;
 }
 
-// ─── Author's dashboard data ────────────────────────────────────────────────────
-export async function getAuthorDashboard() {
+/**
+ * Fetch all submissions belonging to the logged-in author.
+ * Includes joined data for current title, publication info, and payment status.
+ */
+export async function getAuthorDashboard(): Promise<ActionResponse<{ submissions: unknown[] }>> {
     try {
         const author = await getAuthorSession();
-        if (!author) return { error: "Unauthorized", submissions: [] };
+        if (!author) return { success: false, error: "Unauthorized", data: { submissions: [] } };
 
-        const rows: any = await db.execute(sql`
-            SELECT
-                s.id, s.paper_id, s.status, s.submitted_at, s.updated_at,
-                sv.title, sv.abstract, sv.keywords,
-                p.amount as apc_amount, p.currency as apc_currency, p.status as payment_status,
-                pub.final_pdf_url, pub.doi,
-                vi.volume_number, vi.issue_number, vi.year as issue_year
-            FROM submissions s
-            JOIN submission_versions sv ON sv.submission_id = s.id
-                AND sv.version_number = (SELECT MAX(version_number) FROM submission_versions WHERE submission_id = s.id)
-            LEFT JOIN payments p ON p.submission_id = s.id
-            LEFT JOIN publications pub ON pub.submission_id = s.id
-            LEFT JOIN volumes_issues vi ON vi.id = s.issue_id
-            WHERE s.corresponding_author_id = ${author.id}
-            ORDER BY s.submitted_at DESC
-        `);
+        // Unified query using JOINS to avoid multiple calls and raw SQL issues
+        const rows = await db.select({
+            id: submissions.id,
+            paperId: submissions.paperId,
+            status: submissions.status,
+            submittedAt: submissions.submittedAt,
+            updatedAt: submissions.updatedAt,
+            title: submissionVersions.title,
+            paymentStatus: payments.status,
+            paymentAmount: payments.amount,
+            finalPdfUrl: publications.finalPdfUrl,
+            volumeNumber: volumesIssues.volumeNumber,
+            issueNumber: volumesIssues.issueNumber,
+            issueYear: volumesIssues.year
+        })
+        .from(submissions)
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            sql`${submissionVersions.versionNumber} = (SELECT MAX(v2.version_number) FROM submission_versions v2 WHERE v2.submission_id = ${submissions.id})`
+        ))
+        .leftJoin(payments, eq(submissions.id, payments.submissionId))
+        .leftJoin(publications, eq(submissions.id, publications.submissionId))
+        .leftJoin(volumesIssues, eq(submissions.issueId, volumesIssues.id))
+        .where(eq(submissions.correspondingAuthorId, author.id))
+        .orderBy(desc(submissions.submittedAt));
 
-        return { submissions: rows[0] || [] };
-    } catch (error: any) {
+        return { success: true, data: { submissions: rows } };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Author Dashboard Error:", error);
-        return { submissions: [] };
+        return { success: false, error: "Failed to load dashboard: " + message, data: { submissions: [] } };
     }
 }
 
-// ─── Single submission detail for author ────────────────────────────────────────
-export async function getAuthorSubmission(submissionId: number) {
+/**
+ * Fetch detailed view of a single submission for the author.
+ */
+export async function getAuthorSubmission(submissionId: number): Promise<ActionResponse<any>> {
     try {
         const author = await getAuthorSession();
-        if (!author) return null;
+        if (!author) return { success: false, error: "Unauthorized" };
 
-        const rows: any = await db.execute(sql`
-            SELECT
-                s.id, s.paper_id, s.status, s.submitted_at, s.updated_at,
-                sv.id as version_id, sv.version_number, sv.title, sv.abstract,
-                sv.keywords, sv.subject_area, sv.changelog
-            FROM submissions s
-            JOIN submission_versions sv ON sv.submission_id = s.id
-                AND sv.version_number = (SELECT MAX(version_number) FROM submission_versions WHERE submission_id = s.id)
-            WHERE s.id = ${submissionId} AND s.corresponding_author_id = ${author.id}
-            LIMIT 1
-        `);
-        if (!rows[0].length) return null;
-        const sub = rows[0][0];
+        // 1. Core Metadata
+        const subData = await db.select({
+            id: submissions.id,
+            paperId: submissions.paperId,
+            status: submissions.status,
+            submittedAt: submissions.submittedAt,
+            updatedAt: submissions.updatedAt,
+            versionId: submissionVersions.id,
+            versionNumber: submissionVersions.versionNumber,
+            title: submissionVersions.title,
+            abstract: submissionVersions.abstract,
+            keywords: submissionVersions.keywords,
+            changelog: submissionVersions.changelog
+        })
+        .from(submissions)
+        .innerJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            sql`${submissionVersions.versionNumber} = (SELECT MAX(v2.version_number) FROM submission_versions v2 WHERE v2.submission_id = ${submissions.id})`
+        ))
+        .where(and(
+            eq(submissions.id, submissionId),
+            eq(submissions.correspondingAuthorId, author.id)
+        ))
+        .limit(1);
 
-        // Files (manuscript + copyright, NOT pdf_version — that's reviewer-restricted)
-        const files: any = await db.execute(sql`
-            SELECT id, file_type, file_url, original_name, file_size, created_at
-            FROM submission_files
-            WHERE version_id = ${sub.version_id}
-              AND file_type IN ('main_manuscript', 'copyright_form')
-        `);
+        if (!subData.length) return { success: false, error: "Submission not found" };
+        const sub = subData[0];
 
-        // Authors
-        const authors: any = await db.execute(sql`
-            SELECT name, email, designation, institution, is_corresponding, order_index
-            FROM submission_authors
-            WHERE submission_id = ${submissionId}
-            ORDER BY order_index ASC
-        `);
+        // 2. Files (Restricted to Manuscript and Copyright for Author)
+        const files = await db.select()
+            .from(submissionFiles)
+            .where(and(
+                eq(submissionFiles.versionId, sub.versionId),
+                inArray(submissionFiles.fileType, ['main_manuscript', 'copyright_form'])
+            ));
 
-        // Reviewer comments visible to author
-        const reviewComments: any = await db.execute(sql`
-            SELECT r.comments_to_author, r.decision, r.submitted_at,
-                   ra.review_round, ra.deadline
-            FROM review_assignments ra
-            LEFT JOIN reviews r ON ra.id = r.assignment_id
-            WHERE ra.submission_id = ${submissionId}
-              AND r.comments_to_author IS NOT NULL
-            ORDER BY ra.review_round ASC
-        `);
+        // 3. Authors
+        const authorsList = await db.select()
+            .from(submissionAuthors)
+            .where(eq(submissionAuthors.submissionId, submissionId))
+            .orderBy(submissionAuthors.orderIndex);
 
-        // Payment
-        const payment: any = await db.execute(sql`
-            SELECT amount, currency, status, transaction_id, paid_at
-            FROM payments WHERE submission_id = ${submissionId} LIMIT 1
-        `);
+        // 4. Payment Info
+        const paymentData = await db.select()
+            .from(payments)
+            .where(eq(payments.submissionId, submissionId))
+            .limit(1);
 
-        // Publication
-        const pub: any = await db.execute(sql`
-            SELECT pub.final_pdf_url, pub.doi, pub.start_page, pub.end_page, pub.published_at,
-                   vi.volume_number, vi.issue_number, vi.year
-            FROM publications pub
-            JOIN volumes_issues vi ON vi.id = pub.issue_id
-            WHERE pub.submission_id = ${submissionId} LIMIT 1
-        `);
+        // 5. Publication Meta
+        const publicationData = await db.select({
+            finalPdfUrl: publications.finalPdfUrl,
+            doi: publications.doi,
+            publishedAt: publications.publishedAt,
+            volume: volumesIssues.volumeNumber,
+            issue: volumesIssues.issueNumber,
+            year: volumesIssues.year
+        })
+        .from(publications)
+        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+        .where(eq(publications.submissionId, submissionId))
+        .limit(1);
 
         return {
-            ...sub,
-            files: files[0] || [],
-            authors: authors[0] || [],
-            reviewComments: reviewComments[0] || [],
-            payment: payment[0]?.[0] || null,
-            publication: pub[0]?.[0] || null,
+            success: true,
+            data: {
+                ...sub,
+                files,
+                authors: authorsList,
+                payment: paymentData[0] || null,
+                publication: publicationData[0] || null
+            }
         };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Get Author Submission Error:", error);
-        return null;
+        return { success: false, error: "Failed to fetch submission details: " + message };
     }
 }
 
-// ─── Check if author can resubmit ───────────────────────────────────────────────
-export async function checkResubmissionEligibility(submissionId: number) {
+/**
+ * Check if the paper is eligible for resubmission (Window: 15 days).
+ */
+export async function checkResubmissionEligibility(submissionId: number): Promise<ActionResponse<{ eligible: boolean; daysRemaining: number }>> {
     try {
         const author = await getAuthorSession();
-        if (!author) return { eligible: false, reason: "Unauthorized" };
+        if (!author) return { success: false, error: "Unauthorized", data: { eligible: false, daysRemaining: 0 } };
 
-        const rows: any = await db.execute(sql`
-            SELECT id, status, updated_at, corresponding_author_id
-            FROM submissions WHERE id = ${submissionId} LIMIT 1
-        `);
-        if (!rows[0].length) return { eligible: false, reason: "Submission not found" };
+        const rows = await db.select({
+            id: submissions.id,
+            status: submissions.status,
+            updatedAt: submissions.updatedAt,
+            correspondingAuthorId: submissions.correspondingAuthorId
+        })
+        .from(submissions)
+        .where(eq(submissions.id, submissionId))
+        .limit(1);
 
-        const sub = rows[0][0];
-        if (sub.corresponding_author_id !== author.id) {
-            return { eligible: false, reason: "Not your submission" };
+        if (!rows.length) return { success: false, error: "Submission not found", data: { eligible: false, daysRemaining: 0 } };
+
+        const sub = rows[0];
+        if (sub.correspondingAuthorId !== author.id) return { success: false, error: "Unauthorized access", data: { eligible: false, daysRemaining: 0 } };
+
+        if (!['revision_requested', 'rejected'].includes(sub.status)) {
+            return { success: false, error: `Manuscript status '${sub.status}' does not allow resubmission.`, data: { eligible: false, daysRemaining: 0 } };
         }
 
-        const eligible_statuses = ['revision_requested', 'rejected'];
-        if (!eligible_statuses.includes(sub.status)) {
-            return { eligible: false, reason: `Cannot resubmit when status is '${sub.status}'` };
-        }
-
-        const updatedAt = new Date(sub.updated_at);
-        const now = new Date();
-        const daysSinceUpdate = Math.floor((now.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
+        const updatedAt = new Date(sub.updatedAt!);
+        const daysSinceUpdate = Math.floor((Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
         const daysRemaining = 15 - daysSinceUpdate;
 
         if (daysRemaining <= 0) {
-            return { eligible: false, reason: "Resubmission window (15 days) has expired", daysRemaining: 0 };
+            return { success: true, data: { eligible: false, daysRemaining: 0 } };
         }
 
-        return { eligible: true, daysRemaining, reason: "Eligible for resubmission" };
-    } catch (error: any) {
-        return { eligible: false, reason: error.message };
+        return { success: true, data: { eligible: true, daysRemaining } };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        return { success: false, error: message, data: { eligible: false, daysRemaining: 0 } };
     }
 }
 
-// ─── Author resubmits paper ─────────────────────────────────────────────────────
-export async function resubmitPaper(submissionId: number, formData: FormData) {
-    const createdFiles: string[] = [];
+/**
+ * Handle revised manuscript resubmission.
+ * Transactional DB-first logic as per requirements.
+ */
+export async function resubmitPaper(submissionId: number, formData: FormData): Promise<ActionResponse> {
+    const fileCleanup: string[] = [];
     try {
         const author = await getAuthorSession();
-        if (!author) return { error: "Unauthorized" };
+        if (!author) return { success: false, error: "Unauthorized" };
 
-        // Eligibility check
         const eligibility = await checkResubmissionEligibility(submissionId);
-        if (!eligibility.eligible) return { error: eligibility.reason };
+        if (!eligibility.success || !eligibility.data?.eligible) {
+            return { success: false, error: eligibility.error || "Resubmission window expired or ineligible status." };
+        }
 
         const manuscriptFile = formData.get("manuscript") as File;
         const copyrightFile = formData.get("copyright_form") as File;
         const changelog = formData.get("changelog") as string;
 
-        if (!manuscriptFile || manuscriptFile.size === 0) return { error: "Manuscript file is required" };
-        if (!copyrightFile || copyrightFile.size === 0) return { error: "Copyright form is required" };
+        if (!manuscriptFile || manuscriptFile.size === 0) return { success: false, error: "Revised manuscript is required." };
+        if (!copyrightFile || copyrightFile.size === 0) return { success: false, error: "New copyright form is required." };
 
+        // 1. DATABASE TRANSACTION (RECORD COMMIT)
         const result = await db.transaction(async (tx) => {
-            // 1. Get latest version to increment
-            const latestVersions = await tx.select()
+            // A. Get Latest Version to find current metadata
+            const versionsArr = await tx.select()
                 .from(submissionVersions)
                 .where(eq(submissionVersions.submissionId, submissionId))
                 .orderBy(desc(submissionVersions.versionNumber))
                 .limit(1);
+            
+            if (!versionsArr.length) throw new Error("Original version records not found.");
+            const latest = versionsArr[0];
+            const nextVersion = latest.versionNumber + 1;
 
-            if (!latestVersions.length) throw new Error("Original submission version not found");
-            const latest = latestVersions[0];
-            const newVersionNumber = latest.versionNumber + 1;
-
-            // 2. Create new version
+            // B. Create New Version Record
             const [versionInsert] = await tx.insert(submissionVersions).values({
                 submissionId,
-                versionNumber: newVersionNumber,
-                title: latest.title, // Keep original title/abstract if not provided, or update? 
-                                     // (Author might want to update title/abstract too, but for simplicity we keep it)
+                versionNumber: nextVersion,
+                title: latest.title,
                 abstract: latest.abstract,
                 keywords: latest.keywords,
-                changelog: changelog || null,
-            });
-            const newVersionId = (versionInsert as any).insertId;
+                changelog: changelog || "Revised version submission",
+            }).$returningId();
+            const verId = versionInsert.id;
 
-            // 3. Prepare file system
-            const uploadDir = "public/uploads/submissions";
-            await fs.mkdir(path.join(process.cwd(), uploadDir), { recursive: true });
-
-            const mExt = manuscriptFile.name.split('.').pop() || 'docx';
-            const cExt = copyrightFile.name.split('.').pop() || 'pdf';
-            const mName = `main_manuscript-${submissionId}-v${newVersionNumber}-${Date.now()}.${mExt}`;
-            const cName = `copyright_form-${submissionId}-v${newVersionNumber}-${Date.now()}.${cExt}`;
-
+            // C. Predictable URLs (DB First)
+            const timestamp = Date.now();
+            const mName = `revised_manuscript_${submissionId}_v${nextVersion}_${timestamp}.${manuscriptFile.name.split('.').pop()}`;
+            const cName = `revised_copyright_${submissionId}_v${nextVersion}_${timestamp}.${copyrightFile.name.split('.').pop()}`;
             const mUrl = `/uploads/submissions/${mName}`;
             const cUrl = `/uploads/submissions/${cName}`;
 
-            // 4. Insert file records
             await tx.insert(submissionFiles).values([
-                { versionId: newVersionId, fileType: 'main_manuscript', fileUrl: mUrl, originalName: manuscriptFile.name, fileSize: manuscriptFile.size },
-                { versionId: newVersionId, fileType: 'copyright_form', fileUrl: cUrl, originalName: copyrightFile.name, fileSize: copyrightFile.size }
+                { versionId: verId, fileType: "main_manuscript", fileUrl: mUrl, originalName: manuscriptFile.name, fileSize: manuscriptFile.size },
+                { versionId: verId, fileType: "copyright_form", fileUrl: cUrl, originalName: copyrightFile.name, fileSize: copyrightFile.size }
             ]);
 
-            // 5. Update submission status back to submitted
+            // D. Set status back to 'submitted'
             await tx.update(submissions)
                 .set({ status: 'submitted', updatedAt: new Date() })
                 .where(eq(submissions.id, submissionId));
 
-            // 6. Write files to disk (inside TX to rollback DB if disk write fails)
-            await fs.writeFile(path.join(process.cwd(), uploadDir, mName), Buffer.from(await manuscriptFile.arrayBuffer()));
-            createdFiles.push(path.join(process.cwd(), uploadDir, mName));
-
-            await fs.writeFile(path.join(process.cwd(), uploadDir, cName), Buffer.from(await copyrightFile.arrayBuffer()));
-            createdFiles.push(path.join(process.cwd(), uploadDir, cName));
-
-            return { newVersion: newVersionNumber };
+            return { mName, cName, nextVersion };
         });
 
-        // 7. Post-success Notifications
-        const staffUsers = await db.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
-        const [sub] = await db.select({ paperId: submissions.paperId }).from(submissions).where(eq(submissions.id, submissionId)).limit(1);
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        // 2. FILE SYSTEM OPERATIONS (POST-COMMIT)
+        const uploadDir = path.join(process.cwd(), "public/uploads/submissions");
+        try {
+            await fs.writeFile(path.join(uploadDir, result.mName), Buffer.from(await manuscriptFile.arrayBuffer()));
+            fileCleanup.push(path.join(uploadDir, result.mName));
 
-        const adminHtml = `<div style="font-family: sans-serif; padding: 20px; color: #1a1a1a;">
-            <h2 style="color: #6d0202;">Revised Manuscript Received</h2>
-            <p><strong>Paper ID:</strong> ${sub.paperId}</p>
-            <p><strong>Version:</strong> ${result.newVersion}</p>
-            ${changelog ? `<p><strong>Author Notes:</strong> ${changelog}</p>` : ''}
-            <a href="${baseUrl}/admin/submissions/${submissionId}" style="background: #1a1a1a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Review Submission</a>
-        </div>`;
-
-        await Promise.allSettled(staffUsers.map(s => sendEmail({
-            to: s.email,
-            subject: `IJITEST: Revised Submission Received [${sub.paperId}]`,
-            html: adminHtml
-        })));
-
-        revalidatePath(`/author/submissions/${submissionId}`);
-        revalidatePath('/author/submissions');
-        return { success: true, newVersion: result.newVersion };
-
-    } catch (error: any) {
-        // Cleanup files if any were written before error occurred
-        for (const file of createdFiles) {
-            try { await fs.unlink(file); } catch {}
+            await fs.writeFile(path.join(uploadDir, result.cName), Buffer.from(await copyrightFile.arrayBuffer()));
+            fileCleanup.push(path.join(uploadDir, result.cName));
+        } catch (ioErr) {
+            // If IO fails, we must cleanup the DB state to avoid broken versions
+            await db.delete(submissionVersions).where(and(eq(submissionVersions.submissionId, submissionId), eq(submissionVersions.versionNumber, result.nextVersion)));
+            throw new Error("Failed to save files on server. Please try again.");
         }
-        console.error("Resubmit Error:", error);
-        return { error: "Resubmission failed: " + error.message };
+
+        // 3. Notifications to Staff
+        try {
+            const paperData = await db.select({ 
+                paperId: submissions.paperId,
+                title: submissionVersions.title,
+                authorName: userProfiles.fullName
+            })
+            .from(submissions)
+            .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+            .innerJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+            .where(and(eq(submissions.id, submissionId), eq(submissionVersions.versionNumber, result.nextVersion)))
+            .limit(1);
+
+            if (paperData.length > 0) {
+                const { paperId, title, authorName } = paperData[0];
+                const staff = await db.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
+                const template = emailTemplates.resubmissionReceived(authorName, title, paperId, submissionId);
+                
+                await Promise.allSettled(staff.map(s => sendEmail({
+                    to: s.email,
+                    subject: template.subject,
+                    html: template.html
+                })));
+            }
+        } catch (mailErr) {
+            console.error("Resubmission Notification Error:", mailErr);
+            // Non-blocking for the user
+        }
+
+        revalidatePath('/author');
+        return { success: true };
+
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        console.error("Resubmission Failure:", error);
+        return { success: false, error: message || "Failed to process revision." };
+    }
+}
+
+/**
+ * Simple fetch for a user's own submissions as author.
+ * Used by different dashboards (Admin, Editor, Reviewer) to show "My Papers" tab.
+ */
+export async function getMySubmissions() {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) return [];
+
+        const userId = session.user.id;
+
+        const rows = await db.select({
+            id: submissions.id,
+            paperId: submissions.paperId,
+            status: submissions.status,
+            submittedAt: submissions.submittedAt,
+            title: submissionVersions.title,
+        })
+        .from(submissions)
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            sql`${submissionVersions.versionNumber} = (SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`
+        ))
+        .where(eq(submissions.correspondingAuthorId, userId))
+        .orderBy(desc(submissions.submittedAt));
+
+        return rows.map(r => ({
+            id: r.id,
+            paper_id: r.paperId,
+            status: r.status,
+            submitted_at: r.submittedAt ? r.submittedAt.toISOString() : "",
+            title: r.title || "Untitled Manuscript"
+        }));
+    } catch (error) {
+        console.error("Consolidated getMySubmissions Error:", error);
+        return [];
+    }
+}
+
+/**
+ * System Cleanup: Delete authors and their submissions if they are inactive for 15+ days 
+ * after rejection or revision request, and have no other active papers.
+ */
+export async function runCleanupInactiveAuthors(): Promise<ActionResponse<{ deletedCount: number }>> {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || session.user.role !== 'admin') {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+
+        // 1. Find submissions that are 'rejected' or 'revision_requested' and not updated for 15 days
+        const targetSubmissions = await db.select({
+            id: submissions.id,
+            authorId: submissions.correspondingAuthorId
+        })
+        .from(submissions)
+        .where(and(
+            inArray(submissions.status, ['rejected', 'revision_requested']),
+            sql`${submissions.updatedAt} < ${fifteenDaysAgo}`
+        ));
+
+        if (targetSubmissions.length === 0) {
+            return { success: true, data: { deletedCount: 0 }, message: "No inactive submissions found." };
+        }
+
+        const authorIds = [...new Set(targetSubmissions.map(s => s.authorId))];
+        let deletedCount = 0;
+        
+        for (const aId of authorIds) {
+            if (!aId) continue;
+            
+            // Check if this author has ANY active/published papers (not rejected or in revision window)
+            const activePapers = await db.select({ id: submissions.id })
+                .from(submissions)
+                .where(and(
+                    sql`${submissions.correspondingAuthorId} = ${aId}`,
+                    notInArray(submissions.status, ['rejected', 'revision_requested'])
+                ))
+                .limit(1);
+
+            if (activePapers.length === 0) {
+                // This author is purely inactive or rejected. Delete them.
+                // We'll use a transaction for each user cleanup
+                await db.transaction(async (tx) => {
+                    // Get all submission IDs for this author to clean files
+                    const authorSubs = await tx.select({ id: submissions.id }).from(submissions).where(sql`${submissions.correspondingAuthorId} = ${aId}`);
+                    const subIds = authorSubs.map(s => s.id);
+
+                    if (subIds.length > 0) {
+                        // Clean files from disk
+                        const files = await tx.select().from(submissionFiles).where(inArray(submissionFiles.versionId, 
+                            tx.select({ id: submissionVersions.id }).from(submissionVersions).where(inArray(submissionVersions.submissionId, subIds))
+                        ));
+                        
+                        for (const file of files) {
+                            try {
+                                await fs.unlink(path.join(process.cwd(), 'public', file.fileUrl));
+                            } catch { /* ignore */ }
+                        }
+
+                        // Waterfall delete (Drizzle should handle cascade if configured, but we'll be explicit)
+                        // In MySQL without cascade, this is necessary.
+                        await tx.delete(submissionAuthors).where(inArray(submissionAuthors.submissionId, subIds));
+                        await tx.delete(payments).where(inArray(payments.submissionId, subIds));
+                        await tx.delete(submissions).where(inArray(submissions.id, subIds));
+                    }
+
+                    // Delete Profile and User
+                    await tx.delete(userProfiles).where(sql`${userProfiles.userId} = ${aId}`);
+                    await tx.delete(users).where(sql`${users.id} = ${aId}`);
+                });
+                deletedCount++;
+            }
+        }
+
+        revalidatePath('/admin/users');
+        return { success: true, data: { deletedCount }, message: `Cleanup complete. Deleted ${deletedCount} inactive authors.` };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        console.error("Cleanup Error:", error);
+        return { success: false, error: "Cleanup failed: " + message };
     }
 }

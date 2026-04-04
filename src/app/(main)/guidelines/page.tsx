@@ -1,9 +1,9 @@
-import { getSettings } from "@/actions/settings";
+import { getSettingsData } from '@/actions/settings';
 import GuidelinesContent from "./GuidelinesContent";
 import { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Author Guidelines | ${settings.journal_name}`,
         description: `Comprehensive protocol for submitting manuscripts to ${settings.journal_short_name}. Detailed instructions on formatting, templates, and ethical requirements for global research publication.`,
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AuthorGuidelines() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return <GuidelinesContent settings={settings} />;
 }

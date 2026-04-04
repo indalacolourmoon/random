@@ -9,21 +9,15 @@ import {
     FileText,
     Mail,
     Building2,
-    CheckCircle2,
-    XCircle,
-    ExternalLink,
     Search,
     Filter,
     Clock,
-    UserCheck,
     Briefcase,
-    MoreVertical,
     CheckCircle,
-    X,
-    AlertTriangle
+    X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -86,9 +80,9 @@ function ManageApplicationsContent() {
     };
 
     const filteredApps = applications.filter(app => {
-        const matchesSearch = app.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = app.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.email?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesRole = filterRole === 'all' || app.application_type === filterRole;
+        const matchesRole = filterRole === 'all' || app.type === filterRole;
         return matchesSearch && matchesRole;
     });
 
@@ -173,9 +167,9 @@ function ManageApplicationsContent() {
                                 <Card className="border-border/50 shadow-sm overflow-hidden hover:border-primary/20 transition-all group">
                                     <div className="flex flex-col md:flex-row">
                                         <div className="p-5 flex-1 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
-                                            <div className="w-24 h-24 rounded-xl bg-muted border border-border/50 flex-shrink-0 overflow-hidden group-hover:shadow-xl transition-all shadow-inner relative">
-                                                {app.photo_url ? (
-                                                    <img src={app.photo_url} alt="" className="w-full h-full object-cover" />
+                                            <div className="w-24 h-24 rounded-xl bg-muted border border-border/50 shrink-0 overflow-hidden group-hover:shadow-xl transition-all shadow-inner relative">
+                                                {app.photoUrl ? (
+                                                    <img src={app.photoUrl} alt="" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center">
                                                         <User className="w-10 h-10 text-muted-foreground/30" />
@@ -185,12 +179,12 @@ function ManageApplicationsContent() {
 
                                             <div className="space-y-3 flex-1 text-center sm:text-left min-w-0">
                                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                                                    <h3 className="font-serif text-lg xl:text-xl font-semibold text-foreground tracking-tight capitalize">{app.full_name}</h3>
-                                                    <Badge className={`h-6 px-2.5 text-[10px] font-semibold tracking-widest capitalize border-none ${app.application_type === 'editor'
+                                                    <h3 className="font-serif text-lg xl:text-xl font-semibold text-foreground tracking-tight capitalize">{app.fullName}</h3>
+                                                    <Badge className={`h-6 px-2.5 text-[10px] font-semibold tracking-widest capitalize border-none ${app.type === 'editor'
                                                         ? 'bg-purple-500/10 text-purple-600'
                                                         : 'bg-emerald-500/10 text-emerald-600'
                                                         }`}>
-                                                        {app.application_type}
+                                                        {app.type}
                                                     </Badge>
                                                 </div>
 
@@ -202,12 +196,12 @@ function ManageApplicationsContent() {
 
                                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2">
                                                     <Button asChild variant="secondary" size="sm" className="h-10 px-5 gap-2.5 text-xs font-semibold tracking-widest rounded-xl hover:bg-muted border border-border/20 cursor-pointer">
-                                                        <a href={app.cv_url} target="_blank" className="flex items-center gap-2.5 cursor-pointer">
+                                                        <a href={app.cvUrl || '#'} target="_blank" className="flex items-center gap-2.5 cursor-pointer">
                                                             <FileText className="w-4.5 h-4.5" /> View Academic Profile
                                                         </a>
                                                     </Button>
                                                     <p className="text-[11px] font-semibold text-muted-foreground opacity-50 tracking-widest uppercase">
-                                                        Authenticated: {new Date(app.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                        Authenticated: {new Date(app.createdAt || Date.now()).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                                                     </p>
                                                 </div>
                                             </div>

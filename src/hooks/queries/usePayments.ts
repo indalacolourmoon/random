@@ -3,23 +3,27 @@ import {
     getPayments,
     getAcceptedUnpaidPapers,
     updatePaymentStatus,
-    initializePayment
+    initializePayment,
+    PaymentRow,
+    UnpaidPaperRow
 } from '@/actions/payments';
 
 export function usePayments() {
-    return useQuery<any[]>({
+    return useQuery<PaymentRow[]>({
         queryKey: ['payments'],
         queryFn: async () => {
-            return await getPayments();
+            const res = await getPayments();
+            return res.success ? res.data ?? [] : [];
         },
     });
 }
 
 export function useUnpaidPapers() {
-    return useQuery<any[]>({
+    return useQuery<UnpaidPaperRow[]>({
         queryKey: ['unpaid-papers'],
         queryFn: async () => {
-            return await getAcceptedUnpaidPapers();
+            const res = await getAcceptedUnpaidPapers();
+            return res.success ? res.data ?? [] : [];
         },
     });
 }
@@ -40,7 +44,7 @@ export function useInitializePayment() {
 export function useUpdatePaymentStatus() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, status, transactionId }: { id: number; status: string; transactionId: string }) => {
+        mutationFn: async ({ id, status, transactionId }: { id: number; status: 'pending' | 'paid' | 'verified' | 'failed' | 'waived'; transactionId?: string }) => {
             return await updatePaymentStatus(id, status, transactionId);
         },
         onSuccess: (data) => {

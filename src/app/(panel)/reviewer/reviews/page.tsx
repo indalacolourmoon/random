@@ -1,5 +1,5 @@
 'use client'
-import { ShieldAlert, User, Mail, FileUp, CheckCircle, Clock, Search, Plus, X, Download, FileText, Eye, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, User, FileUp, CheckCircle, Clock, Plus, X, FileText, Eye } from 'lucide-react';
 import { useActiveReviews, useUnassignedPapers, useAssignReviewer, useSubmitReview } from '@/hooks/queries/useReviews';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useSession } from 'next-auth/react';
@@ -7,7 +7,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,6 @@ import {
     DialogTrigger,
     DialogFooter
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
@@ -107,7 +106,7 @@ function ReviewsContent() {
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {unassigned.map(paper => (
-                                                <SelectItem key={paper.id} value={paper.id.toString()}>{paper.paper_id} - {paper.title}</SelectItem>
+                                                <SelectItem key={paper.id} value={paper.id.toString()}>{paper.paperId} - {paper.title}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -120,7 +119,7 @@ function ReviewsContent() {
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {staff.map(r => (
-                                                <SelectItem key={r.id} value={r.id.toString()}>{r.full_name} ({r.email})</SelectItem>
+                                                <SelectItem key={r.id} value={r.id.toString()}>{r.profile?.fullName || r.email} ({r.email})</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -137,7 +136,7 @@ function ReviewsContent() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-primary tracking-widest px-1 uppercase font-black ml-1">Secure PDF Manuscript (Required)</label>
+                                    <label className="text-[10px] font-black text-primary tracking-widest px-1 uppercase ml-1">Secure PDF Manuscript (Required)</label>
                                     <div className={`relative group border-2 border-dashed ${assignedFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/20 bg-primary/5'} rounded-xl p-6 transition-all hover:bg-primary/15 hover:border-primary/40`}>
                                         <input
                                             title="pdfFile"
@@ -197,7 +196,7 @@ function ReviewsContent() {
 
             <div className="grid grid-cols-1 gap-4">
                 {reviews.map((item) => (
-                    <Card key={item.id} className="border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group overflow-hidden dark:bg-black border-white hover:shadow-white hover:shadow-sm backdrop-blur-sm">
+                    <Card key={item.id} className="border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group overflow-hidden dark:bg-black hover:shadow-white backdrop-blur-sm">
                         <CardContent className="p-0">
                             <div className="p-6 flex flex-col md:flex-row md:items-start justify-between gap-6">
                                 <div className="flex-1 space-y-4 min-w-0">
@@ -206,7 +205,7 @@ function ReviewsContent() {
                                             {item.status.replace('_', ' ')}
                                         </Badge>
                                         <Badge variant="outline" className="h-6 px-3 text-xs font-mono font-black text-primary/40 tracking-wider bg-primary/5 border-none rounded-lg">
-                                            DOC-{item.paper_id}
+                                            DOC-{item.paperId}
                                         </Badge>
                                     </div>
 
@@ -217,7 +216,7 @@ function ReviewsContent() {
                                      <div className="flex flex-wrap gap-6 items-center">
                                         <div className="flex items-center gap-3 text-[10px] font-black tracking-widest text-primary/40 uppercase 2xl:text-base">
                                             <User className="w-5 h-5 2xl:w-6 2xl:h-6 opacity-40" />
-                                            <span>Staff: {item.reviewer_name}</span>
+                                            <span>Staff: {item.reviewerName}</span>
                                         </div>
                                         <div className="flex items-center gap-3 text-[10px] tracking-widest text-white dark:text-white bg-orange-500 px-4 py-2 rounded-xl border border-orange-500/10 uppercase font-black 2xl:text-base">
                                             <Clock className="w-5 h-5 2xl:w-6 2xl:h-6" />
@@ -227,17 +226,17 @@ function ReviewsContent() {
                                         </div>
                                     </div>
 
-                                    {item.comments_to_author && (
+                                    {item.commentsToAuthor && (
                                         <div className="bg-primary/5 p-6 rounded-xl border border-primary/10 text-sm text-primary/70 font-bold leading-relaxed relative pl-10 shadow-inner">
                                             <span className="absolute left-4 top-4 text-3xl text-emerald-500/30 font-serif leading-none dark:text-white">“</span>
-                                            {item.comments_to_author}
+                                            {item.commentsToAuthor}
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="shrink-0 flex flex-col gap-3 min-w-[240px]">
                                     <Button asChild variant="outline" className="h-12 2xl:h-14 gap-3 font-black text-xs 2xl:text-base uppercase tracking-widest border-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl shadow-sm transition-all cursor-pointer">
-                                        <Link className="cursor-pointer" href={`/reviewer/submissions/${item.submission_id}`}>
+                                        <Link className="cursor-pointer" href={`/reviewer/submissions/${item.submissionId}`}>
                                             <Eye className="w-5 h-5 2xl:w-6 2xl:h-6" /> Open Manuscript
                                         </Link>
                                     </Button>
@@ -340,9 +339,9 @@ function ReviewsContent() {
                                                 </form>
                                             </DialogContent>
                                         </Dialog>
-                                    ) : item.feedback_file_path && (
+                                    ) : item.feedbackFilePath && (
                                         <Button asChild variant="secondary" className="h-12 gap-3 font-black text-xs uppercase tracking-widest bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 shadow-none border-none rounded-xl cursor-pointer">
-                                            <a href={item.feedback_file_path} download>
+                                            <a href={item.feedbackFilePath} download>
                                                 <FileText className="w-5 h-5" /> View Feedback File
                                             </a>
                                         </Button>

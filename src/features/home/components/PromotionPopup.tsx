@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Gift, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
 import { markPromotionAsSeen } from '@/actions/promotion';
@@ -35,12 +34,12 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
     return (
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed  inset-0 z-[100] flex items-center justify-center p-4  bg-black/70 backdrop-blur-md">
+                <div className="fixed  inset-0 z-100 flex items-center justify-center p-4  bg-black/70 backdrop-blur-md">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="border-black  border-2 relative max-w-lg w-full bg-white rounded-[3rem] overflow-hidden shadow-vip border border-primary/5 max-h-[97vh] flex flex-col"
+                        className="border-black  border-2 relative max-w-lg w-full bg-white rounded-[3rem] overflow-hidden shadow-vip max-h-[97vh] flex flex-col"
                     >
                         {/* Decorative Background */}
                         <div className="absolute top-0 right-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -59,7 +58,7 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
 
                         <div className="relative z-10 p-6 sm:p-10 text-center flex flex-col h-full overflow-y-auto custom-scrollbar">
                             <div className="shrink-0 mb-4 sm:mb-6">
-                                <div className=" inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary/5 rounded-[1.5rem] sm:rounded-[2rem] text-primary shadow-inner border border-primary/5 mx-auto">
+                                <div className=" inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary/5 rounded-3xl sm:rounded-4xl text-primary shadow-inner border border-primary/5 mx-auto">
                                     <Sparkles className=" w-7 h-7 sm:w-8 sm:h-8 " />
                                 </div>
                             </div>
@@ -75,7 +74,7 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
                                 </p>
                             </div>
 
-                            <div className="bg-primary/5 p-4 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border border-primary/5 flex items-center gap-4 text-left shadow-inner shrink-0 mb-6 sm:mb-8">
+                            <div className="bg-primary/5 p-4 sm:p-5 rounded-3xl sm:rounded-4xl border border-primary/5 flex items-center gap-4 text-left shadow-inner shrink-0 mb-6 sm:mb-8">
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm shrink-0 border border-primary/5">
                                     <Gift className="animate-shine w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
                                 </div>

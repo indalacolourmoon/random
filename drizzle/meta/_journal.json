@@ -15,6 +15,13 @@
       "when": 1775068987943,
       "tag": "0001_vengeful_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775286776620,
+      "tag": "0002_nebulous_thunderbolts",
+      "breakpoints": true
     }
   ]
 }

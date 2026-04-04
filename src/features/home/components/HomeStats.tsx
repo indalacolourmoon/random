@@ -32,7 +32,7 @@ function HomeStats() {
                     className="h-full"
                 >
                     <Card className="h-full border border-primary/5 bg-white shadow-vip hover:shadow-vip-hover transition-all duration-500 group overflow-hidden relative">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-primary/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500" />
 
                         <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
                             <div className="group-hover:-translate-y-1 transition-transform duration-500">
@@ -53,7 +53,7 @@ function HomeStats() {
                                             repeat: Infinity,
                                             ease: "easeInOut"
                                         }}
-                                        className="h-full w-full bg-gradient-to-r from-secondary to-secondary/50"
+                                        className="h-full w-full bg-linear-to-r from-secondary to-secondary/50"
                                     />
                                 </div>
                                 <motion.div

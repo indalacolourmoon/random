@@ -15,34 +15,35 @@ import {
     volumesIssues,
     publications,
 } from "@/db/schema";
+import { 
+    SubmissionDetail, 
+    SubmissionUI,
+    ActionResponse, 
+    UserWithProfile,
+    SubmissionFile,
+    ReviewWithReviewer,
+} from "@/db/types";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import fs from 'fs/promises';
 import path from 'path';
-import { eq, desc, and, inArray, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
-// ─── Helper: get APC from settings ────────────────────────────────────────────
-async function getApcAmount(): Promise<{ amount: string; currency: string }> {
+/**
+ * Fetch a unified submission object with all related data joined.
+ * Resolves the structural mismatches between the legacy "flat" schema and the new normalized schema.
+ */
+export async function getSubmissionById(id: number): Promise<ActionResponse<SubmissionUI>> {
     try {
-        const rows = await db.select().from(settings)
-            .where(eq(settings.settingKey, 'apc_inr'));
-        const amount = rows[0]?.settingValue || '0';
-        return { amount, currency: 'INR' };
-    } catch {
-        return { amount: '0', currency: 'INR' };
-    }
-}
-
-// ─── Get full submission detail ────────────────────────────────────────────────
-export async function getSubmissionById(id: number) {
-    try {
+        // 1. Fetch Core Submission + Profile + Latest Version + Publication + Issue
         const submissionRows = await db.select({
             submission: submissions,
             author: users,
             authorProfile: userProfiles,
             issue: volumesIssues,
             publication: publications,
-            version: submissionVersions,
             payment: payments
         })
         .from(submissions)
@@ -52,16 +53,27 @@ export async function getSubmissionById(id: number) {
         .leftJoin(volumesIssues, eq(submissions.issueId, volumesIssues.id))
         .leftJoin(publications, eq(submissions.id, publications.submissionId))
         .leftJoin(payments, eq(submissions.id, payments.submissionId))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
         .limit(1);
 
         const row = submissionRows[0];
-        if (!row) return null;
+        if (!row) return { success: false, error: "Submission not found" };
 
-        const authors = await db.select().from(submissionAuthors).where(eq(submissionAuthors.submissionId, id));
+        // 2. Fetch Latest Version
+        const versionRows = await db.select()
+            .from(submissionVersions)
+            .where(eq(submissionVersions.submissionId, id))
+            .orderBy(desc(submissionVersions.versionNumber))
+            .limit(1);
+        
+        const latestVersion = versionRows[0];
+
+        // 3. Fetch Authors (Co-authors)
+        const authors = await db.select()
+            .from(submissionAuthors)
+            .where(eq(submissionAuthors.submissionId, id))
+            .orderBy(submissionAuthors.orderIndex);
+
+        // 4. Fetch Review Assignments with Reviewer Profiles and Decisions
         const assignments = await db.select({
             ra: reviewAssignments,
             reviewer: users,
@@ -74,224 +86,181 @@ export async function getSubmissionById(id: number) {
         .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
         .leftJoin(reviews, eq(reviewAssignments.id, reviews.assignmentId));
 
-        const submissionFilesList = row.version ? await db.select().from(submissionFiles).where(eq(submissionFiles.versionId, row.version.id)) : [];
+        // 5. Fetch Files for the Latest Version
+        const files = latestVersion 
+            ? await db.select().from(submissionFiles).where(eq(submissionFiles.versionId, latestVersion.id)) 
+            : [];
 
-        const result = {
+        // 6. Map to Domain Types
+        const typedAssignments: ReviewWithReviewer[] = assignments.map(a => ({
+            ...a.ra,
+            reviewer: { ...a.reviewer, profile: a.profile } as UserWithProfile,
+            review: a.review
+        }));
+
+        const submissionData: SubmissionDetail = {
             ...row.submission,
-            correspondingAuthor: { ...row.author, profile: row.authorProfile },
-            versions: row.version ? [{ ...row.version, files: submissionFilesList }] : [],
+            correspondingAuthor: { ...row.author, profile: row.authorProfile } as UserWithProfile,
+            versions: latestVersion ? [{ ...latestVersion, files: files as SubmissionFile[] }] : [],
             authors,
             payment: row.payment,
-            reviewAssignments: assignments.map(a => ({
-                ...a.ra,
-                reviewer: { ...a.reviewer, profile: a.profile },
-                review: a.review
-            })),
+            reviewAssignments: typedAssignments,
             issue: row.issue,
             publication: row.publication
         };
 
-        if (!result) return null;
+        // 7. Map to UI-Friendly Composite Object (Flat properties for historical compatibility)
+        const mainManuscript = files.find(f => f.fileType === 'main_manuscript');
+        const pdfVersion = files.find(f => f.fileType === 'pdf_version');
+        const finalPdf = row.publication?.finalPdfUrl;
 
-        const latestVersion = result.versions?.[0];
-        const files = latestVersion?.files || [];
-        const mainManuscript = files.find((f: any) => f.fileType === 'main_manuscript');
-        const pdfVersion = files.find((f: any) => f.fileType === 'pdf_version');
-
-        return {
-            ...result,
-            paper_id: result.paperId,
-            submitted_at: result.submittedAt,
-            updated_at: result.updatedAt,
-            title: latestVersion?.title || "Untitled",
+        const data: SubmissionUI = {
+            ...submissionData,
+            paper_id: submissionData.paperId,
+            submitted_at: submissionData.submittedAt,
+            updated_at: submissionData.updatedAt,
+            title: latestVersion?.title || "Untitled Manuscript",
             abstract: latestVersion?.abstract || "",
             keywords: latestVersion?.keywords || "",
             file_path: mainManuscript?.fileUrl || "",
-            pdf_url: pdfVersion?.fileUrl || "",
-            author_name: result.correspondingAuthor?.profile?.fullName || "Unknown Author",
-            author_email: result.correspondingAuthor?.email || "",
-            co_authors: JSON.stringify(result.authors.map((a: any) => ({
-                name: a.name, email: a.email, phone: a.phone,
-                designation: a.designation, institution: a.institution
+            pdf_url: finalPdf || pdfVersion?.fileUrl || "", // Priority: Published PDF > Review PDF
+            author_name: submissionData.correspondingAuthor?.profile?.fullName || "Unknown Author",
+            author_email: submissionData.correspondingAuthor?.email || "",
+            co_authors: JSON.stringify(submissionData.authors.map(a => ({
+                name: a.name, email: a.email, institution: a.institution
             }))),
-            volume_number: result.issue?.volumeNumber,
-            issue_number: result.issue?.issueNumber,
-            start_page: result.publication?.startPage,
-            end_page: result.publication?.endPage,
-            issue_id: result.issueId,
-            latestVersion,
-            allFiles: files,
-            allReviews: result.reviewAssignments || [],
+            volume_number: submissionData.issue?.volumeNumber,
+            issue_number: submissionData.issue?.issueNumber,
+            start_page: submissionData.publication?.startPage,
+            end_page: submissionData.publication?.endPage,
+            issue_id: submissionData.issueId,
+            latestVersion: latestVersion ? { ...latestVersion, files: files as SubmissionFile[] } : undefined,
+            allFiles: files as SubmissionFile[],
+            allReviews: typedAssignments,
         };
-    } catch (error: any) {
+
+        return { success: true, data };
+    } catch (error) {
         console.error("Get Submission Detail Error:", error);
-        return null;
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
-// ─── Update PDF URL ────────────────────────────────────────────────────────────
-export async function updateSubmissionPdfUrl(submissionId: number, pdfUrl: string) {
+/**
+ * Fetch all submissions formatted for Admin/Editor listing
+ */
+export async function getAllSubmissions(filters?: { status?: string }): Promise<ActionResponse<SubmissionUI[]>> {
     try {
-        const versions = await db.select().from(submissionVersions)
-            .where(eq(submissionVersions.submissionId, submissionId))
-            .orderBy(desc(submissionVersions.versionNumber))
-            .limit(1);
-        const latestVersion = versions[0];
-        if (!latestVersion) throw new Error("No version context found.");
-
-        const existingPdfs = await db.select().from(submissionFiles)
-            .where(and(
-                eq(submissionFiles.versionId, latestVersion.id),
-                eq(submissionFiles.fileType, 'pdf_version')
-            ))
-            .limit(1);
-        const existingPdf = existingPdfs[0];
-
-        if (existingPdf) {
-            await db.update(submissionFiles).set({ fileUrl: pdfUrl }).where(eq(submissionFiles.id, existingPdf.id));
-        } else {
-            await db.insert(submissionFiles).values({
-                versionId: latestVersion.id,
-                fileType: 'pdf_version',
-                fileUrl: pdfUrl,
-                originalName: 'final-manuscript.pdf'
-            });
+        const query = db.select({ id: submissions.id }).from(submissions);
+        if (filters?.status && filters.status !== 'all') {
+            query.where(eq(submissions.status, filters.status as typeof submissions.$inferSelect.status));
         }
+        query.orderBy(desc(submissions.submittedAt));
 
-        revalidatePath(`/admin/submissions/${submissionId}`);
-        revalidatePath(`/editor/submissions/${submissionId}`);
-        return { success: true };
-    } catch (error: any) {
-        return { error: error.message };
+        const ids = await query;
+        const results = await Promise.all(ids.map(async s => {
+            const res = await getSubmissionById(s.id);
+            return res.success ? res.data : null;
+        }));
+        
+        const data = results.filter((s): s is SubmissionUI => s !== null);
+        return { success: true, data };
+    } catch (error) {
+        console.error("Get All Submissions Error:", error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
-// ─── Admin/Editor: Final accept/reject decision ─────────────────────────────
-export async function decideSubmission(id: number, decision: 'accepted' | 'rejected') {
+/**
+ * Admin/Editor: Final accept/reject decision
+ */
+export async function decideSubmission(id: number, decision: 'accepted' | 'rejected'): Promise<ActionResponse> {
     try {
-        const submission = await getSubmissionById(id);
-        if (!submission) return { error: "Submission not found" };
+        const subRes = await getSubmissionById(id);
+        if (!subRes.success || !subRes.data) return { success: false, error: subRes.error || "Submission not found" };
+        const submission = subRes.data;
 
-        const { amount: apcAmount, currency: apcCurrency } = await getApcAmount();
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        const apcRows = await db.select().from(settings).where(eq(settings.settingKey, 'apc_inr')).limit(1);
+        const apcAmount = apcRows[0]?.settingValue || '0';
+        const apcCurrency = 'INR';
 
-        await db.transaction(async (tx: any) => {
-            if (decision === 'accepted') {
-                await tx.update(submissions).set({ status: 'accepted' }).where(eq(submissions.id, id));
+        await db.transaction(async (tx) => {
+            const status = decision === 'accepted' ? 'accepted' : 'rejected';
+            await tx.update(submissions).set({ status }).where(eq(submissions.id, id));
 
-                // Only create payment record if APC > 0
-                if (parseFloat(apcAmount) > 0) {
-                    await tx.insert(payments).values({
-                        submissionId: id,
-                        amount: apcAmount,
-                        currency: apcCurrency,
-                        status: 'pending'
-                    }).onDuplicateKeyUpdate({ set: { status: 'pending' } });
-                }
-
-                const template = emailTemplates.manuscriptAcceptance(
-                    submission.author_name,
-                    submission.title,
-                    submission.paperId
-                );
-                await sendEmail({ to: submission.author_email, subject: template.subject, html: template.html });
-            } else {
-                await tx.update(submissions).set({ status: 'rejected' }).where(eq(submissions.id, id));
-
-                const template = emailTemplates.manuscriptRejection(
-                    submission.author_name,
-                    submission.title,
-                    submission.paperId,
-                    "Editorial Board Decision: Does not meet current session criteria."
-                );
-                await sendEmail({ to: submission.author_email, subject: template.subject, html: template.html });
+            if (decision === 'accepted' && parseFloat(apcAmount) > 0) {
+                // Prepare payment record if not zero charge
+                await tx.insert(payments).values({
+                    submissionId: id,
+                    amount: apcAmount,
+                    currency: apcCurrency,
+                    status: 'pending'
+                }).onDuplicateKeyUpdate({ set: { status: 'pending' } });
             }
+
+            const isFree = parseFloat(apcAmount) === 0;
+
+            const template = decision === 'accepted' 
+                ? emailTemplates.manuscriptAcceptance(submission.author_name, submission.title, submission.paperId, isFree)
+                : emailTemplates.manuscriptRejection(submission.author_name, submission.title, submission.paperId, "Does not meet editorial criteria.");
+
+            await sendEmail({ to: submission.author_email, subject: template.subject, html: template.html });
         });
 
-        revalidatePath('/editor/submissions');
         revalidatePath('/admin/submissions');
         revalidatePath(`/admin/submissions/${id}`);
         return { success: true };
-    } catch (error: any) {
-        return { error: "Failed to finalize decision: " + error.message };
+    } catch (error) {
+        return { success: false, error: "Failed to finalize decision: " + (error instanceof Error ? error.message : String(error)) };
     }
 }
 
-// ─── Update status + email ─────────────────────────────────────────────────────
-export async function updateSubmissionStatus(id: number, status: any) {
+/**
+ * Update submission status and notify author
+ */
+export async function updateSubmissionStatus(id: number, status: typeof submissions.$inferSelect.status): Promise<ActionResponse> {
     try {
         await db.update(submissions).set({ status }).where(eq(submissions.id, id));
 
-        const submission = await getSubmissionById(id);
-        if (submission) {
-            const template = emailTemplates.statusUpdate(submission.author_name, submission.title, status, submission.paperId);
+        const subRes = await getSubmissionById(id);
+        if (subRes.success && subRes.data) {
+            const submission = subRes.data;
+            const apcRows = await db.select().from(settings).where(eq(settings.settingKey, 'apc_inr')).limit(1);
+            const isFree = (apcRows[0]?.settingValue || '0') === '0';
+
+            const template = emailTemplates.statusUpdate(
+                submission.author_name, 
+                submission.title, 
+                status, 
+                submission.paperId,
+                isFree
+            );
             await sendEmail({ to: submission.author_email, subject: template.subject, html: template.html });
         }
 
         revalidatePath('/admin/submissions');
         revalidatePath(`/admin/submissions/${id}`);
         return { success: true };
-    } catch (error: any) {
-        return { error: "Failed to update status: " + error.message };
+    } catch (error) {
+        return { success: false, error: "Failed to update status: " + (error instanceof Error ? error.message : String(error)) };
     }
 }
 
-// ─── Upload manuscript PDF ─────────────────────────────────────────────────────
-export async function uploadManuscriptPdf(submissionId: number, formData: FormData) {
-    try {
-        const file = formData.get("pdfFile") as File;
-        if (!file || file.size === 0) return { error: "No PDF file selected." };
-
-        const rows = await db.select({
-            submission: submissions,
-            version: submissionVersions
-        })
-        .from(submissions)
-        .where(eq(submissions.id, submissionId))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
-        .limit(1);
-
-        const submission = rows[0];
-
-        if (!submission || !submission.version) return { error: "Version context not found." };
-
-        const versionId = submission.version.id;
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const fileName = `final-manuscript-${submissionId}-${Date.now()}.pdf`;
-        const uploadDir = path.join(process.cwd(), "public/uploads/submissions");
-        await fs.mkdir(uploadDir, { recursive: true });
-        await fs.writeFile(path.join(uploadDir, fileName), buffer);
-        const relativePath = `/uploads/submissions/${fileName}`;
-
-        await db.insert(submissionFiles).values({
-            versionId, fileType: 'pdf_version', fileUrl: relativePath,
-            originalName: file.name, fileSize: file.size
-        });
-
-        revalidatePath('/admin/submissions');
-        revalidatePath(`/admin/submissions/${submissionId}`);
-        return { success: true, url: relativePath };
-    } catch (error: any) {
-        return { error: "Failed to upload: " + error.message };
-    }
-}
-
-// ─── Admin/Editor: Request resubmission WITH comments ─────────────────────────
+/**
+ * Request resubmission WITH comments
+ */
 export async function requestResubmissionWithComments(
     submissionId: number,
     comments: string,
     requestedBy: string
-) {
+): Promise<ActionResponse> {
     try {
-        const submission = await getSubmissionById(submissionId);
-        if (!submission) return { error: 'Submission not found' };
+        const subRes = await getSubmissionById(submissionId);
+        if (!subRes.success || !subRes.data) return { success: false, error: subRes.error || 'Submission not found' };
+        const submission = subRes.data;
 
         await db.update(submissions)
-            .set({ status: 'revision_requested', decisionBy: requestedBy })
+            .set({ status: 'revision_requested' })
             .where(eq(submissions.id, submissionId));
 
         const emailData = emailTemplates.resubmissionRequest(
@@ -302,73 +271,107 @@ export async function requestResubmissionWithComments(
         );
         await sendEmail({ to: submission.author_email, subject: emailData.subject, html: emailData.html });
 
-        // Notify all staff
-        const staffUsers = await db.select({ email: users.email })
-            .from(users)
-            .where(inArray(users.role, ['admin', 'editor']));
-
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
-        await Promise.allSettled(staffUsers.map((s: { email: string }) => sendEmail({
-            to: s.email,
-            subject: `Resubmission Requested: ${submission.paperId}`,
-            html: `<p>Resubmission was requested for <strong>${submission.paperId}</strong> by ${requestedBy}.<br>
-                   Comments: ${comments}<br>
-                   <a href="${baseUrl}/admin/submissions/${submissionId}">View Submission</a></p>`
-        })));
-
         revalidatePath(`/admin/submissions/${submissionId}`);
-        revalidatePath(`/editor/submissions/${submissionId}`);
         return { success: true };
-    } catch (error: any) {
-        console.error('Request Resubmission Error:', error);
-        return { error: error.message };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
-// ─── Delete submission (full cleanup) ─────────────────────────────────────────
-export async function deleteSubmission(id: number) {
+/**
+ * Permanent Delete (Full Cleanup)
+ */
+export async function deleteSubmission(id: number): Promise<ActionResponse> {
     try {
-        const rows = await db.select({
-            submission: submissions,
-            version: submissionVersions
-        })
-        .from(submissions)
-        .where(eq(submissions.id, id))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
-        .limit(1);
+        const subRes = await getSubmissionById(id);
+        if (!subRes.success || !subRes.data) return { success: false, error: subRes.error || "Submission not found" };
+        const submission = subRes.data;
 
-        const submission = rows[0];
-        if (!submission) return { error: "Submission not found" };
-
-        const versionId = submission.version?.id;
-
-        // 1. Physical file cleanup
-        if (versionId) {
-            const allFiles = await db.select().from(submissionFiles)
-                .where(eq(submissionFiles.versionId, versionId));
-            for (const file of allFiles) {
-                try {
-                    await fs.unlink(path.join(process.cwd(), 'public', file.fileUrl));
-                } catch { /* ignore missing files */ }
-            }
-        }
-
-        // 2. Database cleanup (children first, then parent)
-        await db.transaction(async (tx: any) => {
+        // 1. Database cleanup
+        await db.transaction(async (tx) => {
+            // Cascade should handle versions, files, and authors, but we do it manually for extra safety
             await tx.delete(submissionAuthors).where(eq(submissionAuthors.submissionId, id));
             await tx.delete(payments).where(eq(payments.submissionId, id));
             await tx.delete(reviewAssignments).where(eq(reviewAssignments.submissionId, id));
             await tx.delete(submissions).where(eq(submissions.id, id));
         });
 
+        // 2. File system cleanup
+        for (const file of submission.allFiles) {
+            try {
+                await fs.unlink(path.join(process.cwd(), 'public', file.fileUrl));
+            } catch { /* ignore */ }
+        }
+
         revalidatePath('/admin/submissions');
-        revalidatePath('/admin');
         return { success: true };
-    } catch (error: any) {
-        console.error("Permanent Delete Error:", error);
-        return { error: "Failed to delete: " + error.message };
+    } catch (error) {
+        return { success: false, error: "Failed to delete: " + (error instanceof Error ? error.message : String(error)) };
+    }
+}
+
+/**
+ * Admin/Editor: Upload a finalized PDF version of the manuscript
+ */
+export async function uploadManuscriptPdf(submissionId: number, formData: FormData): Promise<ActionResponse> {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        const pdfFile = formData.get("pdfFile") as File;
+        if (!pdfFile || pdfFile.size === 0) return { success: false, error: "PDF file is required." };
+
+        // 1. Get Latest Version
+        const versionRows = await db.select()
+            .from(submissionVersions)
+            .where(eq(submissionVersions.submissionId, submissionId))
+            .orderBy(desc(submissionVersions.versionNumber))
+            .limit(1);
+        
+        if (!versionRows.length) return { success: false, error: "No version records found for this submission." };
+        const latestVersion = versionRows[0];
+
+        // 2. Prepare File Path
+        const timestamp = Date.now();
+        const fileName = `final_manuscript_${submissionId}_v${latestVersion.versionNumber}_${timestamp}.pdf`;
+        const fileUrl = `/uploads/submissions/${fileName}`;
+        const uploadDir = path.join(process.cwd(), "public/uploads/submissions");
+
+        // 3. Database Update (Insert File Record)
+        await db.transaction(async (tx) => {
+            // Check if a PDF version already exists for this version
+            const existing = await tx.select().from(submissionFiles).where(and(
+                eq(submissionFiles.versionId, latestVersion.id),
+                eq(submissionFiles.fileType, 'pdf_version')
+            )).limit(1);
+
+            if (existing.length > 0) {
+                await tx.delete(submissionFiles).where(eq(submissionFiles.id, existing[0].id));
+            }
+
+            await tx.insert(submissionFiles).values({
+                versionId: latestVersion.id,
+                fileType: 'pdf_version',
+                fileUrl: fileUrl,
+                originalName: pdfFile.name,
+                fileSize: pdfFile.size
+            });
+
+            await tx.update(submissions).set({ updatedAt: new Date() }).where(eq(submissions.id, submissionId));
+        });
+
+        // 4. File System Operation
+        await fs.mkdir(uploadDir, { recursive: true });
+        await fs.writeFile(path.join(uploadDir, fileName), Buffer.from(await pdfFile.arrayBuffer()));
+
+        revalidatePath(`/admin/submissions/${submissionId}`);
+        revalidatePath('/admin/submissions');
+        
+        return { success: true };
+    } catch (error) {
+        console.error("Upload PDF Error:", error);
+        return { success: false, error: "Failed to upload PDF: " + (error instanceof Error ? error.message : String(error)) };
     }
 }

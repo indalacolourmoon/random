@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, DollarSign, CheckCircle, Clock, Search, Plus, X, User, ExternalLink, ShieldCheck, Mail, ArrowRight, AlertTriangle, History, Eye, Globe } from 'lucide-react';
+import { CreditCard, DollarSign, CheckCircle, Clock, Search, Plus, User, ShieldCheck, Mail, ArrowRight, AlertTriangle, History, Eye, Globe } from 'lucide-react';
 import {
     usePayments,
     useUnpaidPapers,
@@ -9,7 +9,7 @@ import {
 } from '@/hooks/queries/usePayments';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +64,7 @@ export default function PaymentManagement() {
         setIsSubmitting(false);
     }
 
-    async function handleStatusUpdate(id: number, status: string, transactionId: string) {
+    async function handleStatusUpdate(id: number, status: 'pending' | 'paid' | 'verified' | 'failed' | 'waived', transactionId: string) {
         try {
             const res = await updateMutation.mutateAsync({ id, status, transactionId });
             if (res.success) {
@@ -85,9 +85,9 @@ export default function PaymentManagement() {
     const filteredPayments = payments.filter(p => {
         const matchesSearch =
             p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.author_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.paper_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (p.transaction_id && p.transaction_id.toLowerCase().includes(searchQuery.toLowerCase()));
+            p.authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.paperId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.transactionId && p.transactionId.toLowerCase().includes(searchQuery.toLowerCase()));
 
         const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
 
@@ -97,8 +97,8 @@ export default function PaymentManagement() {
     const revenueStats = {
         gross: payments.filter(p => p.status === 'verified').reduce((acc, curr) => acc + parseFloat(curr.amount), 0),
         paid: payments.filter(p => p.status === 'paid' || p.status === 'verified').length,
-        projected: payments.filter(p => p.status === 'unpaid').reduce((acc, curr) => acc + parseFloat(curr.amount), 0),
-        pending: payments.filter(p => p.status === 'unpaid').length
+        projected: payments.filter(p => p.status === 'pending').reduce((acc, curr) => acc + parseFloat(curr.amount), 0),
+        pending: payments.filter(p => p.status === 'pending').length
     };
 
     const stats = [
@@ -112,7 +112,7 @@ export default function PaymentManagement() {
         switch (status) {
             case 'verified': return 'bg-emerald-500/10 text-emerald-600 border-none';
             case 'paid': return 'bg-blue-600/10 text-blue-600 border-none';
-            case 'unpaid': return 'bg-orange-500/10 text-orange-600 border-none';
+            case 'pending': return 'bg-orange-500/10 text-orange-600 border-none';
             case 'waived': return 'bg-purple-500/10 text-purple-600 border-none';
             default: return 'bg-muted text-muted-foreground border-none';
         }
@@ -151,7 +151,7 @@ export default function PaymentManagement() {
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {unpaidPapers.map(paper => (
                                                 <SelectItem key={paper.id} value={paper.id.toString()} className="font-semibold">
-                                                    {paper.paper_id} | {paper.title.slice(0, 50)}...
+                                                    {paper.paperId} | {paper.title.slice(0, 50)}...
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -259,7 +259,7 @@ export default function PaymentManagement() {
                                             </Badge>
                                             <div className="flex items-center gap-3 2xl:gap-5 bg-primary/5 px-4 2xl:px-7 py-1.5 2xl:py-3 rounded-full border border-primary/5 shadow-inner">
                                                 <ShieldCheck className="w-4 h-4 2xl:w-7 2xl:h-7 text-primary/30" />
-                                                <span className="text-[10px] 2xl:text-base font-semibold text-primary/60 tracking-widest uppercase">{item.paper_id}</span>
+                                                <span className="text-[10px] 2xl:text-base font-semibold text-primary/60 tracking-widest uppercase">{item.paperId}</span>
                                             </div>
                                         </div>
                                         <h3 className=" font-semibold text-foreground dark:text-white leading-wider tracking-wider line-clamp-1 group-hover:text-secondary transition-colors duration-500 2xl:text-xl">
@@ -270,7 +270,7 @@ export default function PaymentManagement() {
                                                 <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary/30 uppercase tracking-widest">Primary Investigator</p>
                                                 <div className="flex items-center gap-3 2xl:gap-5 text-sm 2xl:text-lg font-semibold text-primary uppercase">
                                                     <User className="w-4.5 h-4.5 2xl:w-6 2xl:h-6 text-primary/40" />
-                                                    <span>{item.author_name}</span>
+                                                    <span>{item.authorName}</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2 2xl:space-y-3">
@@ -285,18 +285,18 @@ export default function PaymentManagement() {
                                     <div className="shrink-0 flex flex-wrap items-center gap-4 2xl:gap-8 border-t xl:border-t-0 pt-6 xl:pt-0 border-primary/5">
                                         <div className="flex items-center gap-3 2xl:gap-5">
                                             <Button asChild variant="ghost" size="icon" className="w-12 h-12 2xl:w-20 2xl:h-20 rounded-xl 2xl:rounded-2xl bg-primary/5 text-primary/60 dark:text-primary/80 hover:text-primary hover:bg-primary/20 transition-all shadow-sm cursor-pointer">
-                                                <a href={`/admin/submissions/${item.submission_id}`} title="View Manuscript Detail">
+                                                <a href={`/admin/submissions/${item.submissionId}`} title="View Manuscript Detail">
                                                     <Eye className="w-5 h-5 2xl:w-9 2xl:h-9" />
                                                 </a>
                                             </Button>
                                             <Button asChild variant="ghost" size="icon" className="w-12 h-12 2xl:w-20 2xl:h-20 rounded-xl 2xl:rounded-2xl bg-primary/5 text-primary/60 dark:text-primary/80 hover:text-primary hover:bg-primary/20 transition-all shadow-sm cursor-pointer">
-                                                <a href={`mailto:${item.author_email}`} title={`Contact ${item.author_name}`}>
+                                                <a href={`mailto:${item.authorEmail}`} title={`Contact ${item.authorName}`}>
                                                     <Mail className="w-5 h-5 2xl:w-9 2xl:h-9" />
                                                 </a>
                                             </Button>
                                         </div>
                                         <Separator orientation="vertical" className="h-10 2xl:h-16 mx-2 2xl:mx-4 bg-primary/5 hidden xl:block" />
-                                        {item.status === 'unpaid' ? (
+                                        {item.status === 'pending' ? (
                                             <Button
                                                 onClick={async () => {
                                                     const txId = prompt("Enter Bank/Gateway Transaction Reference:");
@@ -312,7 +312,7 @@ export default function PaymentManagement() {
                                             <Button
                                                 onClick={async () => {
                                                     if (confirm("Finalize archive authorization for this manuscript?")) {
-                                                        await handleStatusUpdate(item.id, 'verified', item.transaction_id);
+                                                        await handleStatusUpdate(item.id, 'verified', item.transactionId || '');
                                                     }
                                                 }}
                                                 className="h-14 2xl:h-20 px-10 2xl:px-14 gap-3 2xl:gap-5 bg-emerald-600 text-white dark:text-slate-900 font-semibold text-xs 2xl:text-lg tracking-widest rounded-xl 2xl:rounded-2xl shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 hover:scale-[1.02] transition-all uppercase"
@@ -337,7 +337,7 @@ export default function PaymentManagement() {
                     ))}
 
                     {filteredPayments.length === 0 && !loading && (
-                        <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.02] border-2 border-dashed border-primary/5 rounded-xl space-y-6">
+                        <div className="flex flex-col items-center justify-center py-32 bg-primary/2 border-2 border-dashed border-primary/5 rounded-xl space-y-6">
                             <div className="w-20 h-20 rounded-xl bg-muted shadow-sm flex items-center justify-center text-primary/40">
                                 <AlertTriangle className="w-10 h-10" />
                             </div>

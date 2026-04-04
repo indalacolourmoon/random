@@ -5,7 +5,8 @@ export function useSettings() {
     return useQuery<Record<string, string>>({
         queryKey: ['settings'],
         queryFn: async () => {
-            return await getSettings();
+            const res = await getSettings();
+            return res.success ? res.data ?? {} : {};
         },
     });
 }

@@ -3,12 +3,14 @@ import PageHeader from "@/components/layout/PageHeader";
 import PaperDetailClient from "@/features/archives/components/PaperDetailClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
-import { getSettings } from "@/actions/settings";
+import { getSettingsData } from '@/actions/settings';
 import SettingsInitializer from "@/components/providers/SettingsInitializer";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
-    const paper = await getPaperById(id);
+    const res = await getPaperById(id);
+    const paper = res.success ? res.data : null;
+    
     if (!paper) return { title: 'Article Not Found | IJITEST' };
 
     return {
@@ -26,10 +28,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const [paper, settings] = await Promise.all([
+    const [res, settings] = await Promise.all([
         getPaperById(id),
-        getSettings()
+        getSettingsData()
     ]);
+    
+    const paper = res.success ? res.data : null;
 
     if (!paper) notFound();
 

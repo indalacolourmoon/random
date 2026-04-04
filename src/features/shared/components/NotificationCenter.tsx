@@ -13,6 +13,21 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+const Badge = ({ count }: { count: number }) => (
+    <AnimatePresence>
+        {count > 0 && (
+            <motion.span
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                className="absolute -top-1 -right-1 flex h-5 w-5 2xl:h-7 2xl:w-7 items-center justify-center rounded-full bg-primary text-[9px] sm:text-[10px] 2xl:text-xs font-black text-white shadow-lg shadow-primary/30 ring-2 ring-background z-20"
+            >
+                {count > 9 ? '9+' : count}
+            </motion.span>
+        )}
+    </AnimatePresence>
+);
+
 export default function NotificationCenter() {
     const { data: session } = useSession();
     const userRole = (session?.user as any)?.role;
@@ -21,26 +36,12 @@ export default function NotificationCenter() {
         queryKey: ['notificationCounts'],
         queryFn: getNotificationCounts,
         enabled: !!session?.user,
+        select: (res) => res.success ? res.data : { messages: 0, submissions: 0 },
         refetchInterval: 60000, // Poll every minute
         staleTime: 60000,
     });
 
     if (!userRole || (userRole !== 'admin' && userRole !== 'editor')) return null;
-
-    const Badge = ({ count }: { count: number }) => (
-        <AnimatePresence>
-            {count > 0 && (
-                <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    className="absolute -top-1 -right-1 flex h-5 w-5 2xl:h-7 2xl:w-7 items-center justify-center rounded-full bg-primary text-[9px] sm:text-[10px] 2xl:text-xs font-black text-white shadow-lg shadow-primary/30 ring-2 ring-background z-20"
-                >
-                    {count > 9 ? '9+' : count}
-                </motion.span>
-            )}
-        </AnimatePresence>
-    );
 
     return (
         <TooltipProvider>

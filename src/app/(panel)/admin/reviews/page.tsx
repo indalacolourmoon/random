@@ -1,6 +1,6 @@
 'use client'
 
-import { ShieldAlert, User, Mail, FileUp, CheckCircle, Clock, Search, Plus, X, Download, FileText, FileCheck, AlertCircle, Calendar, ArrowRight, Trash2, Eye, ExternalLink, ChevronDown } from 'lucide-react';
+import { ShieldAlert, User, FileUp, CheckCircle, Clock, Search, Plus, X, Download, FileText, FileCheck } from 'lucide-react';
 import { useActiveReviews, useUnassignedPapers, useAssignReviewer, useSubmitReview } from '@/hooks/queries/useReviews';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { decideSubmission } from '@/actions/submissions';
@@ -8,12 +8,10 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
     Dialog,
     DialogContent,
@@ -71,8 +69,8 @@ function ReviewsContent() {
     const filteredReviews = reviews.filter(r => {
         const matchesSearch =
             r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.reviewer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.paper_id.toLowerCase().includes(searchQuery.toLowerCase());
+            (r.reviewerName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+            r.paperId.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
 
@@ -80,7 +78,7 @@ function ReviewsContent() {
     });
 
     const selectedPaper = unassigned.find(p => p.id.toString() === selectedSubmissionId);
-    const hasExistingPdf = !!selectedPaper?.pdf_url;
+    const hasExistingPdf = !!selectedPaper?.pdfUrl;
 
     return (
         <section className="space-y-8 pb-20">
@@ -138,7 +136,7 @@ function ReviewsContent() {
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {unassigned.map(paper => (
-                                                <SelectItem key={paper.id} value={paper.id.toString()}>{paper.paper_id} | {paper.title.slice(0, 40)}...</SelectItem>
+                                                <SelectItem key={paper.id} value={paper.id.toString()}>{paper.paperId} | {paper.title.slice(0, 40)}...</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -151,7 +149,7 @@ function ReviewsContent() {
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {staff.map(r => (
-                                                <SelectItem key={r.id} value={r.id.toString()}>{r.full_name} ({r.role})</SelectItem>
+                                                <SelectItem key={r.id} value={r.id.toString()}>{r.profile?.fullName || r.email} ({r.role})</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -167,7 +165,7 @@ function ReviewsContent() {
                                     />
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-xs font-semibold text-muted-foreground tracking-widest px-1 uppercase text-primary">
+                                    <label className="text-xs font-semibold  tracking-widest px-1 uppercase text-primary">
                                         Secure PDF Manuscript {hasExistingPdf ? '(Optional - Already Attached)' : '(Required)'}
                                     </label>
                                     <div className={`relative group border-2 border-dashed ${assignedFile ? 'border-emerald-500/40 bg-emerald-500/5' : hasExistingPdf ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-primary/20 bg-primary/5'} rounded-xl p-6 transition-all hover:bg-primary/5 hover:border-primary/40`}>
@@ -272,7 +270,7 @@ function ReviewsContent() {
                                         </Badge>
                                         <div className="flex items-center gap-3 bg-primary/5 px-4 2xl:px-6 py-1.5 2xl:py-2.5 rounded-full border border-primary/5">
                                             <Badge variant="ghost" className="p-0 hover:bg-transparent"><User className="w-4 h-4 2xl:w-6 2xl:h-6 text-primary/30" /></Badge>
-                                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary/60 tracking-widest uppercase">Node: {item.paper_id}</span>
+                                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary/60 tracking-widest uppercase">Node: {item.paperId}</span>
                                         </div>
                                         <div className={`flex items-center gap-2.5 ${item.status === 'completed' ? 'text-primary/40' : 'text-orange-600'}`}>
                                             <Clock className="w-4 h-4 2xl:w-6 2xl:h-6" />
@@ -287,15 +285,15 @@ function ReviewsContent() {
                                                 <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary uppercase tracking-widest leading-relaxed">Assigned Technical Reviewer</span>
                                                 <div className="flex items-center gap-3 text-sm font-semibold text-foreground dark:text-white ">
                                                     <User className="w-4.5 h-4.5 text-primary/40" />
-                                                    <span>{item.reviewer_name}</span>
+                                                    <span>{item.reviewerName}</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {item.comments_to_author && (
-                                            <div className="mt-6 p-6 bg-primary/[0.02] rounded-xl border border-primary/5 text-sm text-primary/80 font-medium leading-relaxed shadow-inner">
+                                        {item.commentsToAuthor && (
+                                            <div className="mt-6 p-6 bg-primary/2 rounded-xl border border-primary/5 text-sm text-primary/80 font-medium leading-relaxed shadow-inner">
                                                 <span className="text-primary font-semibold opacity-40 pr-2 text-lg">"</span>
-                                                {item.comments_to_author}
+                                                {item.commentsToAuthor}
                                                 <span className="text-primary font-semibold opacity-40 pl-2 text-lg">"</span>
                                             </div>
                                         )}
@@ -303,16 +301,16 @@ function ReviewsContent() {
 
                                     <div className="shrink-0 flex flex-col gap-3 xl:w-64 border-t xl:border-t-0 pt-6 xl:pt-0 border-primary/5">
                                         <div className="flex items-center gap-2 w-full">
-                                            {item.manuscript_path && (
+                                            {item.manuscriptPath && (
                                                 <Button asChild variant="outline" className="flex-1 h-12 gap-2 font-semibold text-[9px] uppercase tracking-widest rounded-xl border-primary/10 text-primary hover:bg-primary transition-all shadow-sm cursor-pointer">
-                                                    <a href={item.manuscript_path} className="flex items-center justify-center w-full" download>
+                                                    <a href={item.manuscriptPath} className="flex items-center justify-center w-full" download>
                                                         <Download className="w-3.5 h-3.5 text-secondary mr-1" /> Source
                                                     </a>
                                                 </Button>
                                             )}
-                                            {item.feedback_file_path && (
+                                            {item.feedbackFilePath && (
                                                 <Button asChild variant="outline" className="flex-1 h-12 gap-2 font-semibold text-[9px] uppercase tracking-widest rounded-xl border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all shadow-sm cursor-pointer">
-                                                    <a href={item.feedback_file_path} className="flex items-center justify-center w-full" download>
+                                                    <a href={item.feedbackFilePath} className="flex items-center justify-center w-full" download>
                                                         <FileText className="w-3.5 h-3.5 mr-1" /> Intel
                                                     </a>
                                                 </Button>
@@ -330,7 +328,7 @@ function ReviewsContent() {
                                                     <DialogHeader className="space-y-2">
                                                         <DialogTitle className="text-2xl font-semibold text-foreground tracking-tight uppercase">Final Evaluation</DialogTitle>
                                                         <DialogDescription className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest leading-relaxed opacity-60">
-                                                            Commit technical feedback for Node: <span className="text-primary">{item.paper_id}</span>.
+                                                            Commit technical feedback for Node: <span className="text-primary">{item.paperId}</span>.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <form action={async (formData) => {
@@ -404,12 +402,12 @@ function ReviewsContent() {
                                             </Dialog>
                                         )}
 
-                                        {item.status === 'completed' && isInternalStaff && !['accepted', 'rejected', 'published', 'paid'].includes(item.submission_status) && (
+                                        {item.status === 'completed' && isInternalStaff && !['accepted', 'rejected', 'published', 'paid'].includes(item.submissionStatus) && (
                                             <div className="grid grid-cols-1 gap-4 2xl:gap-6 mt-4 pt-8 2xl:mt-6 2xl:pt-10 border-t border-primary/5">
                                                 <Button
                                                     onClick={async () => {
                                                         if (confirm('Authorize acceptance for this manuscript?')) {
-                                                            const res = await decideSubmission(item.submission_id, 'accepted');
+                                                            const res = await decideSubmission(item.submissionId, 'accepted');
                                                             if (res.success) {
                                                                 toast.success('Accepted');
                                                                 refetchReviews();
@@ -425,7 +423,7 @@ function ReviewsContent() {
                                                     variant="outline"
                                                     onClick={async () => {
                                                         if (confirm('Commit final rejection?')) {
-                                                            const res = await decideSubmission(item.submission_id, 'rejected');
+                                                            const res = await decideSubmission(item.submissionId, 'rejected');
                                                             if (res.success) {
                                                                 toast.success('Rejected');
                                                                 refetchReviews();
@@ -446,7 +444,7 @@ function ReviewsContent() {
                     ))}
 
                     {filteredReviews.length === 0 && !loading && (
-                        <div className="flex flex-col items-center justify-center py-40 bg-primary/[0.02] border-2 border-dashed border-primary/5 rounded-xl space-y-8">
+                        <div className="flex flex-col items-center justify-center py-40 bg-primary/2 border-2 border-dashed border-primary/5 rounded-xl space-y-8">
                             <div className="w-24 h-24 rounded-xl bg-card shadow-xl flex items-center justify-center text-primary/10 border border-primary/5">
                                 <ShieldAlert className="w-12 h-12" />
                             </div>

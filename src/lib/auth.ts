@@ -1,8 +1,9 @@
 import { NextAuthOptions, DefaultSession } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { eq } from "drizzle-orm";
+import { users, userProfiles } from "@/db/schema";
 import bcrypt from "bcryptjs";
 
 declare module "next-auth" {
@@ -42,29 +43,42 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
-                    const result: any = await db.execute(
-                        sql`SELECT * FROM users WHERE email = ${credentials.email}`
-                    )
+                    const result = await db.select({
+                        id: users.id,
+                        email: users.email,
+                        passwordHash: users.passwordHash,
+                        role: users.role,
+                        fullName: userProfiles.fullName,
+                        isActive: users.isActive
+                    })
+                    .from(users)
+                    .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+                    .where(eq(users.email, credentials.email))
+                    .limit(1);
 
-                    const user = result[0]?.[0];
+                    const user = result[0];
 
-                    if (!user) {
-                        throw new Error("Invalid email or password");
+                    if (!user || !user.isActive) {
+                        throw new Error("Invalid email or password or account deactivated");
                     }
 
-                    const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash);
+                    if (!user.passwordHash) {
+                        throw new Error("Please set up your account password first.");
+                    }
+
+                    const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
 
                     if (!isPasswordValid) {
                         throw new Error("Invalid email or password");
                     }
 
                     return {
-                        id: user.id.toString(),
+                        id: user.id,
                         email: user.email,
-                        name: user.full_name,
+                        name: user.fullName || "User",
                         role: user.role,
                     };
-                } catch (error: unknown) {
+                } catch (error) {
                     console.error("Auth error:", error);
                     return null;
                 }

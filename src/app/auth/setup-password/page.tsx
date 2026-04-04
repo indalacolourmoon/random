@@ -1,7 +1,7 @@
 "use client";
 
 import { getPasswordSetupInfo, setupPassword } from '@/actions/users';
-import { ShieldCheck, Lock, Mail, User, CheckCircle2, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -59,7 +59,7 @@ function SetupContent() {
     if (loading) return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
             <div className="animate-pulse flex flex-col items-center gap-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-[2rem]"></div>
+                <div className="w-16 h-16 bg-primary/10 rounded-4xl"></div>
                 <div className="h-4 w-32 bg-gray-200 rounded"></div>
             </div>
         </div>
@@ -103,7 +103,7 @@ function SetupContent() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
             <div className="max-w-xl w-full">
                 <div className="text-center mb-12">
-                    <div className="bg-primary w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-primary/30 mx-auto mb-8">
+                    <div className="bg-primary w-16 h-16 rounded-4xl flex items-center justify-center shadow-2xl shadow-primary/30 mx-auto mb-8">
                         <span className="text-white font-black text-2xl">IJ</span>
                     </div>
                     <h1 className=" font-serif font-black text-gray-900 mb-4">
@@ -137,7 +137,7 @@ function SetupContent() {
                                     name="password"
                                     type="password"
                                     required
-                                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white pl-14 pr-6 py-5 rounded-[1.5rem] outline-none transition-all font-bold"
+                                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white pl-14 pr-6 py-5 rounded-3xl outline-none transition-all font-bold"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -152,7 +152,7 @@ function SetupContent() {
                                     name="confirmPassword"
                                     type="password"
                                     required
-                                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white pl-14 pr-6 py-5 rounded-[1.5rem] outline-none transition-all font-bold"
+                                    className="w-full bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white pl-14 pr-6 py-5 rounded-3xl outline-none transition-all font-bold"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -167,7 +167,7 @@ function SetupContent() {
 
                         <button
                             disabled={status === 'loading'}
-                            className="w-full bg-primary text-white py-6 rounded-[1.5rem] font-black text-lg shadow-[0_20px_40px_-15px_rgba(109,2,2,0.3)] hover:shadow-[0_25px_50px_-12px_rgba(109,2,2,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                            className="w-full bg-primary text-white py-6 rounded-3xl font-black text-lg shadow-[0_20px_40px_-15px_rgba(109,2,2,0.3)] hover:shadow-[0_25px_50px_-12px_rgba(109,2,2,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                         >
                             {status === 'loading'
                                 ? (ctx === 'reset' ? 'Resetting Password...' : 'Securing Account...')

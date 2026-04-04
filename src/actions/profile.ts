@@ -1,13 +1,24 @@
 "use server";
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { 
+    users, 
+    userProfiles, 
+    applications, 
+    applicationInterests, 
+    masterInterests,
+    submissions, 
+    reviews,
+    submissionVersions,
+    reviewAssignments
+} from "@/db/schema";
+import { eq, sql, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
-import { safeDeleteFile } from "@/lib/fs-utils";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { ActionResponse } from "@/db/types";
 
 export type ProfileData = {
     id: string;
@@ -24,7 +35,13 @@ export type ProfileData = {
         reviewed_at: string | null;
     };
     research_interests: string[];
-    history: any[];
+    history: Array<{
+        title: string;
+        created_at?: Date | null;
+        updated_at?: Date | null;
+        status?: string | null;
+        decision?: string | null;
+    }>;
     completeness: {
         score: number;
         total: number;
@@ -33,34 +50,68 @@ export type ProfileData = {
     };
 };
 
-export async function getProfileData(userId: string, role: 'admin' | 'editor' | 'reviewer' | 'author') {
+export async function getProfileData(userId: string, role: 'admin' | 'editor' | 'reviewer' | 'author'): Promise<ActionResponse<ProfileData>> {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) throw new Error("Unauthorized");
+        if (!session) return { success: false, error: "Unauthorized" };
 
-        // 1. Fetch User Base Info
-        const userRows: any = await db.execute(
-            sql`SELECT id, full_name as name, email, designation, photo_url, orcid_id FROM users WHERE id = ${userId}`
-        );
-        if (userRows[0].length === 0) throw new Error("User not found");
-        const userData = userRows[0][0];
+        // 1. Fetch User Base Info and Profile
+        const userWithProfile = await db.select({
+            id: users.id,
+            email: users.email,
+            name: userProfiles.fullName,
+            designation: userProfiles.designation,
+            photo_url: userProfiles.photoUrl,
+            orcid_id: userProfiles.orcidId,
+        })
+        .from(users)
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(eq(users.id, userId))
+        .limit(1);
 
-        const profileData: any = { ...userData };
+        if (userWithProfile.length === 0) return { success: false, error: "User not found" };
+        const userData = userWithProfile[0];
+
+        const profileData: Partial<ProfileData> = { 
+            id: userData.id,
+            email: userData.email,
+            name: userData.name || "",
+            designation: userData.designation || "",
+            photo_url: userData.photo_url,
+            orcid_id: userData.orcid_id,
+        };
 
         // 2. Fetch Application Data (if not admin)
         if (role !== 'admin') {
-            const appRows: any = await db.execute(
-                sql`SELECT institute, nationality as country, status, rejection_reason, reviewed_at FROM applications WHERE email = ${userData.email}`
-            );
-            if (appRows[0].length > 0) {
-                profileData.application = appRows[0][0];
+            const appRows = await db.select({
+                institute: applications.institute,
+                country: applications.nationality,
+                status: applications.status,
+                rejection_reason: sql<string | null>`NULL`,
+                reviewed_at: applications.reviewedAt
+            })
+            .from(applications)
+            .where(eq(applications.email, userData.email))
+            .limit(1);
+
+            if (appRows.length > 0) {
+                profileData.application = {
+                    institute: appRows[0].institute,
+                    country: appRows[0].country || "",
+                    status: appRows[0].status,
+                    rejection_reason: appRows[0].rejection_reason,
+                    reviewed_at: appRows[0].reviewed_at ? appRows[0].reviewed_at.toISOString() : null
+                };
                 
-                // 3. Fetch Interests (if reviewer/editor)
+                // 3. Fetch Interests
+                // 3. Fetch Interests
                 if (role === 'reviewer' || role === 'editor') {
-                    const interestRows: any = await db.execute(
-                        sql`SELECT interest FROM application_interests ai JOIN applications a ON ai.application_id = a.id WHERE a.email = ${userData.email}`
-                    );
-                    profileData.research_interests = (interestRows[0] || []).map((r: any) => r.interest);
+                    const interestRows = await db.select({ name: masterInterests.name })
+                        .from(applicationInterests)
+                        .innerJoin(applications, eq(applicationInterests.applicationId, applications.id))
+                        .innerJoin(masterInterests, eq(applicationInterests.interestId, masterInterests.id))
+                        .where(eq(applications.email, userData.email));
+                    profileData.research_interests = interestRows.map(r => r.name);
                 } else {
                     profileData.research_interests = [];
                 }
@@ -72,102 +123,144 @@ export async function getProfileData(userId: string, role: 'admin' | 'editor' | 
         }
 
         // 4. Role-specific History
-        let history: any[] = [];
-        const userEmail = session.user?.email;
-
-        if (role === 'author' && userEmail) {
-            const subRows: any = await db.execute(
-                sql`SELECT title, status, submitted_at as created_at FROM submissions WHERE author_email = ${userEmail} ORDER BY submitted_at DESC LIMIT 10`
-            );
-            history = subRows[0] || [];
+        let history: ProfileData['history'] = [];
+        if (role === 'author') {
+            const subRows = await db.select({
+                title: submissionVersions.title,
+                status: submissions.status,
+                created_at: submissions.submittedAt
+            })
+            .from(submissions)
+            .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+            .where(eq(submissions.correspondingAuthorId, userId))
+            .orderBy(desc(submissions.submittedAt))
+            .limit(10);
+            history = subRows;
         } else if (role === 'reviewer') {
-            const revRows: any = await db.execute(
-                sql`SELECT s.title, r.status as decision, r.completed_at as updated_at 
-                 FROM reviews r 
-                 JOIN submissions s ON r.submission_id = s.id 
-                 WHERE r.reviewer_id = ${userId} AND r.status = 'completed'
-                 ORDER BY r.completed_at DESC LIMIT 10`
-            );
-            history = revRows[0] || [];
+            const revRows = await db.select({
+                title: submissionVersions.title,
+                decision: reviews.decision,
+                updated_at: reviews.submittedAt
+            })
+            .from(reviews)
+            .innerJoin(reviewAssignments, eq(reviews.assignmentId, reviewAssignments.id))
+            .innerJoin(submissions, eq(reviewAssignments.submissionId, submissions.id))
+            .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+            .where(and(
+                eq(reviewAssignments.reviewerId, userId),
+                eq(reviewAssignments.status, 'completed')
+            ))
+            .orderBy(desc(reviews.submittedAt))
+            .limit(10);
+            history = revRows;
         }
         profileData.history = history;
 
         // 5. Calculate Completeness
         profileData.completeness = await getProfileCompleteness(profileData, role);
 
-        return profileData as ProfileData;
+        return { success: true, data: profileData as ProfileData };
     } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("getProfileData error:", error);
-        throw error;
+        return { success: false, error: "Failed to fetch profile: " + message };
     }
 }
 
-export async function updateProfileField(userId: string, field: string, value: string) {
+export async function updateProfileField(userId: string, field: string, value: string): Promise<ActionResponse<string>> {
     const whitelist = ['name', 'designation', 'orcid_id'];
     if (!whitelist.includes(field)) {
-        throw new Error('Field not permitted');
+        return { success: false, error: 'Field not permitted' };
     }
 
     const trimmedValue = value.trim();
     if (!trimmedValue && field !== 'orcid_id') {
-        throw new Error('Value cannot be empty');
+        return { success: false, error: 'Value cannot be empty' };
     }
 
-    const dbField = field === 'name' ? 'full_name' : field === 'orcid_id' ? 'orcid_id' : 'designation';
-
     try {
-        const query = sql.raw(`UPDATE users SET ${dbField} = ${sql.placeholder('val')} WHERE id = ${sql.placeholder('id')}`);
-        await db.execute(sql`UPDATE users SET ${sql.raw(dbField)} = ${trimmedValue} WHERE id = ${userId}`);
+        const updateDoc: Record<string, string> = {};
+        if (field === 'name') updateDoc.fullName = trimmedValue;
+        else if (field === 'orcid_id') updateDoc.orcidId = trimmedValue;
+        else if (field === 'designation') updateDoc.designation = trimmedValue;
+
+        await db.update(userProfiles)
+            .set(updateDoc)
+            .where(eq(userProfiles.userId, userId));
+            
         revalidatePath("/(panel)", "layout");
-        return trimmedValue;
+        return { success: true, data: trimmedValue };
     } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("updateProfileField error:", error);
-        throw error;
+        return { success: false, error: "Failed to update field: " + message };
     }
 }
 
-export async function updateResearchInterests(userId: string, interests: string[]) {
-    if (!Array.isArray(interests)) throw new Error("Invalid interests format");
+export async function updateResearchInterests(userId: string, interests: string[]): Promise<ActionResponse<string[]>> {
+    if (!Array.isArray(interests)) return { success: false, error: "Invalid interests format" };
     const cleanInterests = interests.map(i => i.trim()).filter(Boolean).slice(0, 20);
 
     try {
-        return await db.transaction(async (tx) => {
-            // Get Application ID first
-            const userRows: any = await tx.execute(sql`SELECT email FROM users WHERE id = ${userId}`);
-            const email = userRows[0][0]?.email;
+        await db.transaction(async (tx) => {
+            // Get User Email and Profile
+            const userRows = await tx.select({ email: users.email })
+                .from(users)
+                .where(eq(users.id, userId))
+                .limit(1);
+            
+            const email = userRows[0]?.email;
             if (!email) throw new Error("User not found");
 
-            const appRows: any = await tx.execute(sql`SELECT id FROM applications WHERE email = ${email}`);
-            const applicationId = appRows[0][0]?.id;
+            const appRows = await tx.select({ id: applications.id })
+                .from(applications)
+                .where(eq(applications.email, email))
+                .limit(1);
+            
+            const applicationId = appRows[0]?.id;
 
             if (applicationId) {
-                await tx.execute(sql`DELETE FROM application_interests WHERE application_id = ${applicationId}`);
-                if (cleanInterests.length > 0) {
-                    const values = cleanInterests.map(i => sql`(${applicationId}, ${i})`);
-                    await tx.execute(sql`INSERT INTO application_interests (application_id, interest) VALUES ${sql.join(values, sql`, `)}`);
+                await tx.delete(applicationInterests).where(eq(applicationInterests.applicationId, applicationId));
+                
+                for (const name of cleanInterests) {
+                    let interestId: number;
+                    const existing = await tx.select().from(masterInterests).where(eq(masterInterests.name, name)).limit(1);
+                    
+                    if (existing[0]) {
+                        interestId = existing[0].id;
+                    } else {
+                        const [inserted] = await tx.insert(masterInterests).values({ name });
+                        interestId = inserted.insertId;
+                    }
+
+                    await tx.insert(applicationInterests).values({
+                        applicationId,
+                        interestId
+                    });
                 }
             }
-
-            revalidatePath("/(panel)", "layout");
-            return cleanInterests;
         });
+        
+        revalidatePath("/(panel)", "layout");
+        return { success: true, data: cleanInterests };
     } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("updateResearchInterests error:", error);
-        throw error;
+        return { success: false, error: "Failed to update interests: " + message };
     }
 }
 
-export async function updateProfilePhoto(userId: string, formData: FormData) {
+export async function updateProfilePhoto(userId: string, formData: FormData): Promise<ActionResponse<string>> {
     const file = formData.get("file") as File;
-    if (!file) throw new Error("No file provided");
+    if (!file) return { success: false, error: "No file provided" };
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-        throw new Error("Invalid file type. Only JPG, PNG and WEBP allowed.");
+        return { success: false, error: "Invalid file type. Only JPG, PNG and WEBP allowed." };
     }
 
     if (file.size > 2 * 1024 * 1024) {
-        throw new Error("File too large. Max 2MB allowed.");
+        return { success: false, error: "File too large. Max 2MB allowed." };
     }
 
     try {
@@ -180,12 +273,18 @@ export async function updateProfilePhoto(userId: string, formData: FormData) {
         const photoUrl = `/uploads/profiles/${fileName}`;
 
         // Get old photo to delete later
-        const rows: any = await db.execute(sql`SELECT photo_url FROM users WHERE id = ${userId}`);
-        const oldPhoto = rows[0][0]?.photo_url;
+        const rows = await db.select({ photoUrl: userProfiles.photoUrl })
+            .from(userProfiles)
+            .where(eq(userProfiles.userId, userId))
+            .limit(1);
+        
+        const oldPhoto = rows[0]?.photoUrl;
 
         await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
         
-        await db.execute(sql`UPDATE users SET photo_url = ${photoUrl} WHERE id = ${userId}`);
+        await db.update(userProfiles)
+            .set({ photoUrl: photoUrl })
+            .where(eq(userProfiles.userId, userId));
 
         if (oldPhoto && oldPhoto.startsWith('/uploads/profiles/')) {
             const oldPath = path.join(process.cwd(), "public", oldPhoto);
@@ -193,19 +292,20 @@ export async function updateProfilePhoto(userId: string, formData: FormData) {
         }
 
         revalidatePath("/(panel)", "layout");
-        return photoUrl;
+        return { success: true, data: photoUrl };
     } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("updateProfilePhoto error:", error);
-        throw error;
+        return { success: false, error: "Failed to update photo: " + message };
     }
 }
 
-export async function getProfileCompleteness(profileData: any, role: string) {
+export async function getProfileCompleteness(profileData: Partial<ProfileData>, role: string) {
     let score = 0;
     let total = 0;
     const missing: string[] = [];
 
-    const check = (val: any, label: string) => {
+    const check = (val: unknown, label: string) => {
         total++;
         if (val && (Array.isArray(val) ? val.length > 0 : val.toString().trim().length > 0)) {
             score++;

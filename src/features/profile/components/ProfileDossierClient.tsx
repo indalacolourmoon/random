@@ -1,31 +1,25 @@
 "use client"
 
-import { useState, useRef, useMemo } from "react"
+import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
-    User, 
     Building2, 
     Globe, 
-    Mail, 
     CheckCircle2, 
     XCircle, 
     Clock, 
     ExternalLink, 
-    Camera, 
-    Upload,
+    Camera,
     ChevronDown,
     FileText,
-    History,
     Search,
     Plus,
     X,
-    Lock,
-    Edit2
+    Lock
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { InlineEditField } from "@/components/ui/InlineEditField"
 import { DossierProgress } from "@/components/ui/DossierProgress"
@@ -36,7 +30,6 @@ import {
     updateProfilePhoto,
     ProfileData 
 } from "@/actions/profile"
-import Image from "next/image"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
@@ -81,11 +74,12 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
     const handleSaveField = async (field: string, value: string) => {
         try {
-            await updateProfileField(userId, field, value)
+            const res = await updateProfileField(userId, field, value)
+            if (!res.success) throw new Error(res.error || "Failed to update profile")
             setData(prev => ({ ...prev, [field === 'name' ? 'name' : field]: value }))
             toast.success(`Identity updated: ${field}`)
-        } catch (error: any) {
-            toast.error(error.message || "Failed to update profile")
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : String(error) || "Failed to update profile")
             throw error
         }
     }
@@ -99,11 +93,12 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
         formData.append("file", file)
 
         try {
-            const newUrl = await updateProfilePhoto(userId, formData)
-            setData(prev => ({ ...prev, photo_url: newUrl }))
+            const response = await updateProfilePhoto(userId, formData)
+            if (!response.success || !response.data) throw new Error(response.error || "Photo upload failed")
+            setData(prev => ({ ...prev, photo_url: response.data || null }))
             toast.success("Identity photo updated")
-        } catch (error: any) {
-            toast.error(error.message || "Photo upload failed")
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : String(error) || "Photo upload failed")
         } finally {
             setIsUploading(false)
         }
@@ -124,11 +119,12 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
     const handleSaveInterests = async () => {
         try {
-            const saved = await updateResearchInterests(userId, tempInterests)
-            setData(prev => ({ ...prev, research_interests: saved }))
+            const res = await updateResearchInterests(userId, tempInterests)
+            if (!res.success || !res.data) throw new Error(res.error || "Failed to update interests")
+            setData(prev => ({ ...prev, research_interests: res.data || [] }))
             setIsEditingInterests(false)
             toast.success("Research profile updated")
-        } catch (error: any) {
+        } catch (error) {
             toast.error("Failed to update interests")
         }
     }
@@ -136,7 +132,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
     return (
         <div className="max-w-7xl mx-auto space-y-12 pb-24">
             {/* Header/Completeness */}
-            <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/5 p-8 2xl:p-12 rounded-[2.5rem] 2xl:rounded-[4rem] shadow-2xl">
+            <div className="bg-white/3 backdrop-blur-3xl border border-white/5 p-8 2xl:p-12 rounded-[2.5rem] 2xl:rounded-[4rem] shadow-2xl">
                 <DossierProgress 
                     percentage={data.completeness.percentage}
                     missing={data.completeness.missing}
@@ -148,7 +144,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
                 
                 {/* Left Column: Identity Sidebar */}
                 <aside className="lg:sticky lg:top-8 space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
-                    <Card className="bg-white/[0.02] border-white/5 shadow-2xl rounded-[2.5rem] 2xl:rounded-[3.5rem] overflow-hidden">
+                    <Card className="bg-white/2 border-white/5 shadow-2xl rounded-[2.5rem] 2xl:rounded-[3.5rem] overflow-hidden">
                         <CardContent className="p-10 2xl:p-14 text-center space-y-8">
                             {/* Photo */}
                             <div className="flex justify-center" ref={sectionRefs['Profile Photo']}>
@@ -253,7 +249,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
                     
                     {/* Affiliation Section */}
                     {role !== 'admin' && (
-                        <Card className="bg-white/[0.02] border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]">
+                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]">
                             <CardContent className="p-10 2xl:p-14">
                                 <div className="flex items-center justify-between mb-8">
                                     <div className="space-y-1">
@@ -287,7 +283,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
                     {/* Research Domains Section */}
                     {(role === 'reviewer' || role === 'editor') && (
-                        <Card className="bg-white/[0.02] border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]" ref={sectionRefs['Research Interests']}>
+                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]" ref={sectionRefs['Research Interests']}>
                             <CardContent className="p-10 2xl:p-14">
                                 <div className="flex items-center justify-between mb-8">
                                     <div className="space-y-1">
@@ -390,7 +386,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
                     {/* Application Status Section */}
                     {role !== 'admin' && data.application && (
-                        <Card className="bg-white/[0.02] border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]">
+                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]">
                             <CardContent className="p-10 2xl:p-14">
                                 <div className="flex items-center justify-between mb-8">
                                     <div className="space-y-1">
@@ -408,7 +404,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
                                 </div>
 
                                 <div className={cn(
-                                    "p-10 rounded-[2rem] border relative overflow-hidden",
+                                    "p-10 rounded-4xl border relative overflow-hidden",
                                     data.application.status === 'approved' ? 'bg-emerald-600/5 border-emerald-500/20' :
                                     data.application.status === 'rejected' ? 'bg-rose-600/5 border-rose-500/20' :
                                     'bg-amber-600/5 border-amber-500/20'
@@ -456,7 +452,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
                     {/* History Section */}
                     {role !== 'admin' && role !== 'editor' && (
-                        <Card className="bg-white/[0.02] border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]" ref={role === 'author' ? sectionRefs['Submission History'] : sectionRefs['Activity History']}>
+                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]" ref={role === 'author' ? sectionRefs['Submission History'] : sectionRefs['Activity History']}>
                             <CardContent className="p-10 2xl:p-14">
                                 <div className="flex items-center justify-between mb-10">
                                     <div className="space-y-1">
@@ -474,7 +470,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
                                 <div className="space-y-4">
                                     {data.history.length > 0 ? data.history.map((item, idx) => (
-                                        <div key={idx} className="group flex items-center justify-between p-6 bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 hover:border-white/10 rounded-3xl transition-all">
+                                        <div key={idx} className="group flex items-center justify-between p-6 bg-white/1 hover:bg-white/3 border border-white/5 hover:border-white/10 rounded-3xl transition-all">
                                             <div className="flex items-center gap-6">
                                                 <div className="w-14 h-14 rounded-2xl bg-muted/40 flex items-center justify-center border border-white/5 shadow-xl group-hover:scale-105 transition-transform">
                                                     <FileText className="w-6 h-6 opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all" />
@@ -482,7 +478,7 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
                                                 <div className="space-y-1">
                                                     <h5 className="font-serif text-lg font-bold line-clamp-1">{item.title}</h5>
                                                     <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground opacity-60">
-                                                        <span>Logged: {new Date(item.created_at || item.updated_at).toLocaleDateString()}</span>
+                                                        <span>Logged: {(item.created_at || item.updated_at) ? new Date((item.created_at || item.updated_at)!).toLocaleDateString() : 'Unknown Date'}</span>
                                                         <span className="w-1 h-1 rounded-full bg-white/10" />
                                                         <span>PID-000{idx + 128}</span>
                                                     </div>

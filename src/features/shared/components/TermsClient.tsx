@@ -1,6 +1,6 @@
 'use client';
 
-import { Scale, FileText, Copyright, ShieldAlert, ChevronRight, Gavel, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, Gavel } from 'lucide-react';
 import Link from 'next/link';
 
 interface TermsClientProps {
@@ -54,7 +54,7 @@ export default function TermsClient({ settings }: TermsClientProps) {
                     <Card className="bg-slate-900 p-12 sm:p-16 2xl:p-24 rounded-[4rem] text-white relative overflow-hidden shadow-2xl group">
                         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-secondary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                         <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
-                            <div className="w-20 h-20 2xl:w-32 2xl:h-32 bg-white/10 rounded-[2rem] flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+                            <div className="w-20 h-20 2xl:w-32 2xl:h-32 bg-white/10 rounded-4xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
                                 <Gavel className="w-10 h-10 2xl:w-16 2xl:h-16 text-secondary" />
                             </div>
                             <div className="space-y-4">

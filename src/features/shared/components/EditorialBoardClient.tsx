@@ -1,35 +1,43 @@
 'use client';
 
-import { motion, Variants } from 'framer-motion';
-import { GraduationCap, MapPin, UserPlus, Mail, Loader2, Globe } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import Link from 'next/link';
+import { Variants } from 'framer-motion';
+import { Mail, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useEditorialBoard } from '@/hooks/queries/usePublic';
 import { staticEditorialBoardMembers, BoardMember } from '../data/editorial-board';
+import { UserWithProfile } from '@/db/types';
 
 interface EditorialBoardClientProps {
     settings: Record<string, string>;
-    initialMembers: BoardMember[];
+    initialMembers: UserWithProfile[];
 }
 
 export default function EditorialBoardClient({ settings, initialMembers }: EditorialBoardClientProps) {
-    const { data: members = [], isLoading } = useEditorialBoard(initialMembers);
+    const { data: dynamicMembers = [], isLoading } = useEditorialBoard(initialMembers);
     const supportEmail = settings.support_email || "editor@iitest.org";
+    
     const groupedBoard = useMemo(() => {
+        // Map dynamic members to match the display loop
+        const mappedDynamic = dynamicMembers.map(m => ({
+            full_name: m.profile?.fullName || "Staff",
+            designation: m.profile?.designation || "Editor",
+            institute: m.profile?.institute || "IJITEST",
+            email: m.email,
+            role: m.role
+        }));
+
         const board = [
             {
                 role: "Editor-in-Chief",
-                members: members.filter((m: any) => m.role === 'admin')
+                members: mappedDynamic.filter(m => m.role === 'admin')
             },
             {
                 role: "Editorial Board Members",
                 members: staticEditorialBoardMembers
             },
-
         ];
         return board.filter(category => category.members.length > 0);
-    }, [members]);
+    }, [dynamicMembers]);
 
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
@@ -53,7 +61,7 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
         }
     };
 
-    if (isLoading && members.length === 0) {
+    if (isLoading && dynamicMembers.length === 0) {
         return (
             <div className="p-24 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary/10" />

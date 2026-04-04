@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import TermsClient from '@/features/shared/components/TermsClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Terms & Conditions | ${settings.journal_name}`,
         description: `Review the legal framework and terms governing your interactions with ${settings.journal_short_name}. Detailed protocols on intellectual sovereignty, submission mandates, and ethical standards.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function TermsAndConditions() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

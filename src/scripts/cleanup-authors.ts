@@ -9,43 +9,41 @@
  * Or trigger via API: GET /api/cron/cleanup-authors (with Authorization: Bearer CRON_SECRET)
  */
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { sql, eq, inArray, and } from "drizzle-orm";
+import { users, submissions } from "@/db/schema";
 
 async function cleanupStaleAuthors() {
     console.log("[Cleanup] Starting stale author deactivation...");
 
     try {
-        const staleAuthors: any = await db.execute(sql`
-            SELECT DISTINCT
-                u.id as user_id,
-                u.email,
-                s.paper_id,
-                s.status,
-                DATEDIFF(NOW(), s.updated_at) as days_stale
-            FROM submissions s
-            JOIN users u ON s.corresponding_author_id = u.id
-            WHERE s.status IN ('rejected', 'revision_requested')
-              AND DATEDIFF(NOW(), s.updated_at) > 15
-              AND u.is_active = true
-              AND u.role = 'author'
-        `);
+        const staleAuthors = await db.select({
+            id: users.id,
+            email: users.email,
+            paperId: submissions.paperId,
+            status: submissions.status,
+            updatedAt: submissions.updatedAt
+        })
+        .from(submissions)
+        .innerJoin(users, eq(submissions.correspondingAuthorId, users.id))
+        .where(and(
+            inArray(submissions.status, ['rejected', 'revision_requested']),
+            sql`DATEDIFF(NOW(), ${submissions.updatedAt}) > 15`,
+            eq(users.isActive, true),
+            eq(users.role, 'author')
+        ));
 
-        const authors = staleAuthors[0] || [];
-        console.log(`[Cleanup] Found ${authors.length} stale author accounts.`);
+        console.log(`[Cleanup] Found ${staleAuthors.length} stale author accounts.`);
 
-        for (const author of authors) {
-            await db.execute(sql`
-                UPDATE users 
-                SET is_active = false, 
-                    invitation_token = NULL, 
-                    invitation_expires = NULL 
-                WHERE id = ${author.user_id}
-            `);
-            console.log(`[Cleanup] Deactivated: ${author.email} | Paper: ${author.paper_id} | Stale: ${author.days_stale} days`);
+        for (const author of staleAuthors) {
+            await db.update(users)
+                .set({ isActive: false })
+                .where(eq(users.id, author.id));
+            
+            console.log(`[Cleanup] Deactivated: ${author.email} | Paper: ${author.paperId}`);
         }
 
-        console.log(`[Cleanup] Done. ${authors.length} account(s) deactivated.`);
+        console.log(`[Cleanup] Done. ${staleAuthors.length} account(s) deactivated.`);
         process.exit(0);
     } catch (error) {
         console.error("[Cleanup] Error:", error);

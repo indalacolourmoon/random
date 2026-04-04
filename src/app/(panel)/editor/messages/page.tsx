@@ -1,13 +1,12 @@
 "use client";
 
-import { MessageSquare, Mail, Calendar, CheckCircle, Eye, Archive, Search, Trash2, User, Clock, AlertCircle, ArrowLeft, Send } from 'lucide-react';
+import { MessageSquare, Mail, Calendar, Archive, Search, Trash2, User, Send } from 'lucide-react';
 import { useMessages, useUpdateMessageStatus, useDeleteMessage } from '@/hooks/queries/useMessages';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
@@ -20,7 +19,7 @@ export default function Messages() {
     const [activeTab, setActiveTab] = useState<'inbox' | 'archived'>('inbox');
     const [searchQuery, setSearchQuery] = useState('');
 
-    async function handleStatusChange(id: number, status: 'resolved' | 'archived' | 'read') {
+    async function handleStatusChange(id: number, status: 'resolved' | 'archived' | 'pending') {
         try {
             await updateMutation.mutateAsync({ id, status });
             if (selectedMessage?.id === id) {
@@ -65,7 +64,7 @@ export default function Messages() {
         return matchesTab && matchesSearch;
     });
 
-    const unreadCount = messages.filter(m => m.status === 'unread').length;
+    const unreadCount = messages.filter(m => m.status === 'pending').length;
 
     return (
         <main className="h-[calc(100vh-100px)] flex flex-col gap-6 pb-6">
@@ -117,7 +116,7 @@ export default function Messages() {
                 {/* Sidebar List */}
                 <Card className="lg:w-[380px] flex flex-col border-primary/5 shadow-vip overflow-hidden bg-card shrink-0 rounded-xl relative">
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-primary/10" />
-                    <CardHeader className="p-6 bg-primary/[0.02] border-b border-primary/5 space-y-2">
+                    <CardHeader className="p-6 bg-primary/2 border-b border-primary/5 space-y-2">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-xs font-semibold text-primary tracking-widest capitalize">Communications</CardTitle>
                             <Badge className="h-7 px-3 bg-primary/10 text-primary text-[10px] xl:text-[11px] 2xl:text-xs font-semibold border-none capitalize tracking-widest rounded-lg">
@@ -129,16 +128,16 @@ export default function Messages() {
                         <div className="divide-y divide-primary/5">
                             {activeMessages.map((m) => {
                                 const isSelected = selectedMessage?.id === m.id;
-                                const isUnread = m.status === 'unread';
+                                const isUnread = m.status === 'pending';
 
                                 return (
                                     <div
                                         key={m.id}
                                         onClick={() => {
                                             setSelectedMessage(m);
-                                            if (isUnread) handleStatusChange(m.id, 'read');
+                                            if (isUnread) handleStatusChange(m.id, 'resolved');
                                         }}
-                                        className={`p-6 cursor-pointer transition-all hover:bg-primary/[0.02] relative group ${isSelected ? 'bg-primary/[0.04]' : ''}`}
+                                        className={`p-6 cursor-pointer transition-all hover:bg-primary/2 relative group ${isSelected ? 'bg-primary/4' : ''}`}
                                     >
                                         <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all ${isSelected ? 'bg-primary' : isUnread ? 'bg-primary/30' : 'bg-transparent'}`} />
                                         <div className="flex items-center justify-between mb-3">
@@ -146,7 +145,7 @@ export default function Messages() {
                                                 {m.subject || 'No subject'}
                                             </span>
                                             <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground/40 capitalize tracking-widest">
-                                                {new Date(m.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                {new Date(m.createdAt || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                             </span>
                                         </div>
                                         <h3 className={`font-serif tracking-tight leading-tight mb-2 truncate capitalize ${isUnread ? 'text-lg font-semibold text-foreground' : 'text-base font-semibold text-muted-foreground'}`}>
@@ -178,7 +177,7 @@ export default function Messages() {
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-primary/10" />
                     {selectedMessage ? (
                         <>
-                            <CardHeader className="p-4 sm:p-8 bg-primary/[0.02] border-b border-primary/5 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+                            <CardHeader className="p-4 sm:p-8 bg-primary/2 border-b border-primary/5 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
                                 <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
                                     <div className="w-16 h-16 rounded-xl bg-muted border border-primary/10 flex items-center justify-center shadow-sm shrink-0">
                                         <User className="w-8 h-8 text-muted-foreground/40" />
@@ -196,7 +195,7 @@ export default function Messages() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => handleStatusChange(selectedMessage.id, selectedMessage.status === 'archived' ? 'read' : 'archived')}
+                                        onClick={() => handleStatusChange(selectedMessage.id, selectedMessage.status === 'archived' ? 'resolved' : 'archived')}
                                         className={`flex-1 sm:flex-none h-12 px-2 sm:px-6 gap-2 sm:gap-3 font-semibold text-[10px] sm:text-xs uppercase tracking-widest rounded-xl transition-all ${selectedMessage.status === 'archived' ? 'border-primary bg-primary text-white dark:text-slate-900 hover:bg-primary/90' : 'border-primary/10 text-foreground hover:bg-muted font-semibold'}`}
                                     >
                                         <Archive className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
@@ -217,11 +216,11 @@ export default function Messages() {
                             <ScrollArea className="flex-1">
                                 <div className="p-8 space-y-8 max-w-4xl mx-auto w-full">
                                     {/* Action Header */}
-                                    <div className="flex flex-wrap items-center justify-between gap-6 py-5 px-8 bg-primary/[0.02] rounded-xl border border-primary/5 shadow-inner">
+                                    <div className="flex flex-wrap items-center justify-between gap-6 py-5 px-8 bg-primary/2 rounded-xl border border-primary/5 shadow-inner">
                                         <div className="flex items-center gap-8">
                                             <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground/60 uppercase tracking-widest">
                                                 <Calendar className="w-5 h-5" />
-                                                <span>{new Date(selectedMessage.created_at).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
+                                                <span>{new Date(selectedMessage.createdAt || Date.now()).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
                                             </div>
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
                                             <span className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -249,7 +248,7 @@ export default function Messages() {
                             </ScrollArea>
 
                             {/* Footer Actions */}
-                            <div className="p-6 border-t border-primary/5 bg-primary/[0.02] flex justify-end gap-4 rounded-b-[2rem]">
+                            <div className="p-6 border-t border-primary/5 bg-primary/2 flex justify-end gap-4 rounded-b-4xl">
                                 <Button asChild className="h-14 px-10 gap-3 font-semibold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:scale-[1.02] transition-all cursor-pointer">
                                     <a href={`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`}>
                                         <Send className="w-5 h-5" /> Dispatch Journal Reply
@@ -259,7 +258,7 @@ export default function Messages() {
                         </>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center p-20 text-center space-y-6">
-                            <div className="w-24 h-24 rounded-xl bg-primary/[0.03] border border-primary/5 flex items-center justify-center shadow-inner">
+                            <div className="w-24 h-24 rounded-xl bg-primary/3 border border-primary/5 flex items-center justify-center shadow-inner">
                                 <Mail className="w-10 h-10 text-primary/20" />
                             </div>
                             <div className="space-y-2 max-w-sm">

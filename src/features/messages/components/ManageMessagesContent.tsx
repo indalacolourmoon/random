@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { toast } from "sonner"
 import { InboxFilters } from "./InboxFilters"
@@ -8,17 +8,18 @@ import { MessageList } from "./MessageList"
 import { MessageDetail } from "./MessageDetail"
 import { useMessages, useUpdateMessageStatus, useBulkUpdateMessages, useRevertMessage } from "@/hooks/queries/useMessages"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, Archive, X, Trash2 } from "lucide-react"
+import { CheckCircle, Archive, X } from "lucide-react"
 
 export function ManageMessagesContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const pathname = usePathname()
 
-    const status = searchParams.get('status') || 'all'
+    const activeStatus = searchParams.get('status') || 'all'
+    const queryStatus = activeStatus === 'all' ? undefined : (activeStatus as 'pending' | 'resolved' | 'archived')
     const search = searchParams.get('search') || ""
 
-    const { data: messages = [], isLoading } = useMessages({ status, search })
+    const { data: messages = [], isLoading } = useMessages({ status: queryStatus, search })
     const updateMutation = useUpdateMessageStatus()
     const bulkMutation = useBulkUpdateMessages()
     const revertMutation = useRevertMessage()
@@ -107,7 +108,7 @@ export function ManageMessagesContent() {
             {/* Left: Filter Sidebar (Desktop) */}
             <aside className="hidden xl:block w-72 h-full shrink-0 animate-in slide-in-from-left duration-700">
                 <InboxFilters 
-                    status={status}
+                    status={activeStatus}
                     search={search}
                     onStatusChange={(s) => updateFilters({ status: s })}
                     onSearchChange={(s) => updateFilters({ search: s })}
@@ -118,7 +119,7 @@ export function ManageMessagesContent() {
             {/* Mobile/Tablet: Top Filters */}
             <div className="xl:hidden shrink-0 space-y-4">
                 <InboxFilters 
-                    status={status}
+                    status={activeStatus}
                     search={search}
                     onStatusChange={(s) => updateFilters({ status: s })}
                     onSearchChange={(s) => updateFilters({ search: s })}
@@ -127,7 +128,7 @@ export function ManageMessagesContent() {
             </div>
 
             {/* Center: List Pane */}
-            <section className="flex-1 min-w-0 bg-card rounded-[2rem] border border-white/[0.03] overflow-hidden shadow-2xl animate-in fade-in duration-1000 relative">
+            <section className="flex-1 min-w-0 bg-card rounded-4xl border border-white/3 overflow-hidden shadow-2xl animate-in fade-in duration-1000 relative">
                 <MessageList 
                     messages={messages}
                     loading={isLoading}
@@ -175,7 +176,7 @@ export function ManageMessagesContent() {
             </section>
 
             {/* Right: Message Detail Detail (Desktop/Large) */}
-            <section className="hidden lg:block w-[450px] 2xl:w-[550px] shrink-0 bg-card rounded-[2rem] border border-white/[0.03] shadow-inner overflow-hidden animate-in slide-in-from-right duration-700">
+            <section className="hidden lg:block w-[450px] 2xl:w-[550px] shrink-0 bg-card rounded-4xl border border-white/3 shadow-inner overflow-hidden animate-in slide-in-from-right duration-700">
                 <MessageDetail 
                     message={selectedMessage}
                     onUpdateStatus={handleUpdateStatus}

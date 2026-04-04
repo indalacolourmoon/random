@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { eq, inArray, lt, and, sql } from "drizzle-orm";
+import { eq, inArray, lt, and } from "drizzle-orm";
 import { users, submissions, submissionVersions, submissionFiles } from "@/db/schema";
 import fs from "fs/promises";
 import path from "path";
@@ -66,9 +66,9 @@ export async function GET(req: Request) {
             deletedPapers: staleSubmissions.map(s => s.paperId),
             timestamp: new Date().toISOString(),
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Cleanup Cron Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
 

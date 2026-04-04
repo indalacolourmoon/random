@@ -3,22 +3,16 @@
 import { useLatestIssuePapers } from "@/hooks/queries/usePublic";
 import { Megaphone, ChevronRight, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export default function AnnouncementBar() {
     const { data: latestPapers } = useLatestIssuePapers();
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        if (latestPapers && latestPapers.length > 0) {
-            setIsVisible(true);
-        }
-    }, [latestPapers]);
+    const isVisible = !!(latestPapers && latestPapers.length > 0);
 
     if (!latestPapers || latestPapers.length === 0 || !isVisible) return null;
 
     const latestIssue = latestPapers[0];
-    const monthYear = new Date(latestIssue.published_at).toLocaleDateString('en-US', {
+    const publishDate = latestIssue.published_at ? new Date(latestIssue.published_at) : new Date();
+    const monthYear = publishDate.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric'
     });
@@ -26,7 +20,7 @@ export default function AnnouncementBar() {
     return (
         <div className="bg-primary overflow-hidden relative group/bar border-b border-white/10">
             {/* Animated Background Pulse */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary-dark to-primary opacity-50 animate-shimmer pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-r from-primary via-primary-dark to-primary opacity-50 animate-shimmer pointer-events-none" />
             
             <div className="container-responsive relative z-10 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-center sm:text-left transition-all duration-500">
                 <div className="flex items-center gap-3">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, BookOpen, Globe, Loader2, Calendar, Layers, CheckCircle } from 'lucide-react'
+import { Plus, Globe, Loader2, Layers } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"

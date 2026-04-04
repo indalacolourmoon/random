@@ -1,10 +1,10 @@
 'use client'
 
-import { Plus, BookOpen, Clock, CheckCircle2, AlertCircle, Trash2, Globe, Calendar, Layers, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, BookOpen, Globe, Calendar, Layers, CheckCircle } from 'lucide-react';
 import { useVolumesIssues, useCreateVolumeIssue, usePublishIssue } from '@/hooks/queries/usePublications';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -147,8 +147,8 @@ export default function PublicationsPage() {
                             <div className="p-10 space-y-8">
                                 <div className="flex items-start justify-between gap-6">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-semibold text-primary/40 capitalize tracking-widest">Archive volume {v.volume_number}</p>
-                                        <h3 className="font-serif text-lg xl:text-xl font-semibold text-foreground dark:text-primary tracking-tight leading-none group-hover:text-emerald-600 transition-colors capitalize">Issue {v.issue_number}</h3>
+                                        <p className="text-[10px] font-semibold text-primary/40 capitalize tracking-widest">Archive volume {v.volumeNumber}</p>
+                                        <h3 className="font-serif text-lg xl:text-xl font-semibold text-foreground dark:text-primary tracking-tight leading-none group-hover:text-emerald-600 transition-colors capitalize">Issue {v.issueNumber}</h3>
                                     </div>
                                     <Badge className={`h-6 px-3 text-[10px] font-semibold capitalize tracking-widest rounded-lg shadow-sm border-none ${v.status === 'published' ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'}`}>
                                         {v.status}
@@ -164,7 +164,7 @@ export default function PublicationsPage() {
                                     <div className="bg-card p-6 rounded-xl border border-primary/5 shadow-inner">
                                         <Layers className="w-6 h-6 text-primary/30 mb-3" />
                                         <p className="text-[10px] font-semibold text-primary/40 uppercase tracking-widest mb-1">Cycle</p>
-                                        <p className="text-xl font-semibold text-primary truncate">{v.month_range}</p>
+                                        <p className="text-xl font-semibold text-primary truncate">{v.monthRange}</p>
                                     </div>
                                 </div>
 

@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getApplications, approveApplication, rejectApplication } from '@/actions/applications';
+import { Application } from '@/db/types';
 
 export function useApplications(filters?: { role?: string, status?: string, interest?: string }) {
-    return useQuery<any[]>({
+    return useQuery<Application[]>({
         queryKey: ['applications', filters],
         queryFn: async () => {
-            const data = await getApplications(filters);
-            return data || [];
+            const res = await getApplications(filters || {});
+            return res.success ? res.data || [] : [];
         }
     });
 }

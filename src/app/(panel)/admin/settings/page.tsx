@@ -2,18 +2,17 @@
 
 export const dynamic = "force-dynamic";
 
-import { Save, Globe, Mail, CheckCircle2, FileText, Upload, Shield, Building, CreditCard, Headphones, Sparkles, Layout, ExternalLink } from 'lucide-react';
+import { Save, Globe, FileText, Upload, Shield, CreditCard, Headphones, Sparkles, Layout, ExternalLink } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '@/hooks/queries/useSettings';
 import { useState, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
@@ -280,7 +279,7 @@ export default function SystemSettings() {
 
                     {/* Resources */}
                     <motion.div variants={itemVariants} className="lg:col-span-2">
-                        <Card className="group relative overflow-hidden bg-white shadow-2xl rounded-[3rem] border border-slate-100 overflow-hidden">
+                        <Card className="group relative bg-white shadow-2xl rounded-[3rem] border border-slate-100 overflow-hidden">
                             <CardHeader className="p-10 pb-6 border-b border-slate-50">
                                 <div className="flex items-center gap-5">
                                     <div className="w-14 h-14 rounded-[1.25rem] bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner">
@@ -295,7 +294,7 @@ export default function SystemSettings() {
                             <CardContent className="p-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     {/* Template Asset */}
-                                    <div className="group/asset bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 transition-all hover:bg-white hover:shadow-xl">
+                                    <div className="group/asset bg-slate-50/50 p-8 rounded-4xl border border-slate-100 transition-all hover:bg-white hover:shadow-xl">
                                         <div className="flex items-start justify-between mb-8">
                                             <div className="space-y-2">
                                                 <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none font-black text-[9px] tracking-widest uppercase rounded-lg px-3 py-1">
@@ -334,7 +333,7 @@ export default function SystemSettings() {
                                     </div>
 
                                     {/* Copyright Asset */}
-                                    <div className="group/asset bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 transition-all hover:bg-white hover:shadow-xl">
+                                    <div className="group/asset bg-slate-50/50 p-8 rounded-4xl border border-slate-100 transition-all hover:bg-white hover:shadow-xl">
                                         <div className="flex items-start justify-between mb-8">
                                             <div className="space-y-2">
                                                 <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-none font-black text-[9px] tracking-widest uppercase rounded-lg px-3 py-1">
@@ -381,7 +380,7 @@ export default function SystemSettings() {
                         <Card className="relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/50 shadow-lg rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between gap-12">
                             <div className="absolute top-0 left-0 w-2 h-full bg-purple-500/20" />
                             <div className="flex items-center gap-8">
-                                <div className="w-20 h-20 rounded-[1.5rem] bg-purple-50 text-purple-600 flex items-center justify-center shadow-xl border border-purple-100 shrink-0 rotate-3">
+                                <div className="w-20 h-20 rounded-3xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-xl border border-purple-100 shrink-0 rotate-3">
                                     <Sparkles className="w-10 h-10" />
                                 </div>
                                 <div className="space-y-2">

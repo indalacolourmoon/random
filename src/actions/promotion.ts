@@ -1,26 +1,30 @@
 "use server";
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { eq } from "drizzle-orm";
+import { users } from "@/db/schema";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { ActionResponse } from "@/db/types";
 
-export async function markPromotionAsSeen() {
+
+export async function markPromotionAsSeen(): Promise<ActionResponse> {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user) return { error: "Unauthenticated" };
+        if (!session?.user?.id) return { success: false, error: "Unauthenticated" };
 
-        const userId = (session.user as any).id;
-        if (!userId) return { error: "User ID not found" };
+        const userId = session.user.id;
 
-        await db.execute(
-            sql`UPDATE users SET has_seen_promotion = 1 WHERE id = ${userId}`
-        );
+        await db.update(users)
+            .set({ hasSeenPromotion: true })
+            .where(eq(users.id, userId));
 
+        revalidatePath('/admin/submissions');
         return { success: true };
-    } catch (error: any) {
+
+    } catch (error) {
         console.error("Mark Promotion As Seen Error:", error);
-        return { error: error.message };
+        return { success: false, error: "Failed to update promotion status: " + (error instanceof Error ? error.message : String(error)) };
     }
 }

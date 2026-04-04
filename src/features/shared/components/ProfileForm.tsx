@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { updateUserProfile } from '@/actions/users';
 
 // Import sub-components

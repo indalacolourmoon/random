@@ -1,23 +1,7 @@
 "use client";
 
-import { motion } from 'framer-motion';
 import {
-    FileText,
-    Layout,
-    Type,
-    List,
-    Image as ImageIcon,
-    BookOpen,
-    Download,
-    Mail,
-    CreditCard,
-    Hash,
-    Info,
-    CheckCircle2,
-    Users,
-    ClipboardCheck,
-    Send,
-    Edit3
+    Download
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/layout/PageHeader";

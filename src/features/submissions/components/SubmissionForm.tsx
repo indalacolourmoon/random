@@ -111,7 +111,7 @@ export default function SubmissionForm() {
         submissionMutation.mutate(formData, {
             onSuccess: () => {
                 toast.success("Form submitted check you mail", {
-                    className: "bg-gradient-to-r from-emerald-500 to-emerald-600 border-none text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-emerald-500/20",
+                    className: "bg-linear-to-r from-emerald-500 to-emerald-600 border-none text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-emerald-500/20",
                 });
                 form.reset();
                 setManuscriptFile(null);
@@ -146,7 +146,7 @@ export default function SubmissionForm() {
 
     const onInvalid = () => {
         toast.error("Please fill missing forms", {
-            className: "bg-gradient-to-r from-rose-500 to-rose-600 border-none text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-rose-500/20",
+            className: "bg-linear-to-r from-rose-500 to-rose-600 border-none text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-rose-500/20",
         });
     };
 
@@ -537,7 +537,7 @@ export default function SubmissionForm() {
                                 >
                                     {manuscriptFile ? (
                                         <div className="text-center px-8 relative z-10 animate-in fade-in zoom-in slide-in-from-bottom-4 duration-700">
-                                            <div className="w-20 h-20 bg-blue-500 text-white rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl rotate-2 transition-transform hover:rotate-0">
+                                            <div className="w-20 h-20 bg-blue-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl rotate-2 transition-transform hover:rotate-0">
                                                 <Check className="w-10 h-10" />
                                             </div>
                                             <p className="text-xl font-black text-primary truncate max-w-[280px] mb-2">{manuscriptFile.name}</p>
@@ -548,7 +548,7 @@ export default function SubmissionForm() {
                                         </div>
                                     ) : (
                                         <div className="text-center relative z-10 transition-all group-hover/upload:scale-110">
-                                            <div className="w-20 h-20 bg-white border border-slate-100 rounded-[1.5rem] shadow-xl flex items-center justify-center mx-auto mb-8 transition-all duration-700 group-hover/upload:shadow-blue-500/10 group-hover/upload:-translate-y-2">
+                                            <div className="w-20 h-20 bg-white border border-slate-100 rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-8 transition-all duration-700 group-hover/upload:shadow-blue-500/10 group-hover/upload:-translate-y-2">
                                                 <Upload className="w-8 h-8 text-blue-500" />
                                             </div>
                                             <p className="text-sm 2xl:text-base font-black tracking-[0.2em] text-primary mb-2">Upload Manuscript</p>
@@ -599,7 +599,7 @@ export default function SubmissionForm() {
                                 >
                                     {copyrightFile ? (
                                         <div className="text-center px-8 relative z-10 animate-in fade-in zoom-in slide-in-from-bottom-4 duration-700">
-                                            <div className="w-20 h-20 bg-indigo-500 text-white rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl -rotate-2 transition-transform hover:rotate-0">
+                                            <div className="w-20 h-20 bg-indigo-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl -rotate-2 transition-transform hover:rotate-0">
                                                 <Shield className="w-10 h-10" />
                                             </div>
                                             <p className="text-xl font-black text-primary truncate max-w-[280px] mb-2">{copyrightFile.name}</p>
@@ -610,7 +610,7 @@ export default function SubmissionForm() {
                                         </div>
                                     ) : (
                                         <div className="text-center relative z-10 transition-all group-hover/upload:scale-110">
-                                            <div className="w-20 h-20 bg-white border border-slate-100 rounded-[1.5rem] shadow-xl flex items-center justify-center mx-auto mb-8 transition-all duration-700 group-hover/upload:shadow-indigo-500/10 group-hover/upload:-translate-y-2">
+                                            <div className="w-20 h-20 bg-white border border-slate-100 rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-8 transition-all duration-700 group-hover/upload:shadow-indigo-500/10 group-hover/upload:-translate-y-2">
                                                 <Upload className="w-8 h-8 text-indigo-500" />
                                             </div>
                                             <p className="text-sm 2xl:text-base font-black tracking-[0.2em] text-primary mb-2">Upload Copyright Form</p>
@@ -638,7 +638,7 @@ export default function SubmissionForm() {
                                         className="w-6 h-6 rounded-lg border-2 border-indigo-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all group-hover/terms:scale-110"
                                     />
                                 </FormControl>
-                                <div className="space-y-1.5 !m-0">
+                                <div className="space-y-1.5 m-0!">
                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                         <span className="text-xs 2xl:text-sm font-black text-primary tracking-tight">I hereby verify that I have read the</span>
                                         <Link href="/guidelines" target="_blank" className="text-xs 2xl:text-sm font-black text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">

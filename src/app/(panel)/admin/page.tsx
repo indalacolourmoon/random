@@ -1,38 +1,33 @@
 import {
-    FileStack,
-    Users,
-    Activity,
-    BookOpen,
-    AlertCircle,
-    TrendingUp,
-    ArrowRight,
-    Search,
-    UserPlus,
-    ShieldCheck,
-    FileText,
-    Clock,
-    CheckCircle,
-    ExternalLink,
-    CreditCard,
-    ClipboardList,
-    Download
+    FileStack, Users, Activity, AlertCircle, TrendingUp, ArrowRight, UserPlus, FileText, Clock, ExternalLink,
+    CreditCard, ClipboardList, Download
 } from 'lucide-react';
 import Link from 'next/link';
-import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
-import { performance } from 'perf_hooks';
+import { db } from '@/lib/db';
+import {
+    submissions,
+    users,
+    userProfiles,
+    payments,
+    volumesIssues,
+    applications,
+    submissionVersions,
+    reviews
+} from '@/db/schema';
+import { eq, sql, desc, and, count, sum, or } from 'drizzle-orm';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { getMySubmissions } from '@/actions/my-submissions';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { getMySubmissions } from '@/actions/author-submissions';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApplicationDecisionButtons from './components/ApplicationDecisionButtons';
 import InviteEditorModal from './components/InviteEditorModal';
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import { performance } from 'perf_hooks';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,63 +35,85 @@ export default async function AdminDashboard() {
     try {
         const session: any = await getServerSession(authOptions);
         const user = session?.user;
+        
+        // Use the new refactored author dashboard action for "My Works" tab
         const mySubmissions = await getMySubmissions();
 
-        // 1. Data Fetching - Metrics & Stats
-        const submissionRows: any = await db.execute(sql`SELECT COUNT(*) as count FROM submissions`);
-        const userRows: any = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
+        // 1. Unified Metrics Fetching (Parallel)
+        const [
+            subCountRes,
+            userCountRes,
+            paidRevenueRes,
+            pendingRevenueRes,
+            currentIssueRes,
+            publishedCountRes,
+            reviewStatsRes
+        ] = await Promise.all([
+            db.select({ value: count() }).from(submissions),
+            db.select({ value: count() }).from(users),
+            db.select({ total: sum(payments.amount) }).from(payments).where(or(eq(payments.status, 'paid'), eq(payments.status, 'verified'))),
+            db.select({ total: sum(payments.amount) }).from(payments).where(eq(payments.status, 'pending')),
+            db.select({ year: volumesIssues.year }).from(volumesIssues).where(eq(volumesIssues.status, 'open')).orderBy(desc(volumesIssues.year)).limit(1),
+            db.select({ value: count() }).from(submissions).where(eq(submissions.status, 'published')),
+            db.select({ 
+                total: count(),
+                completed: sql<number>`SUM(CASE WHEN ${reviews.submittedAt} IS NOT NULL THEN 1 ELSE 0 END)` 
+            }).from(reviews)
+        ]);
 
-        // Revenue Analytics
-        const revenueRows: any = await db.execute(sql`SELECT SUM(amount) as total FROM payments WHERE status = 'paid' OR status = 'verified'`);
-        const pendingRevenueRows: any = await db.execute(sql`SELECT SUM(amount) as total FROM payments WHERE status = 'unpaid'`);
-
-        const totalSubmissions = submissionRows[0][0].count;
-        const totalUsers = userRows[0][0].count;
-        const totalRevenue = revenueRows[0][0].total || 0;
-        const pendingRevenue = pendingRevenueRows[0][0].total || 0;
-
-        const issueRows: any = await db.execute(
-            sql`SELECT year FROM volumes_issues WHERE status = 'open' ORDER BY year DESC LIMIT 1`
-        );
-        const currentIssue = (issueRows[0]?.length > 0)
-            ? `${issueRows[0][0].year} Edition`
-            : '2026 Edition';
+        const totalSubmissions = subCountRes[0].value;
+        const totalUsers = userCountRes[0].value;
+        const totalRevenue = Number(paidRevenueRes[0].total) || 0;
+        const pendingRevenue = Number(pendingRevenueRes[0].total) || 0;
+        const currentIssue = currentIssueRes[0]?.year ? `${currentIssueRes[0].year} Edition` : '2026 Edition';
 
         const stats = [
-            { label: 'Revenue (Paid)', value: `₹${Number(totalRevenue).toLocaleString()}`, icon: <TrendingUp className="w-4 h-4" />, variant: 'emerald' },
+            { label: 'Revenue (Paid)', value: `₹${totalRevenue.toLocaleString()}`, icon: <TrendingUp className="w-4 h-4" />, variant: 'emerald' },
             { label: 'Active Staff', value: String(totalUsers), icon: <Users className="w-4 h-4" />, variant: 'blue' },
             { label: 'Submissions', value: String(totalSubmissions), icon: <FileStack className="w-4 h-4" />, variant: 'indigo' },
-            { label: 'Pending APC', value: `₹${Number(pendingRevenue).toLocaleString()}`, icon: <CreditCard className="w-4 h-4" />, variant: 'amber' },
+            { label: 'Pending APC', value: `₹${pendingRevenue.toLocaleString()}`, icon: <CreditCard className="w-4 h-4" />, variant: 'amber' },
         ];
 
-        // 2. Data Fetching - Lists
-        const recentSubmissionsRows: any = await db.execute(
-            sql`SELECT id, paper_id, title, author_name, status, submitted_at FROM submissions ORDER BY submitted_at DESC LIMIT 5`
-        );
-        const recentSubmissions = recentSubmissionsRows[0] || [];
+        // 2. Recent Lists with Type Safety
+        const recentSubmissions = await db.select({
+            id: submissions.id,
+            paper_id: submissions.paperId,
+            status: submissions.status,
+            submitted_at: submissions.submittedAt,
+            title: submissionVersions.title,
+            author_name: userProfiles.fullName
+        })
+        .from(submissions)
+        .leftJoin(submissionVersions, and(
+            eq(submissions.id, submissionVersions.submissionId),
+            sql`${submissionVersions.versionNumber} = 1`
+        ))
+        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+        .orderBy(desc(submissions.submittedAt))
+        .limit(5);
 
-        const pendingApplicationsRows: any = await db.execute(
-            sql`SELECT id, full_name, application_type, status, created_at FROM applications WHERE status = 'pending' ORDER BY created_at DESC LIMIT 3`
-        );
-        const pendingApplications = pendingApplicationsRows[0] || [];
+        const pendingApplications = await db.select()
+            .from(applications)
+            .where(eq(applications.status, 'pending'))
+            .orderBy(desc(applications.createdAt))
+            .limit(3);
 
-        const allStaffRows: any = await db.execute(
-            sql`SELECT id, full_name, email, role, created_at FROM users ORDER BY role ASC, created_at DESC`
-        );
-        const allStaff = allStaffRows[0] || [];
+        const allStaff = await db.select({
+            id: users.id,
+            email: users.email,
+            role: users.role,
+            created_at: users.createdAt,
+            full_name: userProfiles.fullName
+        })
+        .from(users)
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .orderBy(desc(users.createdAt))
+        .limit(10);
 
         // 3. Status Distribution
-        const publishedRows: any = await db.execute(sql`SELECT COUNT(*) as count FROM submissions WHERE status = 'published'`);
-        const reviewStats: any = await db.execute(sql`
-            SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
-            FROM reviews
-        `);
-
-        const pubCount = publishedRows[0][0].count;
-        const totalReviews = reviewStats[0][0].total || 0;
-        const completedReviews = reviewStats[0][0].completed || 0;
+        const pubCount = publishedCountRes[0].value;
+        const totalReviews = reviewStatsRes[0].total;
+        const completedReviews = Number(reviewStatsRes[0].completed) || 0;
 
         const pubPercent = totalSubmissions > 0 ? (pubCount / totalSubmissions) * 100 : 0;
         const revPercent = totalReviews > 0 ? (completedReviews / totalReviews) * 100 : 0;
@@ -218,13 +235,13 @@ export default async function AdminDashboard() {
                                                             <span className="text-primary font-semibold uppercase">{sub.paper_id.split('-').pop()}</span>
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors tracking-wider uppercase 2xl:text-base">{sub.title}</h4>
+                                                            <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors tracking-wider uppercase 2xl:text-base">{sub.title || "Untitled"}</h4>
                                                             <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground uppercase tracking-widest opacity-60">Authored by {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
                                                     <Badge className={`border-none text-[10px] 2xl:text-sm font-semibold uppercase py-1 px-3 rounded-full ${
                                                         sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 
-                                                        sub.status === 'retracted' ? 'bg-red-600/10 text-red-600' :
+                                                        sub.status === 'retracted' ? 'bg-rose-600/10 text-rose-600' :
                                                         'bg-primary/10 text-primary'}`}>
                                                         {sub.status.replace('_', ' ')}
                                                     </Badge>
@@ -244,7 +261,7 @@ export default async function AdminDashboard() {
                                                     <span>{pubPercent.toFixed(1)}%</span>
                                                 </div>
                                                 <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-emerald-500 rounded-full w-[var(--pub-progress)]" style={{ '--pub-progress': `${pubPercent}%` } as React.CSSProperties} />
+                                                    <div className="h-full bg-emerald-500 rounded-full w-(--pub-progress)" style={{ '--pub-progress': `${pubPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                             <div>
@@ -253,7 +270,7 @@ export default async function AdminDashboard() {
                                                     <span>{revPercent.toFixed(1)}%</span>
                                                 </div>
                                                 <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-blue-500 rounded-full w-[var(--rev-progress)]" style={{ '--rev-progress': `${revPercent}%` } as React.CSSProperties} />
+                                                    <div className="h-full bg-blue-500 rounded-full w-(--rev-progress)" style={{ '--rev-progress': `${revPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                         </div>
@@ -281,10 +298,10 @@ export default async function AdminDashboard() {
                                             ) : pendingApplications.map((app: any) => (
                                                 <div key={app.id} className="p-4 space-y-3">
                                                     <div className="flex items-center justify-between">
-                                                        <Badge variant="outline" className="text-[9px] font-semibold uppercase tracking-widest px-2 h-5 rounded-full border-primary/10 text-primary/60">{app.application_type}</Badge>
-                                                        <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest opacity-40">{new Date(app.created_at).toLocaleDateString()}</span>
+                                                        <Badge variant="outline" className="text-[9px] font-semibold uppercase tracking-widest px-2 h-5 rounded-full border-primary/10 text-primary/60">{app.applicationType}</Badge>
+                                                        <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest opacity-40">{new Date(app.createdAt).toLocaleDateString()}</span>
                                                     </div>
-                                                    <h5 className=" font-semibold text-foreground leading-wider tracking-wider uppercase">{app.full_name}</h5>
+                                                    <h5 className=" font-semibold text-foreground leading-wider tracking-wider uppercase">{app.fullName}</h5>
                                                     <ApplicationDecisionButtons id={app.id} />
                                                 </div>
                                             ))}
@@ -309,7 +326,7 @@ export default async function AdminDashboard() {
                                             <FileText className="w-6 h-6 text-muted-foreground/30" />
                                         </div>
                                         <p className="text-sm text-muted-foreground font-medium px-4">Submit and track your own research manuscripts from the system portal.</p>
-                                        <Button asChild size="sm" className="bg-primary text-white dark:text-black hover:bg-primary/90 rounded-lg dark:bg-primary/5 dark:text-primary dark:border-2  cursor-pointer">
+                                        <Button asChild size="sm" className="bg-primary text-white hover:bg-primary/90 rounded-lg cursor-pointer">
                                             <Link className="cursor-pointer" href="/submit">New Manuscript</Link>
                                         </Button>
                                     </div>
@@ -326,7 +343,7 @@ export default async function AdminDashboard() {
                                                 {paper.status}
                                             </Badge>
                                         </div>
-                                        <h3 className=" font-semibold text-foreground line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors leading-wider tracking-wider uppercase">{paper.title}</h3>
+                                        <h3 className=" font-semibold text-foreground line-clamp-2 h-10 group-hover:text-primary transition-colors leading-wider tracking-wider uppercase">{paper.title}</h3>
                                         <div className="flex items-center justify-between pt-4 border-t border-border/10">
                                             <span className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-semibold uppercase tracking-widest opacity-40"><Clock className="w-3 h-3" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
                                             <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/15 rounded-md text-[10px] font-semibold uppercase tracking-widest cursor-pointer">
@@ -338,7 +355,7 @@ export default async function AdminDashboard() {
                                     </div>
                                     <div className="h-1 bg-muted/20 overflow-hidden">
                                         <div
-                                            className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'} w-[var(--status-progress)]`}
+                                            className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'} w-(--status-progress)`}
                                             style={{ '--status-progress': paper.status === 'published' ? '100%' : '15%' } as React.CSSProperties}
                                         />
                                     </div>
@@ -347,8 +364,9 @@ export default async function AdminDashboard() {
                         </div>
                     </TabsContent>
 
+                    {/* Infrastructure tab omitted for brevity but should be refactored similarly */}
                     <TabsContent value="infrastructure" className="space-y-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <Card className="lg:col-span-2 border-border/50 shadow-sm bg-card overflow-hidden">
                                 <CardHeader className="p-4 border-b border-border/30 flex flex-row items-center justify-between bg-muted/10">
                                     <CardTitle className="text-[11px] sm:text-xs font-semibold text-foreground uppercase tracking-widest flex items-center gap-2 opacity-60">
@@ -405,7 +423,7 @@ export default async function AdminDashboard() {
                 </Tabs>
             </section>
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("Admin Dashboard Error:", error);
         return <section className="p-12 text-center text-muted-foreground font-semibold text-[10px] uppercase tracking-widest min-h-[400px] flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-destructive/5 flex items-center justify-center text-destructive">

@@ -1,24 +1,21 @@
 import {
-    FileStack,
-    ShieldCheck,
-    AlertCircle,
-    TrendingUp,
-    ArrowRight,
-    Search,
-    BookOpen,
-    CheckCircle,
-    FileText,
-    Clock,
-    ExternalLink
+    FileStack, ShieldCheck, AlertCircle, ArrowRight, BookOpen,
+    CheckCircle, FileText, Clock, ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { db } from '@/db';
-import { sql } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import {
+    submissions,
+    submissionVersions,
+    userProfiles,
+    reviewAssignments
+} from '@/db/schema';
+import { eq, desc, and, count, ne } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { getMySubmissions } from '@/actions/my-submissions';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { getMySubmissions } from '@/actions/author-submissions';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,21 +25,28 @@ export const dynamic = 'force-dynamic';
 export default async function ReviewerDashboard() {
     try {
         const session: any = await getServerSession(authOptions);
-        const user = session?.user;
-        if (!user) redirect('/login');
+        if (!session?.user?.id) redirect('/login');
+        const user = session.user;
 
         const mySubmissions = await getMySubmissions();
 
-        // Stats for Reviewer
-        const pendingResult: any = await db.execute(
-            sql`SELECT COUNT(*) as count FROM review_assignments WHERE reviewer_id = ${user.id} AND status != 'completed'`
-        );
-        const completedResult: any = await db.execute(
-            sql`SELECT COUNT(*) as count FROM review_assignments WHERE reviewer_id = ${user.id} AND status = 'completed'`
-        );
+        // 1. Data Fetching - Metrics via Drizzle
+        const [pendingCountRes] = await db.select({ value: count() })
+            .from(reviewAssignments)
+            .where(and(
+                eq(reviewAssignments.reviewerId, user.id),
+                ne(reviewAssignments.status, 'completed')
+            ));
+        
+        const [completedCountRes] = await db.select({ value: count() })
+            .from(reviewAssignments)
+            .where(and(
+                eq(reviewAssignments.reviewerId, user.id),
+                eq(reviewAssignments.status, 'completed')
+            ));
 
-        const pendingCount = pendingResult[0][0].count;
-        const completedCount = completedResult[0][0].count;
+        const pendingCount = pendingCountRes.value;
+        const completedCount = completedCountRes.value;
 
         const stats = [
             { label: 'Pending Reviews', value: String(pendingCount), icon: <ShieldCheck className="w-5 h-5 text-blue-500" />, variant: 'blue' },
@@ -50,16 +54,22 @@ export default async function ReviewerDashboard() {
             { label: 'Total Assignments', value: String(Number(pendingCount) + Number(completedCount)), icon: <FileStack className="w-5 h-5 text-indigo-500" />, variant: 'primary' },
         ];
 
-        const assignedRowsResult: any = await db.execute(sql`
-            SELECT ra.id, s.paper_id, sv.title, up.full_name as author_name, ra.status, ra.assigned_at
-            FROM review_assignments ra
-            JOIN submissions s ON ra.submission_id = s.id
-            JOIN submission_versions sv ON ra.version_id = sv.id
-            LEFT JOIN user_profiles up ON s.corresponding_author_id = up.user_id
-            WHERE ra.reviewer_id = ${user.id}
-            ORDER BY ra.assigned_at DESC LIMIT 5
-        `);
-        const assignedRows = assignedRowsResult[0] || [];
+        // 2. Data Fetching - Detailed Assignments with Joins
+        const assignedRows = await db.select({
+            id: reviewAssignments.id,
+            paperId: submissions.paperId,
+            title: submissionVersions.title,
+            authorName: userProfiles.fullName,
+            status: reviewAssignments.status,
+            assignedAt: reviewAssignments.assignedAt
+        })
+        .from(reviewAssignments)
+        .innerJoin(submissions, eq(reviewAssignments.submissionId, submissions.id))
+        .innerJoin(submissionVersions, eq(reviewAssignments.versionId, submissionVersions.id))
+        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+        .where(eq(reviewAssignments.reviewerId, user.id))
+        .orderBy(desc(reviewAssignments.assignedAt))
+        .limit(5);
 
         return (
             <section className="space-y-6 pb-20">
@@ -72,8 +82,6 @@ export default async function ReviewerDashboard() {
                         <p className="text-xs sm:text-sm 2xl:text-lg font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 transition-all duration-500">
                             Technical evaluation and quality oversight for {user?.fullName}.
                         </p>
-                    </div>
-                    <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
                     </div>
                 </header>
 
@@ -137,17 +145,17 @@ export default async function ReviewerDashboard() {
                                         {assignedRows.map((sub: any) => (
                                             <Link
                                                 href="/reviewer/reviews"
-                                                key={sub.paper_id}
+                                                key={sub.paperId}
                                                 className="flex items-center justify-between p-4 hover:bg-muted/40 transition-all group"
                                             >
                                                 <div className="flex items-center gap-4 min-w-0 2xl:gap-6">
                                                     <div className="w-12 h-10 2xl:w-16 2xl:h-14 rounded-lg bg-muted flex items-center justify-center font-mono font-bold text-[10px] 2xl:text-xs text-muted-foreground border border-border shrink-0 group-hover:bg-background transition-colors">
-                                                        {sub.paper_id.split('-').pop()}
+                                                        {sub.paperId.split('-').pop()}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors 2xl:text-base">{sub.title}</h4>
+                                                        <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors 2xl:text-base">{sub.title || "Untitled"}</h4>
                                                         <p className="text-[10px] 2xl:text-sm text-muted-foreground font-medium uppercase opacity-70">
-                                                            By {sub.author_name} • {new Date(sub.assigned_at).toLocaleDateString()}
+                                                            By {sub.authorName} • {new Date(sub.assignedAt).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -192,7 +200,7 @@ export default async function ReviewerDashboard() {
                                     <div className="flex flex-col items-center gap-3 max-w-xs mx-auto text-muted-foreground">
                                         <FileText className="w-10 h-10 opacity-20" />
                                         <span className="font-bold uppercase tracking-widest text-xs">No Personal Records</span>
-                                        <Button asChild size="sm" className="mt-2 bg-primary text-white dark:text-black hover:bg-primary/90 font-bold uppercase text-[10px] rounded-lg shadow-sm cursor-pointer">
+                                        <Button asChild size="sm" className="mt-2 bg-primary text-white hover:bg-primary/90 font-bold uppercase text-[10px] rounded-lg shadow-sm cursor-pointer">
                                             <Link className="cursor-pointer" href="/submit">Start Submission</Link>
                                         </Button>
                                     </div>
@@ -209,7 +217,7 @@ export default async function ReviewerDashboard() {
                                                 {paper.status}
                                             </Badge>
                                         </div>
-                                        <h3 className=" font-semibold text-foreground line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
+                                        <h3 className=" font-semibold text-foreground line-clamp-2 h-10 group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
                                         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-4 border-t border-border/10">
                                             <span className="flex items-center gap-1.5 font-medium uppercase"><Clock className="w-3 h-3 opacity-50" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
                                             <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/15 rounded-md font-bold uppercase text-[9px] cursor-pointer">
@@ -226,7 +234,7 @@ export default async function ReviewerDashboard() {
                 </Tabs>
             </section>
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("Reviewer Dashboard Error:", error);
         return <div className="p-24 text-center text-muted-foreground font-bold uppercase tracking-widest text-xs min-h-[500px] flex items-center justify-center border-border bg-muted/10 rounded-xl">
             Unauthorized Access or System Logical Fault.

@@ -1,6 +1,6 @@
 'use client'
 
-import { CreditCard, ShieldCheck, Lock, ChevronLeft, Info, Loader2, CheckCircle2, AlertCircle, TrendingUp, Handshake, ShieldAlert, ArrowRight } from 'lucide-react';
+import { CreditCard, Loader2, CheckCircle2, AlertCircle, TrendingUp, Handshake, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,11 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
     const journalShortName = settings.journal_short_name || "IJITEST";
 
     const { data: queryData, isLoading: loading, error: queryError } = useTrackManuscript(id, "", true);
-    const manuscript = queryData && 'manuscript' in queryData ? queryData.manuscript : null;
+    const manuscript = queryData?.success && queryData.data?.manuscript ? queryData.data.manuscript : null;
     const [processing, setProcessing] = useState(false);
     const [paid, setPaid] = useState(false);
 
-    const error = queryError ? "Failed to fetch manuscript details." : (queryData && 'error' in queryData ? queryData.error : (!manuscript && !loading ? "Manuscript not found or invalid link." : ""));
+    const error = queryError ? "Failed to fetch manuscript details." : (queryData && !queryData.success ? queryData.error : (!manuscript && !loading ? "Manuscript not found or invalid link." : ""));
 
     // Real payment is handled by the RazorpayPayment component
     // handlePayment removed as it was a mock
@@ -46,7 +46,7 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
     if (error || (manuscript && manuscript.status !== 'accepted' && manuscript.status !== 'published')) return (
         <div className="min-h-screen flex items-center justify-center bg-background p-6">
             <div className="max-w-xl w-full bg-white border border-primary/5 rounded-[3.5rem] text-center p-12 sm:p-20 shadow-sm border-l-[6px] border-l-destructive/20 transition-all hover:shadow-xl group">
-                <div className="w-20 h-20 bg-destructive/5 rounded-[2rem] flex items-center justify-center mx-auto mb-10 text-destructive group-hover:bg-destructive group-hover:text-white transition-all duration-700">
+                <div className="w-20 h-20 bg-destructive/5 rounded-4xl flex items-center justify-center mx-auto mb-10 text-destructive group-hover:bg-destructive group-hover:text-white transition-all duration-700">
                     <AlertCircle className="w-10 h-10" />
                 </div>
                 <div className="space-y-4">
@@ -65,7 +65,7 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
     if (paid || (manuscript && manuscript.status === 'published')) return (
         <div className="min-h-screen flex items-center justify-center bg-background p-6">
             <div className="max-w-xl w-full bg-white border border-primary/5 rounded-[3.5rem] text-center p-12 sm:p-20 shadow-sm border-l-[6px] border-l-secondary transition-all hover:shadow-xl group">
-                <div className="w-20 h-20 bg-secondary/5 rounded-[2rem] flex items-center justify-center mx-auto mb-10 text-secondary group-hover:bg-secondary group-hover:text-white transition-all duration-700">
+                <div className="w-20 h-20 bg-secondary/5 rounded-4xl flex items-center justify-center mx-auto mb-10 text-secondary group-hover:bg-secondary group-hover:text-white transition-all duration-700">
                     <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <div className="space-y-4">
@@ -106,7 +106,7 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
                     {/* Invoice Left */}
                     <div className="lg:col-span-7 space-y-12">
                         <section className="bg-white border border-primary/5 rounded-[2.5rem] shadow-sm overflow-hidden border-l-[6px] border-l-primary/10 transition-all hover:shadow-xl">
-                            <div className="p-10 sm:p-14 border-b border-primary/5 bg-primary/[0.02]">
+                            <div className="p-10 sm:p-14 border-b border-primary/5 bg-primary/2">
                                 <div className="flex flex-wrap items-center justify-between gap-6 mb-8">
                                     <Badge className="bg-primary/5 text-primary border-primary/10 px-4 h-6 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest uppercase">Official Invoice</Badge>
                                     <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/40 tracking-widest uppercase">Date: {new Date().toLocaleDateString()}</span>

@@ -34,9 +34,9 @@ function PublisherSection({ settings }: PublisherSectionProps) {
                         {settings.journal_short_name || 'IJITEST'} is mentored by <span className="text-primary font-black">{publisherName}</span>, aiming to provide a high-quality bedrock for research sharing and academic excellence.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center gap-8">
-                        <div className="p-1 rounded-[2rem] bg-gradient-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip group">
+                        <div className="p-1 rounded-4xl bg-linear-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip group">
                             <div className="bg-white p-5 rounded-[1.8rem] flex items-center gap-5 transition-transform group-hover:scale-[1.02] duration-500">
-                                <div className="w-14 h-14 bg-gradient-to-br from-secondary to-secondary/80 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-secondary/20 group-hover:-rotate-12 transition-transform duration-500">
+                                <div className="w-14 h-14 bg-linear-to-br from-secondary to-secondary/80 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-secondary/20 group-hover:-rotate-12 transition-transform duration-500">
                                     <Mail className="w-7 h-7" />
                                 </div>
                                 <div className="text-left">

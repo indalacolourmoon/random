@@ -1,7 +1,6 @@
 "use client"
 
 import { Search, Inbox, CheckCircle, Archive, LayoutGrid } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
@@ -92,7 +91,7 @@ export function InboxFilters({
                         <Archive className="w-3.5 h-3.5" />
                         <span className="text-[9px] font-black uppercase tracking-widest">Protocol Tip</span>
                     </div>
-                    <p className="text-[9px] font-medium leading-relaxed text-muted-foreground [text-wrap:balance]">
+                    <p className="text-[9px] font-medium leading-relaxed text-muted-foreground text-balance">
                         Archived communiqués are preserved indefinitely but removed from active intelligence streams.
                     </p>
                 </div>

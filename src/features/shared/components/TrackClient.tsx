@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Loader2, CheckCircle2, Clock, ShieldAlert, FileText, Calendar, CreditCard, ChevronRight, Check, ArrowRight, User } from 'lucide-react';
+import { Search, Loader2, CheckCircle2, ShieldAlert, FileText, Calendar, CreditCard, ArrowRight, User } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -14,7 +14,18 @@ interface TrackClientProps {
     settings: Record<string, string>;
 }
 
-function Milestone({ title, date, description, icon: Icon, active, last }: { title: string, date?: string, description: string, icon: any, active: boolean, last?: boolean }) {
+import { LucideIcon } from 'lucide-react';
+ 
+interface MilestoneProps {
+    title: string;
+    date?: string;
+    description: string;
+    icon: LucideIcon;
+    active: boolean;
+    last?: boolean;
+}
+ 
+function Milestone({ title, date, description, icon: Icon, active, last }: MilestoneProps) {
     return (
         <div className="flex gap-8 relative items-start">
             {!last && (
@@ -63,8 +74,8 @@ export default function TrackClient({ settings }: TrackClientProps) {
         searchTriggered
     );
 
-    const manuscript = data && 'success' in data ? data.manuscript : null;
-    const errorMessage = data && 'error' in data ? data.error : (error as any)?.message;
+    const manuscript = data?.success ? data.data?.manuscript : null;
+    const errorMessage = data?.success ? null : (data?.error || (error instanceof Error ? error instanceof Error ? error.message : String(error) : null));
 
     const resultsRef = useRef<HTMLDivElement>(null);
     const journalShortName = settings.journal_short_name || "IJITEST";
@@ -116,7 +127,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
                     
                     <div className="relative z-10 flex flex-col sm:flex-row items-center gap-10">
-                        <div className="w-20 h-20 2xl:w-28 2xl:h-28 bg-white/10 rounded-[2rem] flex items-center justify-center text-white border border-white/20 shadow-2xl backdrop-blur-md">
+                        <div className="w-20 h-20 2xl:w-28 2xl:h-28 bg-white/10 rounded-4xl flex items-center justify-center text-white border border-white/20 shadow-2xl backdrop-blur-md">
                             <Search className="w-10 h-10 2xl:w-14 2xl:h-14" />
                         </div>
                         <div className="text-center sm:text-left space-y-3">
@@ -140,7 +151,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                         setSearchTriggered(false);
                                     }}
                                     required
-                                    className="h-16 2xl:h-24 rounded-2xl 2xl:rounded-3xl bg-primary/[0.03] border-primary/10 focus-visible:ring-2 focus-visible:ring-secondary/20 font-black text-primary shadow-inner px-8 text-lg 2xl:text-3xl transition-all"
+                                    className="h-16 2xl:h-24 rounded-2xl 2xl:rounded-3xl bg-primary/3 border-primary/10 focus-visible:ring-2 focus-visible:ring-secondary/20 font-black text-primary shadow-inner px-8 text-lg 2xl:text-3xl transition-all"
                                     placeholder={`${journalShortName}-2026-XXX`}
                                 />
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/10">
@@ -159,7 +170,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                         setSearchTriggered(false);
                                     }}
                                     required
-                                    className="h-16 2xl:h-24 rounded-2xl 2xl:rounded-3xl bg-primary/[0.03] border-primary/10 focus-visible:ring-2 focus-visible:ring-secondary/20 font-black text-primary shadow-inner px-8 text-lg 2xl:text-3xl transition-all"
+                                    className="h-16 2xl:h-24 rounded-2xl 2xl:rounded-3xl bg-primary/3er-primary/10 focus-visible:ring-2 focus-visible:ring-secondary/20 font-black text-primary shadow-inner px-8 text-lg 2xl:text-3xl transition-all"
                                     placeholder="author@institution.edu"
                                 />
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/10">
@@ -203,7 +214,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                             className="space-y-16"
                         >
                             <div className="p-12 sm:p-20 bg-card border border-primary/5 rounded-[4rem] shadow-vip relative overflow-hidden group border-t-8 border-t-secondary/40">
-                                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-secondary/[0.02] to-transparent pointer-events-none" />
+                                <div className="absolute top-0 right-0 w-full h-full bg-linear-to-br from-secondary/2 to-transparent pointer-events-none" />
                                 
                                 <section className="mb-16 space-y-10 relative z-10">
                                     <div className="flex flex-wrap items-center justify-between gap-8">
@@ -211,7 +222,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                             <Badge className="bg-secondary text-white border-none text-[10px] 2xl:text-lg font-black tracking-[0.3em] px-6 h-10 rounded-2xl shadow-xl shadow-secondary/20 uppercase">
                                                 Status: {manuscript.status.replace('_', ' ')}
                                             </Badge>
-                                            <span className="text-xs 2xl:text-xl font-black text-primary/40 tracking-[0.2em] bg-primary/[0.03] px-6 py-2 rounded-2xl border border-primary/5">
+                                            <span className="text-xs 2xl:text-xl font-black text-primary/40 tracking-[0.2em] bg-primary/3 px-6 py-2 rounded-2xl border border-primary/5">
                                                 NODE ID: {manuscript.paper_id}
                                             </span>
                                         </div>
@@ -220,7 +231,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                         </div>
                                     </div>
 
-                                    <h2 className="font-serif font-black text-2xl sm:text-4xl 2xl:text-6xl text-foreground leading-[1.1] tracking-tight uppercase max-w-4xl border-l-[12px] border-secondary/20 pl-10 py-2">
+                                    <h2 className="font-serif font-black text-2xl sm:text-4xl 2xl:text-6xl text-foreground leading-[1.1] tracking-tight uppercase max-w-4xl border-l-12 border-secondary/20 pl-10 py-2">
                                         {manuscript.title}
                                     </h2>
 
@@ -331,7 +342,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                     )}
 
                                     {manuscript.status === 'rejected' && (
-                                        <section className="p-12 sm:p-20 bg-destructive/[0.02] border border-destructive/10 rounded-[3.5rem] space-y-10 relative overflow-hidden backdrop-blur-sm">
+                                        <section className="p-12 sm:p-20 bg-destructive/2 border border-destructive/10 rounded-[3.5rem] space-y-10 relative overflow-hidden backdrop-blur-sm">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full blur-3xl -mr-16 -mt-16" />
                                             <div className="space-y-4">
                                                 <h4 className="text-2xl 2xl:text-4xl font-serif font-black text-destructive tracking-tight uppercase">Editorial Consultation Outcome</h4>
@@ -342,9 +353,9 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                             {manuscript.reviewer_feedback && manuscript.reviewer_feedback.length > 0 && (
                                                 <div className="grid grid-cols-1 gap-6">
                                                     {manuscript.reviewer_feedback.map((feedback: string, i: number) => (
-                                                        <div key={i} className="p-10 bg-card rounded-[2rem] border border-destructive/10 text-sm 2xl:text-xl text-foreground font-medium leading-[1.8] relative flex gap-6 shadow-sm group hover:border-destructive/30 transition-colors">
+                                                        <div key={i} className="p-10 bg-card rounded-4xl border border-destructive/10 text-sm 2xl:text-xl text-foreground font-medium leading-[1.8] relative flex gap-6 shadow-sm group hover:border-destructive/30 transition-colors">
                                                             <div className="w-1.5 h-auto bg-destructive/20 rounded-full shrink-0 group-hover:bg-destructive/40 transition-colors" />
-                                                            <div className="italic break-words w-full">"{feedback}"</div>
+                                                            <div className="italic wrap-break-word w-full">"{feedback}"</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -359,7 +370,7 @@ export default function TrackClient({ settings }: TrackClientProps) {
                     {(isError || (data && 'error' in data)) && (
                         <motion.div key="error" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                             <div className="p-16 sm:p-24 bg-card border border-destructive/10 rounded-[4rem] shadow-vip text-center space-y-10 max-w-2xl mx-auto relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-destructive/[0.02] to-transparent pointer-events-none" />
+                                <div className="absolute top-0 left-0 w-full h-full bg-linear-to-br from-destructive/2 to-transparent pointer-events-none" />
                                 <div className="w-20 h-20 2xl:w-32 2xl:h-32 bg-destructive/5 rounded-3xl flex items-center justify-center mx-auto text-destructive border border-destructive/10 shadow-inner group-hover:rotate-12 transition-transform">
                                     <ShieldAlert className="w-10 h-10 2xl:w-16 2xl:h-16" />
                                 </div>

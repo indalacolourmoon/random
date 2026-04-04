@@ -3,7 +3,7 @@ import {
   text, index, unique, decimal, date, boolean, 
   primaryKey 
 } from "drizzle-orm/mysql-core";
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 
 // 👤 1. USERS (AUTH LAYER) - Updated to UUID
 export const users = mysqlTable("users", {
@@ -14,6 +14,7 @@ export const users = mysqlTable("users", {
     isActive: boolean("is_active").default(true).notNull(),
     isEmailVerified: boolean("is_email_verified").default(false).notNull(),
     emailVerifiedAt: timestamp("email_verified_at"),
+    hasSeenPromotion: boolean("has_seen_promotion").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
     deletedAt: timestamp("deleted_at"),
@@ -284,7 +285,7 @@ export const payments = mysqlTable("payments", {
     submissionId: int("submission_id").notNull().references(() => submissions.id, { onDelete: "cascade" }).unique(),
     amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
     currency: varchar("currency", { length: 10 }).default('INR').notNull(),
-    status: mysqlEnum("status", ['pending', 'paid', 'verified', 'failed']).default('pending').notNull(),
+    status: mysqlEnum("status", ['pending', 'paid', 'verified', 'failed', 'waived']).default('pending').notNull(),
     provider: varchar("provider", { length: 50 }),
     transactionId: varchar("transaction_id", { length: 255 }).unique(),
     paidAt: timestamp("paid_at"),
@@ -347,7 +348,10 @@ export const applications = mysqlTable("applications", {
     email: varchar("email", { length: 255 }).notNull(),
     designation: varchar("designation", { length: 255 }).notNull(),
     institute: varchar("institute", { length: 255 }).notNull(),
+    cvUrl: varchar("cv_url", { length: 500 }),
+    photoUrl: varchar("photo_url", { length: 500 }),
     status: mysqlEnum("status", ['pending', 'approved', 'rejected']).default('pending').notNull(),
+    nationality: varchar("nationality", { length: 100 }),
     reviewedBy: varchar("reviewed_by", { length: 36 }).references(() => users.id),
     reviewedAt: timestamp("reviewed_at"),
     createdAt: timestamp("created_at").defaultNow(),
@@ -355,11 +359,39 @@ export const applications = mysqlTable("applications", {
     unique("app_email_type_unique").on(table.email, table.type),
 ]);
 
-export const applicationsRelations = relations(applications, ({ one }) => ({
+export const masterInterests = mysqlTable("master_interests", {
+    id: int("id").primaryKey().autoincrement().notNull(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const applicationInterests = mysqlTable("application_interests", {
+    id: int("id").primaryKey().autoincrement().notNull(),
+    applicationId: int("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
+    interestId: int("interest_id").notNull().references(() => masterInterests.id, { onDelete: "cascade" }),
+});
+
+export const applicationsRelations = relations(applications, ({ one, many }) => ({
     reviewer: one(users, {
         fields: [applications.reviewedBy],
         references: [users.id],
     }),
+    interests: many(applicationInterests),
+}));
+
+export const applicationInterestsRelations = relations(applicationInterests, ({ one }) => ({
+    application: one(applications, {
+        fields: [applicationInterests.applicationId],
+        references: [applications.id],
+    }),
+    interest: one(masterInterests, {
+        fields: [applicationInterests.interestId],
+        references: [masterInterests.id],
+    }),
+}));
+
+export const masterInterestsRelations = relations(masterInterests, ({ many }) => ({
+    applications: many(applicationInterests),
 }));
 
 // 📬 15. CONTACT & UX

@@ -1,57 +1,109 @@
 "use server";
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { 
+    users, 
+    userProfiles, 
+    userInvitations,
+} from "@/db/schema";
+import { 
+    UserWithProfile, 
+    ActionResponse,
+} from "@/db/types";
+import { eq, and, sql, inArray, isNotNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { safeDeleteFile } from "@/lib/fs-utils";
 
-export async function getEditorialBoard() {
+export async function getEditorialBoard(): Promise<ActionResponse<UserWithProfile[]>> {
     try {
-        const rows: any = await db.execute(
-            sql`SELECT full_name, designation, institute, email, role, nationality FROM users WHERE role IN ("admin", "editor", "reviewer") AND password_hash IS NOT NULL AND invitation_token IS NULL ORDER BY role ASC, full_name ASC`
-        );
-        return rows[0] || [];
-    } catch (error: any) {
-        if (error.code === 'ETIMEDOUT') {
-            console.error("Build-time DB Connection Timeout (Editorial Board) - Skipping");
-        } else {
-            console.error("Get Editorial Board Error:", error);
-        }
-        return [];
+        const rows = await db.select({
+            user: users,
+            profile: userProfiles,
+        })
+        .from(users)
+        .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(
+            and(
+                inArray(users.role, ["admin", "editor", "reviewer"]),
+                isNotNull(users.passwordHash),
+                eq(users.isActive, true)
+            )
+        )
+        .orderBy(users.role, userProfiles.fullName);
+
+        const data = rows.map(r => ({
+            ...r.user,
+            profile: r.profile
+        }));
+        return { success: true, data };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        console.error("Get Editorial Board Error:", error);
+        return { success: false, error: message };
     }
 }
 
-export async function getUsers(role?: string) {
+export async function getUsers(role?: "admin" | "editor" | "reviewer" | "author"): Promise<ActionResponse<UserWithProfile[]>> {
     try {
-        let query = sql`SELECT id, email, full_name, role, created_at FROM users`;
+        const query = db.select({
+            user: users,
+            profile: userProfiles,
+        })
+        .from(users)
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId));
+
         if (role) {
-            query = sql`SELECT id, email, full_name, role, created_at FROM users WHERE role = ${role}`;
+            query.where(eq(users.role, role));
         }
-        const rows: any = await db.execute(query);
-        return rows[0] || [];
-    } catch (error: any) {
+
+        const rows = await query;
+        const data = rows.map(r => ({
+            ...r.user,
+            profile: r.profile
+        }));
+        return { success: true, data };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Get Users Error:", error);
-        return [];
+        return { success: false, error: message };
     }
 }
 
 import crypto from 'crypto';
 import { sendEmail } from '@/lib/mail';
 
-export async function createUser(formData: FormData) {
+export async function createUser(formData: FormData): Promise<ActionResponse> {
     const email = formData.get('email') as string;
     const fullName = formData.get('fullName') as string;
-    const role = formData.get('role') as string;
+    const role = formData.get('role') as "admin" | "editor" | "reviewer" | "author";
 
     try {
         const invitationToken = crypto.randomBytes(32).toString('hex');
         const expires = new Date();
-        expires.setHours(expires.getHours() + 24); // 24 hours invitation
+        expires.setHours(expires.getHours() + 24);
 
-        await db.execute(
-            sql`INSERT INTO users (email, full_name, role, invitation_token, invitation_expires) VALUES (${email}, ${fullName}, ${role}, ${invitationToken}, ${expires})`
-        );
+        const userId = crypto.randomUUID();
+
+        await db.transaction(async (tx) => {
+            await tx.insert(users).values({
+                id: userId,
+                email,
+                role,
+            });
+
+            await tx.insert(userProfiles).values({
+                userId,
+                fullName,
+            });
+
+            await tx.insert(userInvitations).values({
+                email,
+                role: role as "editor" | "reviewer",
+                token: invitationToken,
+                expiresAt: expires,
+            });
+        });
 
         // Send invitation email
         const setupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/setup-password?token=${invitationToken}`;
@@ -81,75 +133,113 @@ export async function createUser(formData: FormData) {
 
         revalidatePath('/admin/users');
         return { success: true };
-    } catch (error: any) {
-        console.error("Create User Error:", error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return { error: "Email already exists" };
-        }
-        return { error: "Failed to create user: " + error.message };
-    }
-}
-
-export async function getPasswordSetupInfo(token: string) {
-    try {
-        const rows: any = await db.execute(
-            sql`SELECT email, full_name, role FROM users WHERE invitation_token = ${token} AND invitation_expires > NOW()`
-        );
-        return rows[0]?.[0] || null;
     } catch (error) {
-        console.error("Get Setup Info Error:", error);
-        return null;
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        console.error("Create User Error:", error);
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ER_DUP_ENTRY') {
+            return { success: false, error: "Email already exists" };
+        }
+        return { success: false, error: "Failed to create user: " + message };
     }
 }
 
-export async function setupPassword(formData: FormData) {
+export async function getPasswordSetupInfo(token: string): Promise<ActionResponse<{ email: string, role: string, fullName: string }>> {
+    try {
+        const invitation = await db.select({
+            email: userInvitations.email,
+            role: userInvitations.role,
+            fullName: userProfiles.fullName,
+        })
+        .from(userInvitations)
+        .innerJoin(users, eq(userInvitations.email, users.email))
+        .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(
+            and(
+                eq(userInvitations.token, token),
+                sql`${userInvitations.expiresAt} > NOW()`
+            )
+        )
+        .limit(1);
+
+        if (!invitation[0]) return { success: false, error: "Link expired or invalid" };
+        return { success: true, data: invitation[0] };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        console.error("Get Setup Info Error:", error);
+        return { success: false, error: message };
+    }
+}
+
+export async function setupPassword(formData: FormData): Promise<ActionResponse> {
     const token = formData.get('token') as string;
     const password = formData.get('password') as string;
 
     try {
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Update user and clear token
-        const result: any = await db.execute(
-            sql`UPDATE users SET password_hash = ${passwordHash}, invitation_token = NULL, invitation_expires = NULL WHERE invitation_token = ${token} AND invitation_expires > NOW()`
-        );
+        return await db.transaction(async (tx) => {
+            const invitation = await tx.select()
+                .from(userInvitations)
+                .where(
+                    and(
+                        eq(userInvitations.token, token),
+                        sql`${userInvitations.expiresAt} > NOW()`
+                    )
+                )
+                .limit(1);
 
-        if (result[0].affectedRows === 0) {
-            return { error: "Link expired or invalid" };
-        }
+            if (!invitation[0]) {
+                return { success: false, error: "Link expired or invalid" };
+            }
 
-        return { success: true };
-    } catch (error: any) {
+            await tx.update(users)
+                .set({ passwordHash })
+                .where(eq(users.email, invitation[0].email));
+
+            await tx.delete(userInvitations)
+                .where(eq(userInvitations.token, token));
+
+            return { success: true };
+        });
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Setup Password Error:", error);
-        return { error: "Failed to setup password: " + error.message };
+        return { success: false, error: "Failed to setup password: " + message };
     }
 }
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-export async function requestPasswordReset(formData: FormData) {
+export async function requestPasswordReset(formData: FormData): Promise<ActionResponse> {
     const email = formData.get('email') as string;
 
     try {
-        const rows: any = await db.execute(
-            sql`SELECT id, full_name FROM users WHERE email = ${email}`
-        );
-        const users = rows[0] || [];
+        const userResult = await db.select({
+            id: users.id,
+            role: users.role,
+            fullName: userProfiles.fullName,
+        })
+        .from(users)
+        .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(eq(users.email, email))
+        .limit(1);
 
-        if (users.length === 0) {
-            // Success even if not found for security, but we can log internally
-            return { success: true };
+        const user = userResult[0];
+        if (!user) {
+            return { success: true }; // Security: don't reveal if user exists
         }
 
-        const user = users[0];
         const resetToken = crypto.randomBytes(32).toString('hex');
         const expires = new Date();
-        expires.setHours(expires.getHours() + 1); // 1 hour for reset
+        expires.setHours(expires.getHours() + 1);
 
-        await db.execute(
-            sql`UPDATE users SET invitation_token = ${resetToken}, invitation_expires = ${expires} WHERE id = ${user.id}`
-        );
+        await db.insert(userInvitations).values({
+            email,
+            role: user.role as "editor" | "reviewer",
+            token: resetToken,
+            expiresAt: expires,
+        });
 
         const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/setup-password?token=${resetToken}&ctx=reset`;
 
@@ -162,7 +252,7 @@ export async function requestPasswordReset(formData: FormData) {
                         <h1 style="color: #6d0202; margin-bottom: 10px;">IJITEST</h1>
                         <p style="color: #666; font-size: 14px; text-transform: ; letter-spacing: 0.2em;">Password Recovery</p>
                     </div>
-                    <p>Dear ${user.full_name},</p>
+                    <p>Dear ${user.fullName},</p>
                     <p>We received a request to reset your password for the <strong>IJITEST</strong> editorial portal.</p>
                     <p>To set a new password, please click the button below:</p>
                     <div style="text-align: center; margin: 40px 0;">
@@ -177,75 +267,85 @@ export async function requestPasswordReset(formData: FormData) {
         });
 
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("Reset Request Error:", error);
-        return { error: "Failed to process reset request" };
+        return { success: false, error: "Failed to process reset request" };
     }
 }
 
-export async function deleteUser(id: number) {
+export async function deleteUser(id: string): Promise<ActionResponse> {
     try {
-        const session: any = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions);
 
         if (!session) {
-            return { error: "Unauthorized" };
+            return { success: false, error: "Unauthorized" };
         }
-
-        // Prevent self-deletion
-        if (Number(session.user.id) === Number(id)) {
-            return { error: "You cannot delete your own administrative account while logged in." };
+ 
+        if (session.user.id === id) {
+            return { success: false, error: "You cannot delete your own administrative account while logged in." };
         }
-
-        // Optional: Check if the current user is an admin
+ 
         if (session.user.role !== 'admin') {
-            return { error: "Only administrators can revoke staff access." };
+            return { success: false, error: "Only administrators can revoke staff access." };
         }
 
         return await db.transaction(async (tx) => {
-            // 3. Delete Photo and User
-            const rows: any = await tx.execute(sql`SELECT photo_url FROM users WHERE id = ${id}`);
-            const user = rows[0] || [];
+            const profile = await tx.select({ photoUrl: userProfiles.photoUrl })
+                .from(userProfiles)
+                .where(eq(userProfiles.userId, id))
+                .limit(1);
             
-            await tx.execute(sql`DELETE FROM users WHERE id = ${id}`);
+            await tx.delete(users).where(eq(users.id, id));
             
-            // Cleanup file after transaction success
-            if (user.length > 0 && user[0].photo_url) {
-                await safeDeleteFile(user[0].photo_url);
+            if (profile[0]?.photoUrl) {
+                await safeDeleteFile(profile[0].photoUrl);
             }
 
             revalidatePath('/admin/users');
             return { success: true };
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Delete User Error:", error);
-        return { error: "Failed to delete user" };
+        return { success: false, error: "Failed to delete user" };
     }
 }
 
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
-export async function getUserProfile() {
+export async function getUserProfile(): Promise<ActionResponse<UserWithProfile>> {
     try {
-        const session: any = await getServerSession(authOptions);
-        if (!session?.user) return null;
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Unauthorized" };
 
-        const rows: any = await db.execute(
-            sql`SELECT id, email, full_name, designation, institute, phone, bio, photo_url, role, nationality FROM users WHERE id = ${session.user.id}`
-        );
+        const result = await db.select({
+            user: users,
+            profile: userProfiles,
+        })
+        .from(users)
+        .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(eq(users.id, session.user.id))
+        .limit(1);
 
-        return rows[0]?.[0] || null;
+        if (!result[0]) return { success: false, error: "User not found" };
+
+        const data: UserWithProfile = {
+            ...result[0].user,
+            profile: result[0].profile
+        };
+        return { success: true, data };
     } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Get User Profile Error:", error);
-        return null;
+        return { success: false, error: message };
     }
 }
 
-export async function updateUserProfile(formData: FormData) {
+export async function updateUserProfile(formData: FormData): Promise<ActionResponse> {
     try {
-        const session: any = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions);
         if (!session?.user) {
-            return { error: "Unauthorized" };
+            return { success: false, error: "Unauthorized" };
         }
 
         const fullName = formData.get('fullName') as string;
@@ -272,33 +372,41 @@ export async function updateUserProfile(formData: FormData) {
             photoUrl = `/uploads/profiles/${fileName}`;
         }
 
-        return await db.transaction(async (tx) => {
-            await tx.execute(
-                sql`UPDATE users SET full_name = ${fullName}, designation = ${designation}, institute = ${institute}, phone = ${phone}, bio = ${bio}, photo_url = ${photoUrl}, nationality = ${nationality} WHERE id = ${session.user.id}`
-            );
+        await db.update(userProfiles)
+            .set({
+                fullName,
+                designation,
+                institute,
+                phone,
+                bio,
+                photoUrl,
+                nationality,
+            })
+            .where(eq(userProfiles.userId, session.user.id));
 
-            // Cleanup old photo after successful DB update
-            if (oldPhotoUrl) {
-                await safeDeleteFile(oldPhotoUrl);
-            }
+        if (oldPhotoUrl) {
+            await safeDeleteFile(oldPhotoUrl);
+        }
 
-            revalidatePath(`/${session.user.role}/profile`);
-            return { success: true };
-        });
-    } catch (error: any) {
+        revalidatePath(`/${session.user.role}/profile`);
+        return { success: true };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Update User Profile Error:", error);
-        return { error: "Failed to update profile: " + error.message };
+        return { success: false, error: "Failed to update profile: " + message };
     }
 }
 
-export async function checkUserEmail(email: string) {
+export async function checkUserEmail(email: string): Promise<{ exists: boolean; error?: string }> {
     try {
-        const rows: any = await db.execute(
-            sql`SELECT id FROM users WHERE email = ${email}`
-        );
-        return { exists: rows[0].length > 0 };
+        const result = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
+
+        return { exists: result.length > 0 };
     } catch (error) {
         console.error("Check User Email Error:", error);
-        return { error: "Check failed" };
+        return { error: "Check failed", exists: false };
     }
 }

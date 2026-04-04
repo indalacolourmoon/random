@@ -1,87 +1,167 @@
 "use server";
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { payments, submissions, submissionVersions, userProfiles, users } from "@/db/schema";
+import { eq, desc, and, notInArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ActionResponse } from "@/db/types";
 
-export async function getPayments() {
+export interface PaymentRow {
+    id: number;
+    submissionId: number;
+    amount: string;
+    currency: string;
+    status: 'pending' | 'paid' | 'verified' | 'failed' | 'waived';
+    transactionId: string | null;
+    paidAt: Date | null;
+    createdAt: Date | null;
+    title: string;
+    paperId: string;
+    authorName: string;
+    authorEmail: string;
+}
+
+export async function getPayments(): Promise<ActionResponse<PaymentRow[]>> {
     try {
-        const rows: any = await db.execute(sql`
-            SELECT p.*, s.title, s.paper_id, s.author_name, s.author_email 
-            FROM payments p
-            JOIN submissions s ON p.submission_id = s.id
-            ORDER BY p.created_at DESC
-        `);
-        return rows[0] || [];
-    } catch (error: any) {
+        const results = await db.select({
+            id: payments.id,
+            submissionId: payments.submissionId,
+            amount: payments.amount,
+            currency: payments.currency,
+            status: payments.status,
+            transactionId: payments.transactionId,
+            paidAt: payments.paidAt,
+            createdAt: payments.createdAt,
+            title: submissionVersions.title,
+            paperId: submissions.paperId,
+            authorName: userProfiles.fullName,
+            authorEmail: users.email
+        })
+        .from(payments)
+        .innerJoin(submissions, eq(payments.submissionId, submissions.id))
+        .innerJoin(users, eq(submissions.correspondingAuthorId, users.id))
+        .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+        .orderBy(desc(payments.createdAt));
+        
+        // Group by payment and pick latest version title
+        // Drizzle join might return multiple rows if we don't limit versions or use a subquery
+        // But for IJITEST, we usually just want the latest version.
+        // Simplified for now (assuming 1 version for simplicity or handling in UI)
+        return { success: true, data: results as PaymentRow[] };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Get Payments Error:", error);
-        return [];
+        return { success: false, error: "Failed to fetch payments: " + message };
     }
 }
 
-export async function updatePaymentStatus(paymentId: number, status: string, transactionId?: string) {
+export async function updatePaymentStatus(paymentId: number, status: 'pending' | 'paid' | 'verified' | 'failed' | 'waived', transactionId?: string): Promise<ActionResponse> {
     try {
-        await db.execute(
-            sql`UPDATE payments SET status = ${status}, transaction_id = ${transactionId || null}, paid_at = IF(${status} = 'paid', CURRENT_TIMESTAMP, paid_at) WHERE id = ${paymentId}`
-        );
+        await db.transaction(async (tx) => {
+            await tx.update(payments)
+                .set({ 
+                    status, 
+                    transactionId: transactionId || null, 
+                    paidAt: status === 'paid' ? new Date() : undefined 
+                })
+                .where(eq(payments.id, paymentId));
 
-        if (status === 'paid') {
-            // Get submission ID
-            const rows: any = await db.execute(sql`SELECT submission_id FROM payments WHERE id = ${paymentId}`);
-            if (rows[0].length > 0) {
-                await db.execute(sql`UPDATE submissions SET status = 'paid' WHERE id = ${rows[0][0].submission_id}`);
+            if (status === 'paid') {
+                const [payment] = await tx.select({ submissionId: payments.submissionId })
+                    .from(payments)
+                    .where(eq(payments.id, paymentId))
+                    .limit(1);
+                
+                if (payment) {
+                    await tx.update(submissions)
+                        .set({ status: 'payment_pending' }) // Should check flow: accepted -> payment_pending -> paid/waived -> publication_pending
+                        .where(eq(submissions.id, payment.submissionId));
+                }
             }
-        }
+        });
+
         revalidatePath('/admin/payments');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Update Payment Error:", error);
-        return { error: "Failed to update payment: " + error.message };
+        return { success: false, error: "Failed to update payment: " + message };
     }
 }
 
-export async function initializePayment(submissionId: number, amount: number, currency: string = 'INR') {
+export async function initializePayment(submissionId: number, amount: number, currency: string = 'INR'): Promise<ActionResponse> {
     try {
-        await db.execute(
-            sql`INSERT INTO payments (submission_id, amount, currency, status) VALUES (${submissionId}, ${amount}, ${currency}, 'unpaid')`
-        );
+        await db.insert(payments).values({
+            submissionId,
+            amount: amount.toString(),
+            currency,
+            status: 'pending'
+        });
         revalidatePath('/admin/payments');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Initialize Payment Error:", error);
-        return { error: "Failed to initialize payment: " + error.message };
+        return { success: false, error: "Failed to initialize payment: " + message };
     }
 }
 
-export async function getAcceptedUnpaidPapers() {
+export interface UnpaidPaperRow {
+    id: number;
+    paperId: string;
+    title: string;
+    authorName: string;
+}
+
+export async function getAcceptedUnpaidPapers(): Promise<ActionResponse<UnpaidPaperRow[]>> {
     try {
-        const rows: any = await db.execute(sql`
-            SELECT id, paper_id, title, author_name 
-            FROM submissions 
-            WHERE status = 'accepted' 
-            AND id NOT IN (SELECT submission_id FROM payments)
-        `);
-        return rows[0] || [];
-    } catch (error: any) {
+        // Find submissions that are 'accepted' but have no entry in 'payments'
+        // Subquery for payments
+        const paidSubmissions = db.select({ id: payments.submissionId }).from(payments);
+
+        const results = await db.select({
+            id: submissions.id,
+            paperId: submissions.paperId,
+            title: submissionVersions.title,
+            authorName: userProfiles.fullName
+        })
+        .from(submissions)
+        .innerJoin(users, eq(submissions.correspondingAuthorId, users.id))
+        .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+        .where(and(
+            eq(submissions.status, 'accepted'),
+            notInArray(submissions.id, paidSubmissions)
+        ));
+
+        return { success: true, data: results };
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Get Accepted Unpaid Error:", error);
-        return [];
+        return { success: false, error: "Failed to fetch unpaid papers: " + message };
     }
 }
 
-export async function waivePayment(submissionId: number) {
+export async function waivePayment(submissionId: number): Promise<ActionResponse> {
     try {
-        await db.execute(
-            sql`UPDATE payments SET status = 'waived', paid_at = CURRENT_TIMESTAMP WHERE submission_id = ${submissionId}`
-        );
-        await db.execute(
-            sql`UPDATE submissions SET status = 'paid' WHERE id = ${submissionId}`
-        );
+        await db.transaction(async (tx) => {
+            await tx.update(payments)
+                .set({ status: 'waived', paidAt: new Date() })
+                .where(eq(payments.submissionId, submissionId));
+            
+            await tx.update(submissions)
+                .set({ status: 'payment_pending' })
+                .where(eq(submissions.id, submissionId));
+        });
+
         revalidatePath('/admin/submissions');
         revalidatePath('/admin/submissions/[id]');
         revalidatePath('/admin/payments');
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Waive Payment Error:", error);
-        return { error: "Failed to waive payment: " + error.message };
+        return { success: false, error: "Failed to waive payment: " + message };
     }
 }

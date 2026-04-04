@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpen, Target, Building2, ShieldCheck, ListChecks, FileText, FlaskConical, Cpu, Globe, Sparkles, ChevronRight } from 'lucide-react';
+import { BookOpen, Target, Building2, FlaskConical, Cpu, Globe, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AboutClientProps {
@@ -40,7 +40,7 @@ export default function AboutClient({ settings }: AboutClientProps) {
                     </div>
                     <h2 className="text-primary m-0 font-black uppercase tracking-widest">Aim of the Journal</h2>
                 </div>
-                <div className="p-8 2xl:p-14 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-[2.5rem] shadow-vip-hover">
+                <div className="p-8 2xl:p-14 bg-linear-to-br from-primary/5 to-transparent border border-primary/10 rounded-[2.5rem] shadow-vip-hover">
                     <p className="text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-primary/80 font-medium mb-8 2xl:mb-12 leading-relaxed border-l-4 border-secondary/40 pl-6 2xl:pl-10">
                         {journalShortName} aims to provide a high-quality international platform for researchers, academicians, industry professionals, and scholars to publish original research, review articles, and technical communications in emerging areas of science, engineering, and technology.
                     </p>
@@ -105,7 +105,7 @@ export default function AboutClient({ settings }: AboutClientProps) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1 }}
-                            className="py-8 px-8 group/item bg-white rounded-[2rem] border border-primary/5 shadow-sm hover:border-secondary/20 transition-all duration-500"
+                            className="py-8 px-8 group/item bg-white rounded-4xl border border-primary/5 shadow-sm hover:border-secondary/20 transition-all duration-500"
                         >
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="p-2.5 bg-secondary/5 rounded-xl border border-secondary/10 group-hover:scale-110 transition-transform">
@@ -141,7 +141,7 @@ export default function AboutClient({ settings }: AboutClientProps) {
                         { label: "E-ISSN", value: settings.issn_number || "Applied For" },
                         { label: "Format", value: "Online, Open Access" }
                     ].map((item, i) => (
-                        <div key={i} className="p-6 2xl:p-10 rounded-[2rem] bg-background border border-primary/5 group/spec hover:border-secondary/20 transition-all duration-500">
+                        <div key={i} className="p-6 2xl:p-10 rounded-4xl bg-background border border-primary/5 group/spec hover:border-secondary/20 transition-all duration-500">
                             <dt className="text-primary/30 font-black tracking-widest uppercase text-xs mb-2">{item.label}</dt>
                             <dd className="text-primary font-bold text-lg 2xl:text-2xl">{item.value}</dd>
                         </div>
@@ -154,7 +154,7 @@ export default function AboutClient({ settings }: AboutClientProps) {
                 <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-[120px] group-hover/publisher:bg-white/10 transition-colors duration-1000 pointer-events-none" />
                 <div className="relative z-10">
                     <div className="flex items-center gap-6 mb-10">
-                        <div className="w-20 h-20 2xl:w-32 2xl:h-32 bg-white/10 rounded-[2rem] flex items-center justify-center border border-white/20">
+                        <div className="w-20 h-20 2xl:w-32 2xl:h-32 bg-white/10 rounded-4xl flex items-center justify-center border border-white/20">
                             <Building2 className="w-10 h-10 2xl:w-16 2xl:h-16 text-secondary" />
                         </div>
                         <h2 className="text-white m-0">Legacy Publisher</h2>

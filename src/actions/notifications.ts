@@ -1,14 +1,16 @@
 "use server";
 
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { contactMessages, submissions } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { ActionResponse } from "@/db/types";
 
-export async function getNotificationCounts() {
+export async function getNotificationCounts(): Promise<ActionResponse<{ messages: number, submissions: number }>> {
     try {
-        const session: any = await getServerSession(authOptions);
-        if (!session?.user) return { messages: 0, submissions: 0 };
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Unauthorized" };
 
         const { role } = session.user;
         let messageCount = 0;
@@ -16,26 +18,28 @@ export async function getNotificationCounts() {
 
         // 1. Messages are relevant for Admins and Editors
         if (role === 'admin' || role === 'editor') {
-            const msgRows: any = await db.execute(
-                sql`SELECT COUNT(*) as count FROM contact_messages WHERE status = 'unread'`
-            );
-            messageCount = msgRows[0][0].count;
+            const [msgResult] = await db.select({ count: count() })
+                .from(contactMessages)
+                .where(eq(contactMessages.status, 'pending'));
+            messageCount = msgResult.count;
         }
 
         // 2. New Submissions are primarily for Editors and Admins (awaiting desk screening)
         if (role === 'admin' || role === 'editor') {
-            const subRows: any = await db.execute(
-                sql`SELECT COUNT(*) as count FROM submissions WHERE status = 'submitted'`
-            );
-            submissionCount = subRows[0][0].count;
+            const [subResult] = await db.select({ count: count() })
+                .from(submissions)
+                .where(eq(submissions.status, 'submitted'));
+            submissionCount = subResult.count;
         }
 
-        return {
+        const data = {
             messages: messageCount,
             submissions: submissionCount
         };
+        return { success: true, data };
     } catch (error) {
+        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
         console.error("Get Notification Counts Error:", error);
-        return { messages: 0, submissions: 0 };
+        return { success: false, error: message };
     }
 }

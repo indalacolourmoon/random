@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Issue } from '@/db/types';
 import {
     getVolumesIssues,
     createVolumeIssue,
@@ -6,25 +7,28 @@ import {
     getPapersByIssueId,
     unassignPaperFromIssue,
     updateVolumeIssue,
-    deleteVolumeIssue
+    deleteVolumeIssue,
+    assignPaperToIssue,
+    PaperWithPublication
 } from '@/actions/publications';
-import { assignPaperToIssue } from '@/actions/publications';
 
 export function useVolumesIssues() {
-    return useQuery<any[]>({
+    return useQuery<(Issue & { paperCount: number })[]>({
         queryKey: ['volumes-issues'],
         queryFn: async () => {
-            return await getVolumesIssues();
+            const res = await getVolumesIssues();
+            return res.success ? res.data ?? [] : [];
         },
     });
 }
 
 export function usePapersByIssue(issueId: number | null) {
-    return useQuery<any[]>({
+    return useQuery<PaperWithPublication[]>({
         queryKey: ['issue-papers', issueId],
         queryFn: async () => {
             if (!issueId) return [];
-            return await getPapersByIssueId(issueId);
+            const res = await getPapersByIssueId(issueId);
+            return res.success ? res.data ?? [] : [];
         },
         enabled: !!issueId,
     });

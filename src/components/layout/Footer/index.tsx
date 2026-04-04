@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, MapPin, ShieldCheck, Globe } from 'lucide-react';
+import { Phone, MapPin, ShieldCheck } from 'lucide-react';
 import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 export default function Footer({ settings }: { settings?: Record<string, string> }) {

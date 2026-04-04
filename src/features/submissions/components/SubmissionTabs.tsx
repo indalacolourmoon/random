@@ -34,7 +34,7 @@ export default function SubmissionTabs({ currentStatus = 'all' }: { currentStatu
                     <button
                         key={tab.value}
                         onClick={() => handleTabClick(tab.value)}
-                        className={`relative px-8 2xl:px-14 py-3 2xl:py-6 rounded-2xl 2xl:rounded-[2rem] text-xs 2xl:text-xl font-black tracking-widest transition-all whitespace-nowrap ${isActive
+                        className={`relative px-8 2xl:px-14 py-3 2xl:py-6 rounded-2xl 2xl:rounded-4xl text-xs 2xl:text-xl font-black tracking-widest transition-all whitespace-nowrap ${isActive
                             ? 'text-white dark:text-slate-900 cursor-pointer'
                             : 'text-muted-foreground hover:text-foreground bg-card border border-border shadow-sm cursor-pointer'
                             }`}

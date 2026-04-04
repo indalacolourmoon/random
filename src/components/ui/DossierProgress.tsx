@@ -1,7 +1,6 @@
 "use client"
 
-import { Progress } from "@/components/ui/progress"
-import { CheckCircle2, AlertCircle, ChevronDown } from "lucide-react"
+import { CheckCircle2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 

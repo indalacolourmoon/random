@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useApplications, useApproveApplication, useRejectApplication } from '@/hooks/queries/useApplications';
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -11,20 +11,10 @@ import {
     FileText,
     Mail,
     Building2,
-    CheckCircle2,
     XCircle,
-    ExternalLink,
     Search,
-    Filter,
-    Clock,
-    UserCheck,
     Briefcase,
-    MoreVertical,
-    CheckCircle,
-    X,
-    AlertTriangle,
     Download,
-    Trash2,
     RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -237,7 +227,7 @@ function ManageApplicationsContent() {
                                 className="group relative"
                             >
                                 <Card 
-                                    className={`relative overflow-hidden border-white/10 bg-white/[0.02] backdrop-blur-xl transition-all hover:bg-white/[0.04] hover:border-primary/30 cursor-pointer ${selectedIds.includes(app.id) ? 'border-primary/50' : ''}`}
+                                    className={`relative overflow-hidden border-white/10 bg-white/2 backdrop-blur-xl transition-all hover:bg-white/4 hover:border-primary/30 cursor-pointer ${selectedIds.includes(app.id) ? 'border-primary/50' : ''}`}
                                     onClick={() => setInspectApp(app)}
                                 >
                                     <div className="flex items-stretch">
@@ -253,8 +243,8 @@ function ManageApplicationsContent() {
                                             {/* Photo */}
                                             <div className="p-4 flex justify-center">
                                                 <div className="w-16 h-16 2xl:w-20 2xl:h-20 bg-muted rounded-xl border border-white/10 overflow-hidden shadow-2xl">
-                                                    {app.photo_url ? (
-                                                        <img src={app.photo_url} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                                    {app.photoUrl ? (
+                                                        <img src={app.photoUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center opacity-20"><User /></div>
                                                     )}
@@ -264,11 +254,11 @@ function ManageApplicationsContent() {
                                             {/* Info */}
                                             <div className="p-6 space-y-2 border-r border-white/5">
                                                 <div className="flex items-center gap-3">
-                                                    <h3 className="font-serif text-lg xl:text-xl 2xl:text-2xl font-semibold text-foreground">{app.full_name}</h3>
+                                                    <h3 className="font-serif text-lg xl:text-xl 2xl:text-2xl font-semibold text-foreground">{app.fullName}</h3>
                                                     <Badge className={`rounded-full h-5 px-3 border-none text-[8px] xl:text-[9px] font-semibold capitalize tracking-widest ${
-                                                        app.application_type === 'editor' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
+                                                        app.type === 'editor' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
                                                     }`}>
-                                                        {app.application_type}
+                                                        {app.type}
                                                     </Badge>
                                                 </div>
                                                 <div className="flex flex-wrap gap-x-6 gap-y-1 text-muted-foreground text-[9px] xl:text-xs font-semibold capitalize tracking-wide opacity-70">
@@ -297,7 +287,7 @@ function ManageApplicationsContent() {
                                                     {app.status}
                                                 </Badge>
                                                 <p className="text-[9px] font-mono text-muted-foreground uppercase opacity-40">
-                                                    Logged: {new Date(app.created_at).toLocaleDateString()}
+                                                    Logged: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}
                                                 </p>
                                             </div>
                                         </CardContent>
@@ -357,14 +347,14 @@ function ManageApplicationsContent() {
                             <div className="p-10 bg-muted/10 border-r border-white/5 space-y-8 overflow-y-auto custom-scrollbar">
                                 <div className="space-y-6 text-center lg:text-left">
                                     <div className="w-40 h-40 2xl:w-48 2xl:h-48 rounded-3xl bg-muted border border-white/10 mx-auto lg:mx-0 overflow-hidden shadow-2xl ring-1 ring-white/5">
-                                        {inspectApp.photo_url ? (
-                                            <img src={inspectApp.photo_url} alt="" className="w-full h-full object-cover" />
+                                        {inspectApp.photoUrl ? (
+                                            <img src={inspectApp.photoUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-20 scale-150"><User /></div>
                                         )}
                                     </div>
                                     <div className="space-y-1">
-                                        <h2 className="font-serif text-3xl 2xl:text-4xl font-semibold">{inspectApp.full_name}</h2>
+                                        <h2 className="font-serif text-3xl 2xl:text-4xl font-semibold">{inspectApp.fullName}</h2>
                                         <p className="font-mono text-xs text-primary uppercase tracking-widest">{inspectApp.designation}</p>
                                     </div>
                                 </div>
@@ -383,7 +373,7 @@ function ManageApplicationsContent() {
                                         </div>
                                         <div className="space-y-1">
                                             <span className="opacity-40">Role Target</span>
-                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.application_type}</p>
+                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.type}</p>
                                         </div>
                                         <div className="space-y-1">
                                             <span className="opacity-40">Status</span>
@@ -405,18 +395,18 @@ function ManageApplicationsContent() {
                                         </div>
                                     </div>
 
-                                    {inspectApp.status === 'rejected' && inspectApp.rejection_reason && (
+                                    {inspectApp.status === 'rejected' && inspectApp.rejectionReason && (
                                         <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl space-y-2">
                                             <span className="font-mono text-[9px] uppercase tracking-widest text-rose-500">Rejection Reasoning</span>
-                                            <p className="text-xs text-rose-200/60 leading-relaxed italic">"{inspectApp.rejection_reason}"</p>
+                                            <p className="text-xs text-rose-200/60 leading-relaxed italic">&quot;{inspectApp.rejectionReason}&quot;</p>
                                         </div>
                                     )}
 
-                                    {inspectApp.reviewed_at && (
+                                    {inspectApp.reviewedAt && (
                                          <div className="pt-8 opacity-40 text-[8px] font-mono uppercase tracking-[0.2em] leading-loose">
-                                            Audited At: {new Date(inspectApp.reviewed_at).toLocaleString()}
+                                            Audited At: {inspectApp.reviewedAt ? new Date(inspectApp.reviewedAt).toLocaleString() : 'N/A'}
                                             <br />
-                                            Auditor ID: 0000{inspectApp.reviewed_by}
+                                            Auditor ID: 0000{inspectApp.reviewedBy}
                                          </div>
                                     )}
                                 </div>
@@ -430,16 +420,16 @@ function ManageApplicationsContent() {
                                         <span className="font-semibold text-xs uppercase tracking-widest">Research Dossier</span>
                                     </div>
                                     <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg border border-white/5 px-4 text-[10px] font-semibold uppercase">
-                                        <a href={inspectApp.cv_url} download>
+                                        <a href={inspectApp.cvUrl} download>
                                             <Download className="w-3.5 h-3.5 mr-2" /> Download Original
                                         </a>
                                     </Button>
                                 </div>
 
                                 <div className="flex-1 bg-muted/20 relative">
-                                    {inspectApp.cv_url?.toLowerCase().endsWith('.pdf') ? (
+                                    {inspectApp.cvUrl?.toLowerCase().endsWith('.pdf') ? (
                                         <iframe 
-                                            src={inspectApp.cv_url} 
+                                            src={inspectApp.cvUrl} 
                                             title="Candidate CV Preview"
                                             className="w-full h-full border-none grayscale contrast-125"
                                         />
@@ -453,7 +443,7 @@ function ManageApplicationsContent() {
                                                 <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">Non-PDF Research Documentation Detected</p>
                                             </div>
                                             <Button asChild className="rounded-2xl h-14 px-8 bg-white text-black font-semibold hover:bg-white/90">
-                                                <a href={inspectApp.cv_url} download>
+                                                <a href={inspectApp.cvUrl} download>
                                                     Retrieve & Download Document
                                                 </a>
                                             </Button>
@@ -497,7 +487,7 @@ function ManageApplicationsContent() {
                                                         <Button 
                                                             disabled={rejectionReason.length < 20}
                                                             onClick={() => handleReject(inspectApp.id, rejectionReason)}
-                                                            className="flex-[2] h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase tracking-widest shadow-xl shadow-rose-900/40"
+                                                            className="flex-2 h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase tracking-widest shadow-xl shadow-rose-900/40"
                                                         >
                                                             Confirm Terminal Rejection
                                                         </Button>
@@ -513,7 +503,7 @@ function ManageApplicationsContent() {
                                                     <div className="space-y-2">
                                                         <h4 className="font-serif text-xl font-semibold">Proceed with Onboarding?</h4>
                                                         <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">
-                                                            Approving {inspectApp.full_name} as {inspectApp.application_type}
+                                                            Approving {inspectApp.fullName} as {inspectApp.type}
                                                         </p>
                                                     </div>
                                                     <div className="flex gap-4">
@@ -526,7 +516,7 @@ function ManageApplicationsContent() {
                                                         </Button>
                                                         <Button 
                                                             onClick={() => handleApprove(inspectApp.id)}
-                                                            className="flex-[2] h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                            className="flex-2 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
                                                         >
                                                             Confirm Approval & Invite
                                                         </Button>
@@ -543,7 +533,7 @@ function ManageApplicationsContent() {
                                                     </Button>
                                                     <Button 
                                                         onClick={() => setApproveConfirm(true)}
-                                                        className="flex-[2] h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                        className="flex-2 h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
                                                     >
                                                         Approve Request
                                                     </Button>
@@ -577,7 +567,7 @@ function ManageApplicationsContent() {
                     <DialogFooter className="flex gap-4">
                         <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-semibold uppercase h-14 rounded-2xl flex-1">Abort</Button>
                         <Button 
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase h-14 rounded-2xl flex-[2]"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase h-14 rounded-2xl flex-2"
                             onClick={() => {
                                 toast.promise(
                                     // Use individual approval for simplicity or a dedicated batch action if built
@@ -626,7 +616,7 @@ function ManageApplicationsContent() {
                         <Button variant="ghost" onClick={() => setBulkMode(null)} className="font-semibold uppercase h-14 rounded-2xl flex-1">Abort</Button>
                         <Button 
                             disabled={bulkReason.length < 20}
-                            className="bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase h-14 rounded-2xl flex-[2]"
+                            className="bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase h-14 rounded-2xl flex-2"
                             onClick={() => {
                                 toast.promise(
                                     Promise.all(selectedIds.map(id => handleReject(id, bulkReason))),

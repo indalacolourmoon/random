@@ -1,4 +1,4 @@
-import { ChevronRight, ShieldAlert } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import PageHeader from "@/components/layout/PageHeader";
 import Link from 'next/link';
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
@@ -6,10 +6,10 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AboutClient from '@/features/shared/components/AboutClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `About the Journal | ${settings.journal_name}`,
         description: `Learn about ${settings.journal_name} (${settings.journal_short_name}). We focus on rapid yet rigorous peer review for technically sound research in engineering, science, and technology.`,
@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function About() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">
@@ -48,7 +48,7 @@ export default async function About() {
 
                     {/* Sidebar Utilities */}
                     <aside className="space-y-10">
-                        <div className="p-1 rounded-[2.5rem] bg-gradient-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip animate-float">
+                        <div className="p-1 rounded-[2.5rem] bg-linear-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip animate-float">
                             <div className="bg-white/50 backdrop-blur-sm p-3 rounded-[2.3rem]">
                                 <TrackManuscriptWidget />
                             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck, Clock, ChevronRight, CheckCircle2, Search, FileText, Gavel, Users } from 'lucide-react';
+import { ShieldCheck, Clock, ChevronRight, Search, Gavel, Users } from 'lucide-react';
 import Link from 'next/link';
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
 import { Button } from "@/components/ui/button";

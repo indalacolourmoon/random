@@ -1,10 +1,8 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TopBar from "@/components/layout/TopBar";
-import { getSettings } from "@/actions/settings";
+import { getSettingsData } from '@/actions/settings';
 import PromotionPopup from "@/features/home/components/PromotionPopup";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/layout/AppSidebar";
 
 
 export default async function MainLayout({
@@ -12,7 +10,7 @@ export default async function MainLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
 
     return (

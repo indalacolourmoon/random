@@ -2,15 +2,6 @@
 
 import * as React from "react";
 import {
-    Home,
-    BookOpen,
-    FileText,
-    Info,
-    Mail,
-    Archive,
-    ChevronRight,
-    Search,
-    UserCircle,
     SendHorizonal
 } from "lucide-react";
 import { navigation } from "./Navbar/nav-data";

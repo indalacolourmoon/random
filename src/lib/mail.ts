@@ -30,14 +30,15 @@ export async function sendEmail({ to, subject, text, html }: SendEmailProps) {
 
         console.log("Message sent: %s", info.messageId);
         return { success: true, messageId: info.messageId };
-    } catch (error: any) {
+    } catch (error) {
         console.error("--- SMTP Error Diagnosis ---");
         console.error("Host:", process.env.SMTP_HOST);
         console.error("User:", process.env.SMTP_USER);
-        console.error("Error Code:", error?.code);
-        console.error("SMTP Response:", error?.response);
+        const err = error as Error & { code?: string, response?: unknown };
+        console.error("Error Code:", err?.code);
+        console.error("SMTP Response:", err?.response);
         console.error("---------------------------");
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
+        return { success: false, error: err instanceof Error ? err.message : String(error) };
     }
 }
 
@@ -75,7 +76,7 @@ export const emailTemplates = {
         `
         }
     },
-    statusUpdate: (authorName: string, paperTitle: string, status: string, paperId: string) => {
+    statusUpdate: (authorName: string, paperTitle: string, status: string, paperId: string, isFree: boolean = false) => {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
         const isAccepted = status === 'accepted';
 
@@ -93,8 +94,13 @@ export const emailTemplates = {
                     ${isAccepted ? `
                         <div style="background: #f0fdf4; padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #dcfce7;">
                             <p style="margin-top: 0; font-weight: bold; color: #166534;">Congratulations on your acceptance!</p>
-                            <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">To finalize the publication process, please complete the Article Processing Charge (APC) payment.</p>
-                            <a href="${baseUrl}/payment/${paperId}" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Proceed to Payment & Publish</a>
+                            ${!isFree ? `
+                                <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">To finalize the publication process, please complete the Article Processing Charge (APC) payment.</p>
+                                <a href="${baseUrl}/payment/${paperId}" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Proceed to Payment & Publish</a>
+                            ` : `
+                                <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">Your paper will now proceed to the final publication queue. Our technical team will contact you for the final camera-ready copy formatting.</p>
+                                <a href="${baseUrl}/author" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Go to Author Portal</a>
+                            `}
                         </div>
                     ` : `
                         <p>Please log in to the portal or check your records for more details.</p>
@@ -128,7 +134,7 @@ export const emailTemplates = {
         `
         }
     },
-    manuscriptAcceptance: (authorName: string, paperTitle: string, paperId: string) => {
+    manuscriptAcceptance: (authorName: string, paperTitle: string, paperId: string, isFree: boolean = false) => {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
         return {
             subject: `MANUSCRIPT ACCEPTED: ${paperId}`,
@@ -140,8 +146,13 @@ export const emailTemplates = {
 
                     <div style="background: #f0fdf4; padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #dcfce7; margin: 30px 0;">
                         <p style="margin-top: 0; font-weight: bold; color: #166534; font-size: 18px;">Congratulations on your achievement!</p>
-                        <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">To finalize the publication and include your paper in the upcoming issue, please complete the Article Processing Charge (APC) payment.</p>
-                        <a href="${baseUrl}/payment/${paperId}" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Proceed to Payment & Publish</a>
+                        ${!isFree ? `
+                            <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">To finalize the publication and include your paper in the upcoming issue, please complete the Article Processing Charge (APC) payment.</p>
+                            <a href="${baseUrl}/payment/${paperId}" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Proceed to Payment & Publish</a>
+                        ` : `
+                            <p style="font-size: 14px; color: #166534; margin-bottom: 25px;">Your paper has been queued for publication. Our technical team will reach out for the final formatting details.</p>
+                            <a href="${baseUrl}/author" style="background: #166534; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block;">Go to Author Portal</a>
+                        `}
                     </div>
 
                     <p>After payment, our technical team will reach out for the final camera-ready copy formatting.</p>
@@ -262,6 +273,28 @@ export const emailTemplates = {
                     <a href="${baseUrl}/author/submissions" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Go to Author Portal</a>
                 </div>
                 <p>Warm regards,<br>Editorial Office, IJITEST</p>
+            </div>
+            `
+        };
+    },
+    resubmissionReceived: (authorName: string, paperTitle: string, paperId: string, subId: number) => {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        return {
+            subject: `Revised Paper Received: ${paperId}`,
+            html: `
+            <div style="font-family: serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
+                <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
+                <p>Hello Editor,</p>
+                <p>A revised version of the manuscript "<strong>${paperTitle}</strong>" (ID: ${paperId}) has been uploaded by <strong>${authorName}</strong>.</p>
+                <div style="background: #fdf2f2; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <p style="margin: 0; font-weight: bold;">Paper ID: ${paperId}</p>
+                    <p style="margin: 5px 0 0 0;">Latest Revision: ${new Date().toLocaleDateString()}</p>
+                </div>
+                <p>Please review the updated files and proceed with the editorial decision or re-assigned review.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${baseUrl}/admin/submissions/${subId}" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">View in Admin Panel</a>
+                </div>
+                <p>Warm regards,<br>System Notifications, IJITEST</p>
             </div>
             `
         };

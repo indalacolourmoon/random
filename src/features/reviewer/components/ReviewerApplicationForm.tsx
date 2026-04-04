@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
-import { Upload, X, CheckCircle2, AlertCircle, FileText, ImageIcon, Loader2, ChevronRight, ChevronLeft, Building2, Globe, Tag, Plus } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, FileText, ImageIcon, Loader2, ChevronRight, ChevronLeft, Building2, Plus } from 'lucide-react';
 import { checkUserEmail } from '@/actions/users';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -100,7 +100,7 @@ export default function ReviewerApplicationForm() {
     const reviewerMutation = useReviewerApplicationMutation();
     const [step, setStep] = useState(1);
     const [direction, setDirection] = useState(0); // 1 for forward, -1 for back
-    const [activeTab, setActiveTab] = useState<'reviewer' | 'editor'>('reviewer');
+
 
     // Form State
     const [formData, setFormData] = useState({
@@ -185,7 +185,7 @@ export default function ReviewerApplicationForm() {
         }
 
         const submissionData = new FormData();
-        submissionData.append('application_type', activeTab);
+        submissionData.append('application_type', 'reviewer');
         submissionData.append('fullName', formData.fullName);
         submissionData.append('designation', formData.designation);
         submissionData.append('email', formData.email);
@@ -480,11 +480,11 @@ export default function ReviewerApplicationForm() {
                                         />
                                     </div>
 
-                                    <aside className="p-8 bg-amber-50/50 border border-amber-200/50 rounded-[2rem] flex gap-5">
+                                    <aside className="p-8 bg-amber-50/50 border border-amber-200/50 rounded-4xl flex gap-5">
                                         <AlertCircle className="w-6 h-6 text-amber-500 shrink-0" />
                                         <div className="space-y-1">
                                             <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Integrity Protocol</p>
-                                            <p className="text-[10px] font-medium text-amber-600 leading-relaxed uppercase tracking-[0.1em]">
+                                            <p className="text-[10px] font-medium text-amber-600 leading-relaxed uppercase tracking-widest">
                                                 By submitting these assets, you verify their authenticity. Encrypted verification proceeds immediately upon transmission.
                                             </p>
                                         </div>

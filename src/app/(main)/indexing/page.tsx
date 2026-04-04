@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import IndexingClient from '@/features/shared/components/IndexingClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Indexing & Abstracting | ${settings.journal_name}`,
         description: `Explore the global discovery hubs where ${settings.journal_short_name} research is archived and indexed. Discover our roadmap for major scientific databases including Google Scholar, CrossRef, and more.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function Indexing() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

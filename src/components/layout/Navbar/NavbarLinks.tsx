@@ -4,7 +4,6 @@ import { navigation } from './nav-data';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
 
 interface NavbarLinksProps {
     isScrolled: boolean;

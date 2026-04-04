@@ -3,14 +3,16 @@ import PageHeader from "@/components/layout/PageHeader";
 import PaperDetailClient from "@/features/archives/components/PaperDetailClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
-import { getSettings } from "@/actions/settings";
+import { getSettingsData } from '@/actions/settings';
 import SettingsInitializer from "@/components/providers/SettingsInitializer";
 import { getPublishedPapers } from "@/actions/archives";
 
 export async function generateStaticParams() {
     try {
-        const papers = await getPublishedPapers();
-        return papers.map((paper: any) => ({
+        const res = await getPublishedPapers();
+        if (!res.success || !res.data) return [];
+        
+        return res.data.map((paper: any) => ({
             id: paper.id.toString(),
         }));
     } catch (error) {
@@ -21,10 +23,12 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
-    const [paper, settings] = await Promise.all([
+    const [paperRes, settings] = await Promise.all([
         getPaperById(id),
-        getSettings()
+        getSettingsData()
     ]);
+    
+    const paper = paperRes.success ? paperRes.data : null;
     
     if (!paper) return { title: 'Article Not Found | IJITEST' };
 
@@ -47,30 +51,32 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             // Highwire Press (Google Scholar)
             'citation_title': paper.title,
             'citation_author': allAuthors,
-            'citation_publication_date': paper.published_at ? new Date(paper.published_at).toISOString().split('T')[0].replace(/-/g, '/') : paper.publication_year?.toString(),
+            'citation_publication_date': paper.published_at ? new Date(paper.published_at).toISOString().split('T')[0].replace(/-/g, '/') : (paper.publication_year?.toString() || ''),
             'citation_journal_title': settings.journal_name || 'International Journal of Information Technology (IJITEST)',
-            'citation_volume': paper.volume_number?.toString(),
-            'citation_issue': paper.issue_number?.toString(),
-            'citation_firstpage': paper.start_page?.toString(),
-            'citation_lastpage': paper.end_page?.toString(),
+            'citation_volume': paper.volume_number?.toString() || '',
+            'citation_issue': paper.issue_number?.toString() || '',
+            'citation_firstpage': paper.start_page?.toString() || '',
+            'citation_lastpage': paper.end_page?.toString() || '',
             'citation_pdf_url': paper.pdf_url ? (paper.pdf_url.startsWith('http') ? paper.pdf_url : `${baseUrl}${paper.pdf_url}`) : '',
             
             // Dublin Core
-            'dc.title': paper.title,
+            'dc.title': paper.title || '',
             'dc.creator': allAuthors,
-            'dc.date': paper.published_at ? new Date(paper.published_at).toISOString().split('T')[0] : paper.publication_year?.toString(),
-            'dc.subject': paper.keywords,
-            'dc.description': paper.abstract,
+            'dc.date': paper.published_at ? new Date(paper.published_at).toISOString().split('T')[0] : (paper.publication_year?.toString() || ''),
+            'dc.subject': paper.keywords || '',
+            'dc.description': paper.abstract || '',
         }
     };
 }
 
 export default async function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const [paper, settings] = await Promise.all([
+    const [paperRes, settings] = await Promise.all([
         getPaperById(id),
-        getSettings()
+        getSettingsData()
     ]);
+    
+    const paper = paperRes.success ? paperRes.data : null;
 
     if (!paper) notFound();
 

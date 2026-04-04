@@ -1,12 +1,12 @@
 "use client";
 
-import { Users, UserPlus, Shield, Mail, Trash2, X, ShieldCheck, UserCog, MoreVertical, Plus, Info, CheckCircle, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Users, UserPlus, Shield, Mail, Trash2, ShieldCheck, UserCog, Info, CheckCircle, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useUsers, useCreateUser, useDeleteUser } from '@/hooks/queries/useUsers';
 import { useSession } from 'next-auth/react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { cleanupInactiveAuthors } from '@/actions/cleanup-inactive-authors';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { runCleanupInactiveAuthors } from '@/actions/author-submissions';
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -43,9 +43,9 @@ export default function UserManagement() {
     const handleCleanup = () => {
         startCleanup(async () => {
             try {
-                const result = await cleanupInactiveAuthors();
+                const result = await runCleanupInactiveAuthors();
                 if (result.success) {
-                    toast.success(`Cleanup complete. Deleted ${result.deletedCount} inactive authors.`);
+                    toast.success(`Cleanup complete. Deleted ${result.data?.deletedCount || 0} inactive authors.`);
                 } else {
                     toast.error(result.error || "Failed to perform cleanup");
                 }
@@ -127,7 +127,7 @@ export default function UserManagement() {
                                 </select>
                             </div>
                             <DialogFooter className="pt-4">
-                                <Button type="submit" className="w-full h-12 font-semibold text-xs tracking-widest shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-black dark:text-slate-900 hover:bg-primary/90 cursor-pointer">
+                                <Button type="submit" className="w-full h-12 font-semibold text-xs tracking-widest shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:bg-primary/90 cursor-pointer">
                                     Send Invitation
                                 </Button>
                             </DialogFooter>
@@ -153,7 +153,7 @@ export default function UserManagement() {
                                     <UserCog className="w-8 h-8" />
                                 </div>
                                 <div className="min-w-0">
-                                    <h3 className="font-semibold text-foreground tracking-wider truncate leading-none mb-2 transition-all duration-500 text-sm xl:text-base 2xl:text-xl">{user.full_name}</h3>
+                                    <h3 className="font-semibold text-foreground tracking-wider truncate leading-none mb-2 transition-all duration-500 text-sm xl:text-base 2xl:text-xl">{user.profile?.fullName || 'No Name'}</h3>
                                     <Badge className={`h-5 xl:h-6 2xl:h-8 px-2 xl:px-3 2xl:px-5 text-[9px] xl:text-xs 2xl:text-sm font-semibold tracking-widest border-none shadow-sm transition-all duration-500 capitalize ${getRoleVariant(user.role)}`}>
                                         {user.role}
                                     </Badge>
@@ -172,7 +172,7 @@ export default function UserManagement() {
                                 </div>
                                 <div className="flex items-center gap-2.5 text-[10px] 2xl:text-base font-semibold text-muted-foreground tracking-widest px-1">
                                     <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6 opacity-30" />
-                                    <span>Member since {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                                    <span>Member since {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'}</span>
                                 </div>
                             </div>
 
@@ -214,7 +214,7 @@ export default function UserManagement() {
                         </div>
                         <DialogTitle className="text-xl font-semibold text-foreground tracking-wider">Revoke Staff Access?</DialogTitle>
                         <DialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
-                            You are about to revoke system access for <span className="text-foreground font-semibold">{userToDelete?.full_name}</span>. This action will immediately invalidate their credentials and remove their administrative permissions.
+                            You are about to revoke system access for <span className="text-foreground font-semibold">{userToDelete?.profile?.fullName || 'this user'}</span>. This action will immediately invalidate their credentials and remove their administrative permissions.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="bg-muted/30 p-5 rounded-xl border border-border/50 mb-2">
@@ -319,7 +319,7 @@ export default function UserManagement() {
                     ))}
                 </div>
 
-                 <div className="border border-border/50 rounded-xl 2xl:rounded-[2rem] overflow-hidden mt-6 shadow-sm overflow-x-auto">
+                 <div className="border border-border/50 rounded-xl 2xl:rounded-4xl overflow-hidden mt-6 shadow-sm overflow-x-auto">
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow className="border-border/50">

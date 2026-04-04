@@ -1,37 +1,16 @@
 "use client";
 
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-    LogOut,
-    ChevronRight,
-    Menu,
-    X,
-    User,
-    Settings,
-    Bell,
 
-    Layers,
-    LayoutDashboard
-} from 'lucide-react';
+
+
 import { signOut, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { sidebarItems, getFullHref } from '@/lib/navigation';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from "@/components/ui/avatar";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+
+
+
+
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import PreferencesDialog from '@/features/shared/components/PreferencesDialog';
 import { PanelSidebar } from './_components/PanelSidebar';

@@ -16,8 +16,8 @@ export async function safeDeleteFile(relativePath: string | null | undefined) {
             await fs.access(absolutePath);
             await fs.unlink(absolutePath);
             console.log(`Successfully deleted file: ${absolutePath}`);
-        } catch (accessError: any) {
-            if (accessError.code === 'ENOENT') {
+        } catch (accessError) {
+            if (accessError instanceof Error && 'code' in accessError && accessError.code === 'ENOENT') {
                 // File already doesn't exist, which is fine
                 return;
             }

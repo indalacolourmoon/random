@@ -4,34 +4,34 @@ import { getActiveReviews, getUnassignedAcceptedPapers, assignReviewer, submitRe
 export interface ReviewAssignment {
     id: number;
     status: 'assigned' | 'completed' | 'withdrawn';
-    assigned_at: string;
+    assignedAt: string;
     deadline: string;
-    review_round: number;
-    submission_id: number;
-    paper_id: string;
+    reviewRound: number;
+    submissionId: number;
+    paperId: string;
     title: string;
-    reviewer_name: string;
+    reviewerName: string;
     decision?: string | null;
-    comments_to_author?: string | null;
-    review_submitted_at?: string | null;
-    manuscript_path?: string | null;
-    feedback_file_path?: string | null;
-    submission_status: string;
+    commentsToAuthor?: string | null;
+    submittedAt?: string | null;
+    submissionStatus: string;
+    manuscriptPath?: string;
+    feedbackFilePath?: string;
 }
 
 export interface UnassignedPaper {
     id: number;
-    paper_id: string;
+    paperId: string;
     title: string;
-    pdf_url: string | null;
+    pdfUrl?: string;
 }
 
 export function useActiveReviews(reviewerId?: string) {
     return useQuery<ReviewAssignment[]>({
         queryKey: ['reviews', reviewerId],
         queryFn: async () => {
-            const data = await getActiveReviews(reviewerId);
-            return (data as ReviewAssignment[]) || [];
+            const res = await getActiveReviews(reviewerId);
+            return res.success ? (res.data as ReviewAssignment[]) ?? [] : [];
         }
     });
 }
@@ -40,8 +40,8 @@ export function useUnassignedPapers() {
     return useQuery<UnassignedPaper[]>({
         queryKey: ['unassignedPapers'],
         queryFn: async () => {
-            const data = await getUnassignedAcceptedPapers();
-            return (data as UnassignedPaper[]) || [];
+            const res = await getUnassignedAcceptedPapers();
+            return res.success ? (res.data as UnassignedPaper[]) ?? [] : [];
         }
     });
 }
@@ -51,9 +51,11 @@ export function useAssignReviewer() {
 
     return useMutation({
         mutationFn: (formData: FormData) => assignReviewer(formData),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['reviews'] });
-            queryClient.invalidateQueries({ queryKey: ['unassignedPapers'] });
+        onSuccess: (res) => {
+            if (res.success) {
+                queryClient.invalidateQueries({ queryKey: ['reviews'] });
+                queryClient.invalidateQueries({ queryKey: ['unassignedPapers'] });
+            }
         }
     });
 }
@@ -63,8 +65,10 @@ export function useSubmitReview() {
 
     return useMutation({
         mutationFn: ({ assignmentId, formData }: { assignmentId: number, formData: FormData }) => submitReview(assignmentId, formData),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['reviews'] });
+        onSuccess: (res) => {
+            if (res.success) {
+                queryClient.invalidateQueries({ queryKey: ['reviews'] });
+            }
         }
     });
 }

@@ -52,7 +52,7 @@ export default function IndexingClient({ settings }: IndexingClientProps) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {techSpecs.map((spec, idx) => (
-                                <div key={idx} className="p-8 bg-white border border-primary/5 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary">
+                                <div key={idx} className="p-8 bg-white border border-primary/5 rounded-4xl shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary">
                                     <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary mb-6 transition-colors">
                                         <spec.icon className="w-6 h-6" />
                                     </div>

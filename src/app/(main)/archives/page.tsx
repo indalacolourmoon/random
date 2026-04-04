@@ -2,12 +2,12 @@ import PageHeader from "@/components/layout/PageHeader";
 import { getArchivePapers } from '@/actions/archives';
 import ArchivesClient from '@/features/shared/components/ArchivesClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export const revalidate = 3600; // 1 hour
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Journal Archives | ${settings.journal_name}`,
         description: `Browse the digital repository of ${settings.journal_short_name}. Explore peer-reviewed research, technical reports, and innovative trends in engineering and science since ${settings.journal_name}'s inception.`,
@@ -20,8 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Archives() {
-    const papers = await getArchivePapers();
-    const settings = await getSettings();
+    const res = await getArchivePapers();
+    const papers = res.success ? res.data || [] : [];
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

@@ -1,10 +1,10 @@
 import PageHeader from "@/components/layout/PageHeader";
 import ReviewerGuidelinesClient from '@/features/shared/components/ReviewerGuidelinesClient';
 import { Metadata } from 'next';
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
     return {
         title: `Reviewer Guidelines | ${settings.journal_name}`,
         description: `Elite protocols and ethical standards for manuscript evaluation at ${settings.journal_short_name}. Detailed directives on methodology, originality, and confidentiality for domain experts.`,
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 3600;
 
 export default async function ReviewerGuidelines() {
-    const settings = await getSettings();
+    const settings = await getSettingsData();
 
     return (
         <main className="bg-background min-h-screen">

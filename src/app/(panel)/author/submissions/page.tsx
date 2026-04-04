@@ -26,7 +26,8 @@ export default async function AuthorSubmissionsList() {
     if (!session?.user) redirect('/login');
     if (session.user.role !== 'author') redirect(`/${session.user.role}`);
 
-    const { submissions } = await getAuthorDashboard();
+    const dashboardResponse = await getAuthorDashboard();
+    const submissions = dashboardResponse.data?.submissions || [];
 
     // Attach eligibility data in parallel
     const withEligibility = await Promise.all(

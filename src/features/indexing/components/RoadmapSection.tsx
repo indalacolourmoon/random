@@ -1,5 +1,4 @@
 "use client";
-import { Globe } from 'lucide-react';
 import { memo } from 'react';
 
 const roadmapItems = [

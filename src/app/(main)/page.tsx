@@ -1,4 +1,4 @@
-import { getSettings } from '@/actions/settings';
+import { getSettingsData } from '@/actions/settings';
 import { Metadata } from 'next';
 import HomeCarousel from '@/features/home/components/HomeCarousel';
 import WelcomeSection from '@/features/home/components/WelcomeSection';
@@ -17,7 +17,7 @@ import SettingsInitializer from '@/components/providers/SettingsInitializer';
 export const revalidate = 3600; // 1 hour
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const settings = await getSettingsData();
   return {
     title: `${settings.journal_name} | Elite Academic Publishing`,
     description: `Welcome to ${settings.journal_name} (${settings.journal_short_name}). We provide a global platform for breakthrough research in engineering, science, and technology with rapid, high-quality peer review.`,
@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const settings = await getSettings();
+  const settings = await getSettingsData();
 
   return (
     <main className="flex flex-col overflow-hidden bg-background relative">
@@ -72,7 +72,7 @@ export default async function Home() {
 
           {/* Institutional Sidebar */}
           <aside className="space-y-10 sm:space-y-12">
-            <div className="p-1 rounded-[2rem] bg-gradient-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip hover:shadow-vip-hover transition-shadow duration-500">
+            <div className="p-1 rounded-4xl bg-linear-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip hover:shadow-vip-hover transition-shadow duration-500">
               <div className="bg-white/50 backdrop-blur-sm p-2 rounded-[1.8rem]">
                 <TrackManuscriptWidget />
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, BookOpen, Clock, CheckCircle2, AlertCircle, Trash2, Globe, Calendar, Layers, CheckCircle, AlertTriangle, Save, History, ChevronDown as ChevronDownIcon, ChevronUp, FileText, Link, Eye, Unlink } from 'lucide-react';
+import { Plus, BookOpen, Clock, CheckCircle2, Trash2, Globe, Calendar, Layers, CheckCircle, Save, ChevronDown as ChevronDownIcon, ChevronUp, FileText, Eye, Unlink } from 'lucide-react';
 
 import {
     useVolumesIssues,
@@ -14,7 +14,7 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -128,10 +128,10 @@ export default function PublicationsPage() {
 
 
     const stats = {
-        totalVolumes: new Set(volumes.map(v => v.volume_number)).size,
+        totalVolumes: new Set(volumes.map(v => v.volumeNumber)).size,
         publishedIssues: volumes.filter(v => v.status === 'published').length,
         openIssues: volumes.filter(v => v.status === 'open').length,
-        totalPapers: volumes.reduce((acc, v) => acc + (v.paper_count || 0), 0)
+        totalPapers: volumes.reduce((acc, v) => acc + (v.paperCount || 0), 0)
     };
 
     if (loading) {
@@ -167,7 +167,7 @@ export default function PublicationsPage() {
                             <Plus className="w-6 h-6 2xl:w-10 2xl:h-10" /> Deploy New Cycle
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md rounded-[2rem] p-10 bg-card border-primary/5 shadow-3xl overflow-hidden glassmorphism">
+                    <DialogContent className="sm:max-w-md rounded-4xl p-10 bg-card border-primary/5 shadow-3xl overflow-hidden glassmorphism">
                         <DialogHeader className="space-y-6">
                             <div className="w-16 h-16 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary shadow-inner">
                                 <Plus className="w-8 h-8" />
@@ -252,7 +252,7 @@ export default function PublicationsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className="p-8 bg-card rounded-[2rem] shadow-vip border-none group hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+                        className="p-8 bg-card rounded-4xl shadow-vip border-none group hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
                     >
                         <div className={`absolute top-0 right-0 w-20 h-20 ${item.bg} rounded-full -mr-10 -mt-10 blur-2xl opacity-50 group-hover:opacity-100 transition-opacity`} />
                         <div className="flex items-center justify-between relative z-10">
@@ -260,7 +260,7 @@ export default function PublicationsPage() {
                                 <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase">{item.label}</p>
                                 <h3 className="text-3xl 2xl:text-5xl font-black text-foreground tracking-tighter">{item.value}</h3>
                             </div>
-                            <div className={`w-14 h-14 2xl:w-20 2xl:h-20 rounded-[1.5rem] ${item.bg} flex items-center justify-center border border-primary/5 shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
+                            <div className={`w-14 h-14 2xl:w-20 2xl:h-20 rounded-3xl ${item.bg} flex items-center justify-center border border-primary/5 shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
                                 <item.icon className={`w-6 h-6 2xl:w-10 2xl:h-10 ${item.color}`} />
                             </div>
                         </div>
@@ -285,7 +285,7 @@ export default function PublicationsPage() {
                                     <div className="flex items-start justify-between gap-6">
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-3">
-                                                <p className="text-[10px] 2xl:text-base font-black text-primary/30 tracking-[0.4em] uppercase">Archive Node {v.volume_number}</p>
+                                                <p className="text-[10px] 2xl:text-base font-black text-primary/30 tracking-[0.4em] uppercase">Archive Node {v.volumeNumber}</p>
                                                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
                                                     <button title='Edit Metadata' onClick={() => setShowEditModal(v)} className="p-2 2xl:p-4 hover:text-secondary transition-colors hover:bg-secondary/10 rounded-xl border border-transparent hover:border-secondary/20">
                                                         <Save className="w-4 h-4 2xl:w-8 2xl:h-8" />
@@ -296,7 +296,7 @@ export default function PublicationsPage() {
                                                 </div>
                                             </div>
                                             <h3 className="font-serif font-black text-foreground tracking-tight leading-none group-hover:text-primary transition-colors text-2xl xl:text-3xl 2xl:text-5xl uppercase">
-                                                Issue <span className="opacity-40">{v.issue_number}</span>
+                                                Issue <span className="opacity-40">{v.issueNumber}</span>
                                             </h3>
                                         </div>
                                         <Badge className={`h-10 2xl:h-14 px-5 2xl:px-8 text-[10px] 2xl:text-lg font-black tracking-[0.2em] border-none rounded-2xl shadow-xl uppercase ${v.status === 'published' ? 'bg-emerald-500 text-white shadow-emerald-500/10' : 'bg-orange-500 text-white shadow-orange-500/10'}`}>
@@ -309,15 +309,15 @@ export default function PublicationsPage() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6 2xl:gap-10">
-                                        <div className="bg-primary/[0.03] p-6 2xl:p-10 rounded-[2rem] border border-primary/5 shadow-inner group-hover:bg-primary/[0.05] transition-colors">
+                                        <div className="bg-primary/3 p-6 2xl:p-10 rounded-4xl border border-primary/5 shadow-inner group-hover:bg-primary/5 transition-colors">
                                             <Calendar className="w-6 h-6 2xl:w-10 2xl:h-10 text-primary/20 mb-4" />
                                             <p className="text-[10px] 2xl:text-base font-black text-primary/30 tracking-[0.2em] mb-2 uppercase leading-none">Fiscal Year</p>
                                             <p className="text-xl 2xl:text-4xl font-black text-primary tracking-tighter">{v.year}</p>
                                         </div>
-                                        <div className="bg-primary/[0.03] p-6 2xl:p-10 rounded-[2rem] border border-primary/5 shadow-inner group-hover:bg-primary/[0.05] transition-colors">
+                                        <div className="bg-primary/3 p-6 2xl:p-10 rounded-4xl border border-primary/5 shadow-inner group-hover:bg-primary/5 transition-colors">
                                             <Layers className="w-6 h-6 2xl:w-10 2xl:h-10 text-primary/20 mb-4" />
                                             <p className="text-[10px] 2xl:text-base font-black text-primary/30 tracking-[0.2em] mb-2 uppercase leading-none">Cycle Window</p>
-                                            <p className="text-xl 2xl:text-3xl font-black text-primary truncate tracking-tighter uppercase">{v.month_range}</p>
+                                            <p className="text-xl 2xl:text-3xl font-black text-primary truncate tracking-tighter uppercase">{v.monthRange}</p>
                                         </div>
                                     </div>
 
@@ -328,7 +328,7 @@ export default function PublicationsPage() {
                                             className="w-full h-14 2xl:h-24 gap-4 2xl:gap-6 border-primary/10 text-primary font-black text-[10px] 2xl:text-2xl tracking-[0.3em] rounded-2xl 2xl:rounded-[2.5rem] hover:bg-primary hover:text-white shadow-xl shadow-primary/5 uppercase transition-all duration-300"
                                         >
                                             {expandedIssue === v.id ? <ChevronUp className="w-6 h-6 2xl:w-10 2xl:h-10" /> : <ChevronDownIcon className="w-6 h-6 2xl:w-10 2xl:h-10" />}
-                                            {expandedIssue === v.id ? 'Collapse Dossier' : `Access Manuscripts (${v.paper_count || 0})`}
+                                            {expandedIssue === v.id ? 'Collapse Dossier' : `Access Manuscripts (${v.paperCount || 0})`}
                                         </Button>
 
                                         <AnimatePresence>
@@ -337,7 +337,7 @@ export default function PublicationsPage() {
                                                     initial={{ height: 0, opacity: 0 }}
                                                     animate={{ height: 'auto', opacity: 1 }}
                                                     exit={{ height: 0, opacity: 0 }}
-                                                    className="overflow-hidden bg-primary/[0.02] rounded-[2rem] border border-primary/10 shadow-inner"
+                                                    className="overflow-hidden bg-primary/2 rounded-4xl border border-primary/10 shadow-inner"
                                                 >
                                                     <div className="p-6 xl:p-10 space-y-4">
                                                         {loadingPapers ? (
@@ -352,7 +352,7 @@ export default function PublicationsPage() {
                                                                         <div className="flex items-start justify-between gap-6 relative z-10">
                                                                             <div className="min-w-0 space-y-1">
                                                                                 <p className="text-xs 2xl:text-xl font-black text-primary tracking-tight leading-tight line-clamp-2 uppercase">{paper.title}</p>
-                                                                                <p className="text-[10px] 2xl:text-base font-bold text-muted-foreground mt-1 uppercase tracking-widest opacity-40">Registry: {paper.paper_id}</p>
+                                                                                <p className="text-[10px] 2xl:text-base font-bold text-muted-foreground mt-1 uppercase tracking-widest opacity-40">Registry: {paper.paperId}</p>
                                                                             </div>
                                                                             <div className="flex items-center gap-3 shrink-0">
                                                                                 <Button asChild variant="ghost" size="icon" className="w-10 h-10 2xl:w-16 2xl:h-16 text-primary/40 hover:text-primary hover:bg-primary/10 rounded-xl transition-all cursor-pointer">
@@ -399,8 +399,8 @@ export default function PublicationsPage() {
                 ))}
 
                 {volumes.length === 0 && (
-                    <div className="col-span-full py-60 bg-primary/[0.02] border-2 border-dashed border-primary/10 rounded-[4rem] flex flex-col items-center justify-center text-center shadow-inner space-y-10 group hover:bg-primary/[0.04] transition-colors">
-                        <div className="w-32 h-32 2xl:w-48 2xl:h-48 rounded-[2rem] 2xl:rounded-[4rem] bg-card border border-primary/10 flex items-center justify-center text-primary/10 shadow-2xl group-hover:scale-110 transition-transform">
+                    <div className="col-span-full py-60 bg-primary/2 border-2 border-dashed border-primary/10 rounded-[4rem] flex flex-col items-center justify-center text-center shadow-inner space-y-10 group hover:bg-primary/4 transition-colors">
+                        <div className="w-32 h-32 2xl:w-48 2xl:h-48 rounded-4xl 2xl:rounded-[4rem] bg-card border border-primary/10 flex items-center justify-center text-primary/10 shadow-2xl group-hover:scale-110 transition-transform">
                             <BookOpen className="w-16 h-16 2xl:w-24 2xl:h-24" />
                         </div>
                         <div className="space-y-4">
@@ -433,7 +433,7 @@ export default function PublicationsPage() {
                                         name="volume"
                                         type="number"
                                         required
-                                        defaultValue={showEditModal.volume_number}
+                                        defaultValue={showEditModal.volumeNumber}
                                         className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                     />
                                 </div>
@@ -443,7 +443,7 @@ export default function PublicationsPage() {
                                         name="issue"
                                         type="number"
                                         required
-                                        defaultValue={showEditModal.issue_number}
+                                        defaultValue={showEditModal.issueNumber}
                                         className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                     />
                                 </div>
@@ -466,7 +466,7 @@ export default function PublicationsPage() {
                                     name="monthRange"
                                     type="text"
                                     required
-                                    defaultValue={showEditModal.month_range}
+                                    defaultValue={showEditModal.monthRange}
                                     className="h-12 bg-primary/5 border-primary/5 focus-visible:ring-1 focus-visible:ring-primary/20 font-bold text-sm shadow-inner rounded-xl px-4"
                                 />
                             </div>

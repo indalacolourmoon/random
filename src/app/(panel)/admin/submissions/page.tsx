@@ -96,7 +96,7 @@ export default async function Submissions({
             <Card className="border-primary/5 shadow-vip overflow-hidden bg-card">
                 <CardContent className="p-0">
                     {/* Tabs Header */}
-                    <div className="p-6 border-b border-primary/5 bg-primary/[0.01]">
+                    <div className="p-6 border-b border-primary/5 bg-primary/1">
                         <SubTabs currentStatus={currentStatus} />
                     </div>
 
@@ -108,7 +108,7 @@ export default async function Submissions({
                     />
 
                     {/* Footer Stats */}
-                    <div className="p-8 border-t border-primary/5 flex items-center justify-center bg-primary/[0.01]">
+                    <div className="p-8 border-t border-primary/5 flex items-center justify-center bg-primary/1">
                         <p className="text-[9px] xl:text-xs font-semibold text-primary/20 tracking-widest capitalize">
                             Secure data segment end | {submissions.length} total records
                         </p>

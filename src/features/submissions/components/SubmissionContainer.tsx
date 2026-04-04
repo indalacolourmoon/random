@@ -34,7 +34,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Separator } from '@/components/ui/separator';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import SubmissionSearch from './SubmissionSearch';
 import DeleteSubmissionButton from './DeleteSubmissionButton';
 
@@ -73,7 +73,7 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
     return (
         <div className="flex flex-col">
             {/* Search & Stats Header */}
-            <div className="p-8 border-b border-primary/5 space-y-6 bg-primary/[0.01]">
+            <div className="p-8 border-b border-primary/5 space-y-6 bg-primary/1">
                 <div className="flex flex-col md:flex-row gap-6 items-stretch md:items-center justify-between ">
                     <div className="flex-1">
                         <SubmissionSearch 
@@ -102,7 +102,7 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         key={sub.id} 
-                        className="p-8 space-y-6 bg-card active:bg-primary/[0.02] transition-colors relative"
+                        className="p-8 space-y-6 bg-card active:bg-primary/2 transition-colors relative"
                     >
                         <div className="flex justify-between items-start gap-4">
                             <div className="space-y-3 flex-1">
@@ -129,7 +129,7 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                                         <MoreVertical className="w-6 h-6" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-64 rounded-[1.5rem] p-3 shadow-2xl border-primary/5 bg-white/95 backdrop-blur-xl">
+                                <DropdownMenuContent align="end" className="w-64 rounded-3xl p-3 shadow-2xl border-primary/5 bg-white/95 backdrop-blur-xl">
                                     <DropdownMenuItem asChild className="rounded-xl h-14 gap-4 px-5 focus:bg-primary/5 focus:text-primary transition-all">
                                         <Link href={`/${role}/submissions/${sub.id}`}>
                                             <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center">
@@ -228,7 +228,7 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button asChild className="h-12 px-6 gap-3 bg-primary text-white dark:text-black font-black text-[10px] tracking-[0.2em] rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.05] active:scale-[0.95] transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+                                                    <Button asChild className="h-12 px-6 gap-3 bg-primary text-white dark:text-black font-black text-[10px] tracking-[0.2em] rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.05] active:scale-[0.95] transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 duration-500">
                                                         <Link href={`/${role}/submissions/${sub.id}`}>
                                                             Examine Dossier
                                                         </Link>
@@ -246,7 +246,7 @@ export default function SubmissionContainer({ submissions, currentStatus, role }
                                                     <MoreVertical className="w-6 h-6" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-64 rounded-[1.5rem] p-3 shadow-2xl border-primary/5 bg-white/95 backdrop-blur-xl">
+                                            <DropdownMenuContent align="end" className="w-64 rounded-3xl p-3 shadow-2xl border-primary/5 bg-white/95 backdrop-blur-xl">
                                                 <DropdownMenuItem asChild className="rounded-xl h-14 gap-4 px-5 focus:bg-primary/5 focus:text-primary transition-all">
                                                     <Link href={`/${role}/submissions/${sub.id}`}>
                                                         <FileText className="w-5 h-5 text-primary/40" />

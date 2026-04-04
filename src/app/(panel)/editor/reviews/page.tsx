@@ -1,5 +1,5 @@
 'use client'
-import { ShieldAlert, User, Mail, FileUp, CheckCircle, Clock, Search, Plus, X, Download, FileText, MoreVertical, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, User, FileUp, CheckCircle, Clock, Plus, X, Download, FileText } from 'lucide-react';
 import { useActiveReviews, useUnassignedPapers, useAssignReviewer, useSubmitReview } from '@/hooks/queries/useReviews';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { decideSubmission } from '@/actions/submissions';
@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,6 @@ import {
     DialogTrigger,
     DialogFooter
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
@@ -106,7 +105,7 @@ function ReviewsContent() {
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {unassigned.map(paper => (
-                                                <SelectItem key={paper.id} value={paper.id.toString()}>{paper.paper_id} - {paper.title}</SelectItem>
+                                                <SelectItem key={paper.id} value={paper.id.toString()}>{paper.paperId} - {paper.title}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -119,7 +118,7 @@ function ReviewsContent() {
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl border-primary/5 bg-card">
                                             {staff.map(r => (
-                                                <SelectItem key={r.id} value={r.id.toString()}>{r.full_name} ({r.email})</SelectItem>
+                                                <SelectItem key={r.id} value={r.id.toString()}>{r.profile?.fullName || r.email} ({r.email})</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -175,7 +174,7 @@ function ReviewsContent() {
                                             {item.status.replace('_', ' ')}
                                         </Badge>
                                         <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-mono font-semibold text-primary/30 uppercase tracking-[0.2em] bg-primary/5 px-3 2xl:px-4 py-1.5 2xl:py-2.5 rounded-lg border border-primary/5">
-                                            Manuscript ID: {item.paper_id}
+                                            Manuscript ID: {item.paperId}
                                         </span>
                                     </div>
 
@@ -188,7 +187,7 @@ function ReviewsContent() {
                                             <div className="w-9 h-9 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
                                                 <User className="w-4 h-4" />
                                             </div>
-                                            <span>Assigned: {item.reviewer_name}</span>
+                                            <span>Assigned: {item.reviewerName}</span>
                                         </div>
                                         <div className="flex items-center gap-3 text-[11px] xl:text-xs font-semibold capitalize tracking-widest">
                                             <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
@@ -200,19 +199,19 @@ function ReviewsContent() {
                                         </div>
                                     </div>
 
-                                    {item.comments_to_author && (
+                                    {item.commentsToAuthor && (
                                         <div className="bg-primary/5 p-6 rounded-xl border border-primary/5 text-sm md:text-base text-primary/70 font-medium leading-relaxed italic relative mt-4 shadow-inner">
                                             <span className="absolute -top-4 -left-1 text-4xl text-primary/20 font-serif">"</span>
-                                            {item.comments_to_author}
+                                            {item.commentsToAuthor}
                                             <span className="absolute -bottom-8 -right-1 text-4xl text-primary/20 font-serif">"</span>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="shrink-0 flex flex-col gap-3 min-w-[240px]">
-                                    {item.manuscript_path && (
+                                    {item.manuscriptPath && (
                                         <Button asChild variant="outline" className="h-12 gap-3 font-semibold text-xs uppercase tracking-widest border-primary/10 text-primary hover:bg-primary hover:text-white transition-all rounded-xl shadow-sm cursor-pointer">
-                                            <a href={item.manuscript_path} download>
+                                            <a href={item.manuscriptPath} download>
                                                 <Download className="w-5 h-5" /> Download Manuscript
                                             </a>
                                         </Button>
@@ -283,20 +282,20 @@ function ReviewsContent() {
                                                 </form>
                                             </DialogContent>
                                         </Dialog>
-                                    ) : item.feedback_file_path && (
+                                    ) : item.feedbackFilePath && (
                                         <Button asChild variant="secondary" className="h-12 gap-3 font-semibold text-xs uppercase tracking-widest bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 shadow-none border-none rounded-xl transition-all cursor-pointer">
-                                            <a href={item.feedback_file_path} download>
+                                            <a href={item.feedbackFilePath} download>
                                                 <FileText className="w-5 h-5" /> View Feedback File
                                             </a>
                                         </Button>
                                     )}
 
-                                    {item.status === 'completed' && isInternalStaff && !['accepted', 'rejected', 'published', 'paid'].includes(item.submission_status) && (
+                                    {item.status === 'completed' && isInternalStaff && !['accepted', 'rejected', 'published', 'paid'].includes(item.submissionStatus) && (
                                         <div className="grid grid-cols-2 gap-3 2xl:gap-5 mt-4 pt-6 2xl:mt-6 2xl:pt-8 border-t border-primary/5">
                                             <Button
                                                 onClick={async () => {
                                                     if (confirm('Are you sure you want to FINAL ACCEPT this paper? Authors will be notified.')) {
-                                                        const res = await decideSubmission(item.submission_id, 'accepted');
+                                                        const res = await decideSubmission(item.submissionId, 'accepted');
                                                         if (res.success) {
                                                             toast.success('Accepted');
                                                             refetchReviews();
@@ -311,7 +310,7 @@ function ReviewsContent() {
                                             <Button
                                                 onClick={async () => {
                                                     if (confirm('Are you sure you want to REJECT this paper? Feedback will be sent, and manuscript file will be deleted.')) {
-                                                        const res = await decideSubmission(item.submission_id, 'rejected');
+                                                        const res = await decideSubmission(item.submissionId, 'rejected');
                                                         if (res.success) {
                                                             toast.success('Rejected');
                                                             refetchReviews();

@@ -1,17 +1,13 @@
 import {
     FileStack,
-    Users,
     Activity,
     BookOpen,
     AlertCircle,
     TrendingUp,
     ArrowRight,
-    Search,
-    UserPlus,
     ShieldCheck,
     FileText,
     Clock,
-    CheckCircle,
     ExternalLink,
     CreditCard,
     ClipboardList,
@@ -20,15 +16,14 @@ import {
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import * as schema from "@/db/schema";
-import { eq, desc, sql, count, and, ne } from "drizzle-orm";
-import os from 'os';
+import { eq, desc, sql, count } from "drizzle-orm";
 import fs from 'fs';
 import path from 'path';
 import { performance } from 'perf_hooks';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { getMySubmissions } from '@/actions/my-submissions';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { getMySubmissions } from '@/actions/author-submissions';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -248,7 +243,7 @@ export default async function EditorDashboard() {
                                                     <span>{pubPercent.toFixed(1)}%</span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-emerald-500 rounded-full w-[var(--pub-progress)]" style={{ '--pub-progress': `${pubPercent}%` } as React.CSSProperties} />
+                                                    <div className="h-full bg-emerald-500 rounded-full w-(--pub-progress)" style={{ '--pub-progress': `${pubPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                             <div>
@@ -257,7 +252,7 @@ export default async function EditorDashboard() {
                                                     <span>{revPercent.toFixed(1)}%</span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                                    <div className="h-full bg-blue-500 rounded-full w-[var(--rev-progress)]" style={{ '--rev-progress': `${revPercent}%` } as React.CSSProperties} />
+                                                    <div className="h-full bg-blue-500 rounded-full w-(--rev-progress)" style={{ '--rev-progress': `${revPercent}%` } as React.CSSProperties} />
                                                 </div>
                                             </div>
                                         </div>
@@ -295,7 +290,7 @@ export default async function EditorDashboard() {
                                         </div>
                                         <div className="mt-8 pt-8 border-t border-border/30 text-center">
                                             <p className="text-[10px] text-muted-foreground/60 font-medium italic mb-4 px-4 leading-relaxed">System monitoring protocol active. Maintain integrity of the review cycle.</p>
-                                            <Button asChild size="sm" className="w-full h-12 bg-primary text-white dark:text-black font-semibold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] cursor-pointer">
+                                            <Button asChild size="sm" className="w-full h-12 bg-primary text-white dark:text-primary font-semibold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] cursor-pointer">
                                                 <Link href="/editor/submissions" className="flex items-center gap-2 cursor-pointer">
                                                     Audit Queue <ArrowRight className="w-3 h-3" />
                                                 </Link>
@@ -316,7 +311,7 @@ export default async function EditorDashboard() {
                                             <FileText className="w-6 h-6 text-muted-foreground/30" />
                                         </div>
                                         <p className="text-sm text-muted-foreground font-medium px-4">Submit and track your own research manuscripts from the system portal.</p>
-                                        <Button asChild size="sm" className="bg-primary text-white dark:text-black hover:bg-primary/90 rounded-lg dark:bg-primary/5 dark:text-primary dark:border-2 cursor-pointer">
+                                        <Button asChild size="sm" className="bg-primary text-white hover:bg-primary/90 rounded-lg dark:bg-primary/5 dark:text-primary dark:border-2 cursor-pointer">
                                             <Link className="cursor-pointer" href="/submit">New Manuscript</Link>
                                         </Button>
                                     </div>
@@ -334,7 +329,7 @@ export default async function EditorDashboard() {
                                                     {paper.status}
                                                 </Badge>
                                             </div>
-                                            <h3 className=" font-semibold text-foreground line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
+                                            <h3 className=" font-semibold text-foreground line-clamp-2 min-h-10 group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
                                             <div className="flex items-center justify-between pt-4 border-t border-border/10">
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-medium tracking-wider"><Clock className="w-3 h-3" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
                                                 <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/20 rounded-md text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase cursor-pointer">
@@ -346,7 +341,7 @@ export default async function EditorDashboard() {
                                         </div>
                                         <div className="h-1 bg-muted/20 overflow-hidden">
                                             <div
-                                                className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'} w-[var(--status-progress)]`}
+                                                className={`h-full transition-all duration-1000 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'} w-(--status-progress)`}
                                                 style={{ '--status-progress': paper.status === 'published' ? '100%' : '15%' } as React.CSSProperties}
                                             />
                                         </div>
@@ -389,7 +384,7 @@ export default async function EditorDashboard() {
                 </Tabs>
             </main>
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("Editor Dashboard Error:", error);
         return <div className="p-12 text-center text-muted-foreground font-semibold text-xs min-h-[400px] flex items-center justify-center">
             System Logic Latency. Refresh Page.
