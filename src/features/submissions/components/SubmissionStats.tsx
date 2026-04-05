@@ -7,8 +7,9 @@ import {
     AlertCircle,
     TrendingUp
 } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
-import { motion } from 'framer-motion';
+import { useMemo } from 'react';
+import {motion} from 'framer-motion'
+import { Card, CardContent } from '@/components/ui/card';
 
 interface SubmissionStatsProps {
     stats: {
@@ -21,7 +22,7 @@ interface SubmissionStatsProps {
 }
 
 export default function SubmissionStats({ stats }: SubmissionStatsProps) {
-    const items = [
+    const items = useMemo(() => [
         { 
             label: 'Total Manuscripts', 
             value: stats.total, 
@@ -54,7 +55,7 @@ export default function SubmissionStats({ stats }: SubmissionStatsProps) {
             bg: 'bg-emerald-500/10',
             borderColor: 'border-emerald-500/20'
         }
-    ];
+    ], [stats]);
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

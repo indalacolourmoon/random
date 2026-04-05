@@ -1,26 +1,26 @@
-"use client";
-
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { navigation } from './nav-data';
-import { cn } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
-import { SendHorizonal, X, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { navigation } from './nav-data';
+import { X, ChevronRight, SendHorizontal } from 'lucide-react';
 
 interface MobileMenuProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
 }
 
-export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
+function MobileMenuComponent({ isOpen, setIsOpen }: MobileMenuProps) {
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const handleClose = useCallback(() => setIsOpen(false), [setIsOpen]);
 
     // Body Scroll Lock
     useEffect(() => {
@@ -48,7 +48,7 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setIsOpen(false)}
+                        onClick={handleClose}
                         className="fixed  inset-0 bg-primary/20 backdrop-blur-md z-[9998] lg:hidden"
                     />
 
@@ -68,7 +68,7 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
                             </div>
                             <button
                                 title="Close Menu"
-                                onClick={() => setIsOpen(false)}
+                                onClick={handleClose}
                                 className="w-8 h-8 flex items-center justify-center rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all duration-300"
                             >
                                 <X className="h-4 w-4" />
@@ -76,16 +76,16 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
                         </div>
 
                         {/* Navigation Scroll Area (Scrollbar Hidden) */}
-                        <div
-                            className="flex-1 overflow-y-auto px-5 py-6 scrolling-touch"
-                            style={{
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none',
-                            }}
-                        >
+                        <div className="flex-1 overflow-y-auto px-5 py-6 scrolling-touch">
                             <style dangerouslySetInnerHTML={{
                                 __html: `
-                                .scrolling-touch::-webkit-scrollbar { display: none; }
+                                .scrolling-touch {
+                                    scrollbar-width: none;
+                                    -ms-overflow-style: none;
+                                }
+                                .scrolling-touch::-webkit-scrollbar { 
+                                    display: none; 
+                                }
                             `}} />
                             <ul className="grid grid-cols-1 gap-1.5 list-none p-0">
                                 {navigation.map((item, idx) => {
@@ -96,11 +96,12 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.05 + idx * 0.03 }}
+                                            className="block w-full"
                                         >
                                             <div className="space-y-1">
                                                 <Link
                                                     href={item.href}
-                                                    onClick={() => setIsOpen(false)}
+                                                    onClick={handleClose}
                                                     className={cn(
                                                         "group flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all duration-300 border border-transparent",
                                                         isActive
@@ -116,7 +117,7 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
                                                             {item.icon && <item.icon className="w-4 h-4" />}
                                                         </div>
                                                         <span className={cn(
-                                                            "text-[12px] font-black  tracking-[0.05em] transition-all duration-300",
+                                                            "text-[12px] font-black tracking-[0.05em] transition-all duration-300",
                                                             isActive ? "text-primary" : "text-primary/60 group-hover:text-primary"
                                                         )}>{item.name}</span>
                                                     </div>
@@ -128,15 +129,15 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
 
                                                 {item.children && (
                                                     <ul className="ml-12 space-y-1 border-l border-primary/5 pl-4 pb-1 list-none p-0">
-                                                        {item.children.map((child, childIdx) => {
+                                                        {item.children.map((child) => {
                                                             const isSubActive = pathname === child.href;
                                                             return (
                                                                 <li key={child.name}>
                                                                     <Link
                                                                         href={child.href}
-                                                                        onClick={() => setIsOpen(false)}
+                                                                        onClick={handleClose}
                                                                         className={cn(
-                                                                            "flex items-center gap-2.5 py-1.5 text-[10px] font-bold  tracking-wider transition-all",
+                                                                            "flex items-center gap-2.5 py-1.5 text-[10px] font-bold tracking-wider transition-all",
                                                                             isSubActive ? "text-secondary" : "text-primary/40 hover:text-primary"
                                                                         )}
                                                                     >
@@ -163,9 +164,9 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
                             <Link
                                 href="/submit"
                                 className="btn-primary btn-fill-secondary w-full h-14 flex items-center justify-center gap-3"
-                                onClick={() => setIsOpen(false)}
+                                onClick={handleClose}
                             >
-                                <SendHorizonal className="w-4 h-4 relative z-20" />
+                                <SendHorizontal className="w-4 h-4 relative z-20" />
                                 <span className="relative z-20">Submit Manuscript</span>
                             </Link>
                         </div>
@@ -176,3 +177,5 @@ export function MobileMenu({ isOpen, setIsOpen }: MobileMenuProps) {
         document.body
     );
 }
+
+export const MobileMenu = memo(MobileMenuComponent);

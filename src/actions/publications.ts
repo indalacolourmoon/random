@@ -21,32 +21,6 @@ import fs from "fs/promises";
 import { brandPdf } from "@/lib/pdf-branding";
 import { getSubmissionById } from "./submissions";
 
-/**
- * Internal helper to sync submission_mode for papers based on the latest issue.
- */
-async function syncPublicationModes(tx?: any) {
-    const executor = tx || db;
-    try {
-        // 1. Find the latest published issue
-        const latestRows = await executor.select()
-            .from(volumesIssues)
-            .where(eq(volumesIssues.status, 'published'))
-            .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
-            .limit(1);
-
-        const latest = latestRows[0];
-
-        if (latest) {
-            // Logic for 'current' vs 'archive' mode logic
-            // (Note: This is a business logic field in submissions table to help with public listing)
-            // We'll update the status or a dedicated mode column if it exists.
-            // Looking at schema.ts, submissions doesn't have a 'submissionMode' column anymore?
-            // Actually, I should check schema.ts again.
-        }
-    } catch (error) {
-        console.error("Critical Sync Error:", error);
-    }
-}
 
 /**
  * Create a new volume/issue
@@ -58,6 +32,17 @@ export async function createVolumeIssue(formData: FormData): Promise<ActionRespo
     const monthRange = formData.get('monthRange') as string;
 
     try {
+        // 1. Check for duplicates
+        const existing = await db.select().from(volumesIssues).where(and(
+            eq(volumesIssues.volumeNumber, volume),
+            eq(volumesIssues.issueNumber, issue),
+            eq(volumesIssues.year, year)
+        )).limit(1);
+
+        if (existing.length > 0) {
+            return { success: false, error: "Volume/Issue already exists for this year." };
+        }
+
         await db.insert(volumesIssues).values({
             volumeNumber: volume,
             issueNumber: issue,
@@ -162,10 +147,10 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
                 const lastPage = maxPageRows[0]?.lastPage || 0;
                 if (finalStartPage === undefined) finalStartPage = lastPage + 1;
                 const startNum = finalStartPage as number; 
-
                 if (finalEndPage === undefined) {
                     try {
-                        const pdfPath = path.join(process.cwd(), 'public', latestPdf.fileUrl);
+                        const cleanPath = latestPdf.fileUrl.replace(/^\/+/, '');
+                        const pdfPath = path.join(process.cwd(), 'public', cleanPath);
                         const pdfBytes = await fs.readFile(pdfPath);
                         const { PDFDocument } = await import('pdf-lib');
                         const pdfDoc = await PDFDocument.load(pdfBytes);
@@ -176,8 +161,6 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
                     }
                 }
             }
-
-            // Ensure they are treated as numbers for the rest of the function
             const confirmedStartPage: number = finalStartPage as number;
             const confirmedEndPage: number = finalEndPage as number;
 
@@ -185,7 +168,8 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
             const brandedFileName = `${submission.paperId}-published.pdf`;
             const brandedRelativePath = `/uploads/published/${brandedFileName}`;
 
-            await brandPdf(latestPdf.fileUrl, brandedRelativePath, {
+            const cleanInput = latestPdf.fileUrl.replace(/^\/+/, '');
+            await brandPdf(cleanInput, brandedRelativePath, {
                 journalName: settings.journal_name || "IJITEST",
                 journalShortName: "IJITEST",
                 volume: issue.volumeNumber,
@@ -207,13 +191,12 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
                 startPage: confirmedStartPage,
                 endPage: confirmedEndPage,
                 publishedAt: new Date()
-            })
-.onDuplicateKeyUpdate({
+            }).onDuplicateKeyUpdate({
                 set: {
                     issueId: issueId,
                     finalPdfUrl: brandedRelativePath,
-                    startPage: finalStartPage,
-                    endPage: finalEndPage,
+                    startPage: confirmedStartPage,
+                    endPage: confirmedEndPage,
                     publishedAt: new Date()
                 }
             });

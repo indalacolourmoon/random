@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { eq, inArray, lt, and } from "drizzle-orm";
+import { eq, inArray, lt, and, sql } from "drizzle-orm";
 import { users, submissions, submissionVersions, submissionFiles } from "@/db/schema";
 import fs from "fs/promises";
 import path from "path";
@@ -23,7 +23,7 @@ export async function GET(req: Request) {
         const staleSubmissions = await db.select({
             id: submissions.id,
             paperId: submissions.paperId,
-            authorId: submissions.correspondingAuthorId,
+            correspondingAuthorId: submissions.correspondingAuthorId,
         })
         .from(submissions)
         .where(and(
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
         }
 
         const submissionIds = staleSubmissions.map(s => s.id);
-        const authorIds = staleSubmissions.map(s => s.authorId);
+        const authorIds = Array.from(new Set(staleSubmissions.map(s => s.correspondingAuthorId).filter(id => !!id)));
 
         // 2. Fetch all file URLs for cleanup
         const filesToCleanup = await db.select({ url: submissionFiles.fileUrl })
@@ -47,7 +47,9 @@ export async function GET(req: Request) {
         // 3. Delete files from disk
         for (const file of filesToCleanup) {
             try {
-                const filePath = path.join(process.cwd(), "public", file.url);
+                // Normalise path: prevent double-slashes if url has leading "/"
+                const normalizedUrl = file.url.replace(/^\/+/, "");
+                const filePath = path.join(process.cwd(), "public", normalizedUrl);
                 await fs.unlink(filePath);
             } catch (err) {
                 console.error(`Failed to delete file ${file.url}:`, err);
@@ -55,11 +57,25 @@ export async function GET(req: Request) {
         }
 
         // 4. HARD DELETE (Cascades handles versions, files, assignments in schema)
-        // Note: Authors table (users) needs to be deleted too
         await db.delete(submissions).where(inArray(submissions.id, submissionIds));
-        await db.delete(users).where(and(inArray(users.id, authorIds), eq(users.role, 'author')));
 
-        console.log(`Cleanup: hard-deleted ${submissionIds.length} stale submissions and authors.`);
+        // 5. Author Cleanup Safety Check
+        // Only delete authors who have ZERO remaining submissions after the cleanup.
+        let deletedAuthorsCount = 0;
+        if (authorIds.length > 0) {
+            for (const authorId of authorIds) {
+                const remainingSubmissions = await db.select({ count: sql<number>`count(*)` })
+                    .from(submissions)
+                    .where(eq(submissions.correspondingAuthorId, authorId!));
+                
+                if (Number(remainingSubmissions[0].count) === 0) {
+                    await db.delete(users).where(and(eq(users.id, authorId!), eq(users.role, 'author')));
+                    deletedAuthorsCount++;
+                }
+            }
+        }
+
+        console.log(`Cleanup: hard-deleted ${submissionIds.length} stale submissions and ${deletedAuthorsCount} authors.`);
 
         return NextResponse.json({
             deletedCount: submissionIds.length,

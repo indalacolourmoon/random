@@ -1,5 +1,5 @@
-"use client";
-
+'use client'
+import { useMemo, useCallback } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -80,7 +80,7 @@ export default function SubmissionForm() {
         name: "co_authors" as const,
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
         if (!manuscriptFile) {
             toast.error("Manuscript Missing", {
                 description: "Primary research document is required."
@@ -118,7 +118,21 @@ export default function SubmissionForm() {
                 setCopyrightFile(null);
             }
         });
-    }
+    }, [manuscriptFile, copyrightFile, submissionMutation, form]);
+
+    const onInvalid = useCallback(() => {
+        toast.error("Please fill missing forms", {
+            className: "bg-linear-to-r from-rose-500 to-rose-600 border-none text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-rose-500/20",
+        });
+    }, []);
+
+    const handleManuscriptChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setManuscriptFile(e.target.files?.[0] || null);
+    }, []);
+
+    const handleCopyrightChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setCopyrightFile(e.target.files?.[0] || null);
+    }, []);
 
     if (submissionMutation.isSuccess) {
         return (
@@ -143,12 +157,6 @@ export default function SubmissionForm() {
             </motion.div>
         );
     }
-
-    const onInvalid = () => {
-        toast.error("Please fill missing forms", {
-            className: "bg-linear-to-r from-rose-500 to-rose-600 border-none text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-rose-500/20",
-        });
-    };
 
     return (
         <Form {...form}>
@@ -523,7 +531,7 @@ export default function SubmissionForm() {
                             <div className="relative group/upload">
                                 <input
                                     type="file"
-                                    onChange={(e) => setManuscriptFile(e.target.files?.[0] || null)}
+                                    onChange={handleManuscriptChange}
                                     className="hidden"
                                     id="manuscript-upload"
                                     accept=".doc,.docx,.pdf"
@@ -585,7 +593,7 @@ export default function SubmissionForm() {
                             <div className="relative group/upload">
                                 <input
                                     type="file"
-                                    onChange={(e) => setCopyrightFile(e.target.files?.[0] || null)}
+                                    onChange={handleCopyrightChange}
                                     className="hidden"
                                     id="copyright-upload"
                                     accept=".doc,.docx,.pdf"

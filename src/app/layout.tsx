@@ -73,6 +73,8 @@ import AuthProvider from "@/components/providers/AuthProvider";
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/lib/query-provider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import SmoothScroll from "@/providers/SmoothScroll";
+import ScrollToTop from "@/components/common/ScrollToTop";
 
 export default function RootLayout({
   children,
@@ -88,14 +90,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <QueryProvider>
-              <TooltipProvider>
-                {children}
-                <Toaster position="top-right" offset={50} richColors closeButton />
-              </TooltipProvider>
-            </QueryProvider>
-          </AuthProvider>
+          <SmoothScroll>
+            <AuthProvider>
+              <QueryProvider>
+                <TooltipProvider>
+                  {children}
+                  <ScrollToTop />
+                  <Toaster position="top-right" offset={50} richColors closeButton />
+                </TooltipProvider>
+              </QueryProvider>
+            </AuthProvider>
+          </SmoothScroll>
         </ThemeProvider>
       </body>
     </html>

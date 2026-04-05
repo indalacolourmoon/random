@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from 'lucide-react';
-import { useState, memo } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,12 @@ function TrackManuscriptWidget() {
     const [paperId, setPaperId] = useState('');
     const router = useRouter();
 
-    const handleTrack = (e: React.FormEvent) => {
+    const handleTrack = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (paperId.trim()) {
             router.push(`/track?id=${paperId}`);
         }
-    };
+    }, [paperId, router]);
 
     return (
         <motion.div

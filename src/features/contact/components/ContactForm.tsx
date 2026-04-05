@@ -3,6 +3,7 @@
 import { Send, CheckCircle, Loader2 } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback } from 'react';
 import { contactSchema, type ContactFormData } from "@/lib/validations/contact";
 import { useContactMutation } from '@/hooks/queries/usePublicMutations';
 import { Button } from "@/components/ui/button";
@@ -30,13 +31,13 @@ export default function ContactForm() {
         },
     });
 
-    async function onSubmit(values: ContactFormData) {
+    const onSubmit = useCallback(async (values: ContactFormData) => {
         const formData = new FormData();
         Object.entries(values).forEach(([key, value]) => {
             formData.append(key, value);
         });
         contactMutation.mutate(formData);
-    }
+    }, [contactMutation]);
 
     if (contactMutation.isSuccess) {
         return (

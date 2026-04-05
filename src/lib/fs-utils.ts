@@ -9,7 +9,8 @@ export async function safeDeleteFile(relativePath: string | null | undefined) {
     if (!relativePath || !relativePath.startsWith('/')) return;
 
     try {
-        const absolutePath = path.join(process.cwd(), "public", relativePath);
+        const cleanPath = relativePath.replace(/^\/+/, '');
+        const absolutePath = path.join(process.cwd(), "public", cleanPath);
 
         // Check if file exists before trying to delete
         try {

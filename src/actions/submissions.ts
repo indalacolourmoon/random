@@ -192,7 +192,7 @@ export async function decideSubmission(id: number, decision: 'accepted' | 'rejec
                 // Prepare payment record if not zero charge
                 await tx.insert(payments).values({
                     submissionId: id,
-                    amount: apcAmount,
+                    amount: parseFloat(apcAmount).toString(), // Safe parsing to decimal string
                     currency: apcCurrency,
                     status: 'pending'
                 }).onDuplicateKeyUpdate({ set: { status: 'pending' } });
@@ -299,7 +299,9 @@ export async function deleteSubmission(id: number): Promise<ActionResponse> {
         // 2. File system cleanup
         for (const file of submission.allFiles) {
             try {
-                await fs.unlink(path.join(process.cwd(), 'public', file.fileUrl));
+                // Normalize file path to avoid double slashes
+                const normalizedPath = file.fileUrl.replace(/^\/+/, '');
+                await fs.unlink(path.join(process.cwd(), 'public', normalizedPath));
             } catch { /* ignore */ }
         }
 

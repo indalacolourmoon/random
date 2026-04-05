@@ -23,8 +23,189 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import React, { useCallback, useMemo } from 'react';
+
+// Memoized helper component for individual review cards
+const ReviewItemCard = React.memo(({ 
+    item, 
+    user, 
+    isInternalStaff, 
+    onAccept, 
+    onReject,
+    onFeedbackSubmit 
+}: { 
+    item: any, 
+    user: any, 
+    isInternalStaff: boolean, 
+    onAccept: (item: any) => void, 
+    onReject: (item: any) => void,
+    onFeedbackSubmit: (item: any, formData: FormData) => Promise<void>
+}) => {
+    const [feedbackFiles, setFeedbackFiles] = useState<{ [key: number]: File | null }>({});
+
+    return (
+        <Card className="border-primary/5 shadow-vip hover:shadow-2xl hover:scale-[1.005] transition-all group overflow-hidden bg-card relative">
+            <div className={`absolute top-0 left-0 w-1.5 h-full ${item.status === 'completed' ? 'bg-emerald-500/20' : 'bg-blue-500/20'}`} />
+            <CardContent className="p-0">
+                <div className="p-8 flex flex-col xl:flex-row xl:items-start justify-between gap-8">
+                    <div className="flex-1 space-y-4 min-w-0">
+                        <div className="flex items-center gap-3">
+                            <Badge className={`h-8 2xl:h-10 px-3 2xl:px-5 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase tracking-[0.2em] shadow-sm rounded-lg ${item.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border-none' : 'bg-blue-500/10 text-blue-600 border-none'}`}>
+                                {item.status.replace('_', ' ')}
+                            </Badge>
+                            <div className="flex items-center gap-3 bg-primary/5 px-4 2xl:px-6 py-1.5 2xl:py-2.5 rounded-full border border-primary/5">
+                                <Badge variant="ghost" className="p-0 hover:bg-transparent"><User className="w-4 h-4 2xl:w-6 2xl:h-6 text-primary/30" /></Badge>
+                                <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary/60 tracking-widest uppercase">Node: {item.paperId}</span>
+                            </div>
+                            <div className={`flex items-center gap-2.5 ${item.status === 'completed' ? 'text-primary/40' : 'text-orange-600'}`}>
+                                <Clock className="w-4 h-4 2xl:w-6 2xl:h-6" />
+                                <span className="text-xs 2xl:text-base font-semibold uppercase tracking-widest ">Due: {new Date(item.deadline).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <h3 className="text-base xl:text-lg 2xl:text-2xl font-semibold text-primary dark:text-white leading-tight tracking-tight group-hover:text-secondary transition-all duration-500">
+                            {item.title}
+                        </h3>
+                        <div className="flex flex-wrap gap-10 items-center border-t border-primary/5 pt-6">
+                            <div className="space-y-2">
+                                <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary uppercase tracking-widest leading-relaxed">Assigned Technical Reviewer</span>
+                                <div className="flex items-center gap-3 text-sm font-semibold text-foreground dark:text-white ">
+                                    <User className="w-4.5 h-4.5 text-primary/40" />
+                                    <span>{item.reviewerName}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {item.commentsToAuthor && (
+                            <div className="mt-6 p-6 bg-primary/2 rounded-xl border border-primary/5 text-sm text-primary/80 font-medium leading-relaxed shadow-inner">
+                                <span className="text-primary font-semibold opacity-40 pr-2 text-lg">"</span>
+                                {item.commentsToAuthor}
+                                <span className="text-primary font-semibold opacity-40 pl-2 text-lg">"</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="shrink-0 flex flex-col gap-3 xl:w-64 border-t xl:border-t-0 pt-6 xl:pt-0 border-primary/5">
+                        <div className="flex items-center gap-2 w-full">
+                            {item.manuscriptPath && (
+                                <Button asChild variant="outline" className="flex-1 h-12 gap-2 font-semibold text-[9px] uppercase tracking-widest rounded-xl border-primary/10 text-primary hover:bg-primary transition-all shadow-sm cursor-pointer">
+                                    <a href={item.manuscriptPath} className="flex items-center justify-center w-full" download>
+                                        <Download className="w-3.5 h-3.5 text-secondary mr-1" /> Source
+                                    </a>
+                                </Button>
+                            )}
+                            {item.feedbackFilePath && (
+                                <Button asChild variant="outline" className="flex-1 h-12 gap-2 font-semibold text-[9px] uppercase tracking-widest rounded-xl border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all shadow-sm cursor-pointer">
+                                    <a href={item.feedbackFilePath} className="flex items-center justify-center w-full" download>
+                                        <FileText className="w-3.5 h-3.5 mr-1" /> Intel
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
+
+                        {item.status !== 'completed' && user?.role === 'reviewer' && (
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button className="w-full h-14 gap-3 font-semibold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:scale-[1.05] hover:opacity-90 hover:text-white dark:hover:text-slate-900 active:scale-95 transition-all cursor-pointer">
+                                        <FileUp className="w-4 h-4" /> Submit Intel
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-xl rounded-xl p-10 bg-card border-primary/5 shadow-2xl">
+                                    <DialogHeader className="space-y-2">
+                                        <DialogTitle className="text-2xl font-semibold text-foreground tracking-tight uppercase">Final Evaluation</DialogTitle>
+                                        <DialogDescription className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest leading-relaxed opacity-60">
+                                            Commit technical feedback for Node: <span className="text-primary">{item.paperId}</span>.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form action={async (formData) => {
+                                        await onFeedbackSubmit(item, formData);
+                                    }} className="space-y-6 pt-6">
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">Summary of Findings</label>
+                                            <textarea
+                                                name="feedbackText"
+                                                required
+                                                rows={4}
+                                                className="w-full bg-primary/5 border-none rounded-xl p-5 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/5 text-primary resize-none placeholder:text-primary/30"
+                                                placeholder="Initial vector of technical feedback..."
+                                            />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">Deep Analysis Node (File)</label>
+                                            <div className={`relative group border-2 border-dashed ${feedbackFiles[item.id] ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/20 bg-primary/5'} rounded-xl p-10 transition-all hover:bg-primary/5 hover:border-primary/40`}>
+                                                <input
+                                                    title="file"
+                                                    name="feedbackFile"
+                                                    type="file"
+                                                    onChange={(e) => setFeedbackFiles(prev => ({ ...prev, [item.id]: e.target.files?.[0] || null }))}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                />
+                                                <div className="flex flex-col items-center justify-center pointer-events-none space-y-4">
+                                                    {feedbackFiles[item.id] ? (
+                                                        <>
+                                                            <CheckCircle className="w-8 h-8 text-emerald-500 animate-bounce" />
+                                                            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest text-center truncate max-w-[250px]">{feedbackFiles[item.id]?.name}</p>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    setFeedbackFiles(prev => ({ ...prev, [item.id]: null }));
+                                                                }}
+                                                                className="pointer-events-auto mt-2 text-rose-500 hover:bg-rose-500/10 font-semibold text-[10px] uppercase tracking-widest"
+                                                            >
+                                                                REMOVE PAYLOAD
+                                                            </Button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="w-14 h-14 rounded-xl bg-muted shadow-sm flex items-center justify-center text-primary/40 group-hover:text-primary group-hover:scale-110 transition-all">
+                                                                <FileUp className="w-6 h-6" />
+                                                            </div>
+                                                            <p className="text-xs font-semibold text-primary/60 dark:text-primary/80 uppercase tracking-widest">Upload Evaluation Payload</p>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <DialogFooter className="pt-6">
+                                            <Button type="submit" className="w-full h-16 bg-primary text-white dark:text-slate-900 font-semibold text-xs uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 rounded-xl hover:scale-[1.01] hover:opacity-90 hover:text-white dark:hover:text-slate-900 active:scale-[0.99] transition-all cursor-pointer">
+                                                COMMIT FINDINGS
+                                            </Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        )}
+
+                        {item.status === 'completed' && isInternalStaff && !['accepted', 'rejected', 'published', 'paid'].includes(item.submissionStatus) && (
+                            <div className="grid grid-cols-1 gap-4 2xl:gap-6 mt-4 pt-8 2xl:mt-6 2xl:pt-10 border-t border-primary/5">
+                                <Button
+                                    onClick={() => onAccept(item)}
+                                    className="w-full h-14 2xl:h-20 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs 2xl:text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    <CheckCircle className="w-5 h-5 2xl:w-7 2xl:h-7 mr-3" /> AUTHORIZE ACCEPT
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => onReject(item)}
+                                    className="w-full h-14 2xl:h-20 font-semibold text-xs 2xl:text-sm uppercase tracking-widest border-rose-500/20 text-rose-600 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    <X className="w-5 h-5 2xl:w-7 2xl:h-7 mr-3" /> COMMIT REJECT
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
+
+ReviewItemCard.displayName = "ReviewItemCard";
 
 function ReviewsContent() {
+
     const { data: session } = useSession();
     const searchParams = useSearchParams();
     const assignId = searchParams.get('assign');
@@ -40,11 +221,9 @@ function ReviewsContent() {
     const loading = loadingReviews || loadingUnassigned || loadingStaff;
 
     const [showAssignModal, setShowAssignModal] = useState(false);
-    const [selectedReview, setSelectedReview] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [assignedFile, setAssignedFile] = useState<File | null>(null);
-    const [feedbackFiles, setFeedbackFiles] = useState<{ [key: number]: File | null }>({});
 
     useEffect(() => {
         if (assignId) {
@@ -53,6 +232,43 @@ function ReviewsContent() {
     }, [assignId]);
 
     const [selectedSubmissionId, setSelectedSubmissionId] = useState<string>(assignId || "");
+
+    const handleAccept = useCallback(async (item: any) => {
+        if (confirm('Authorize acceptance for this manuscript?')) {
+            const res = await decideSubmission(item.submissionId, 'accepted');
+            if (res.success) {
+                toast.success('Accepted');
+                refetchReviews();
+            }
+            else toast.error(res.error);
+        }
+    }, [refetchReviews]);
+
+    const handleReject = useCallback(async (item: any) => {
+        if (confirm('Commit final rejection?')) {
+            const res = await decideSubmission(item.submissionId, 'rejected');
+            if (res.success) {
+                toast.success('Rejected');
+                refetchReviews();
+            }
+            else toast.error(res.error);
+        }
+    }, [refetchReviews]);
+
+    const handleFeedbackSubmit = useCallback(async (item: any, formData: FormData) => {
+        const toastId = toast.loading('Committing findings...');
+        try {
+            const result = await uploadMutation.mutateAsync({ assignmentId: item.id, formData });
+            if (result.success) {
+                toast.success('Feedback committed', { id: toastId });
+                refetchReviews();
+            } else {
+                toast.error(result.error, { id: toastId });
+            }
+        } catch (e) {
+            toast.error('Failed to submit findings', { id: toastId });
+        }
+    }, [uploadMutation, refetchReviews]);
 
     if (loading) {
         return (
@@ -66,16 +282,19 @@ function ReviewsContent() {
     const user: any = session?.user;
     const isInternalStaff = user?.role === 'admin' || user?.role === 'editor';
 
-    const filteredReviews = reviews.filter(r => {
-        const matchesSearch =
-            r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (r.reviewerName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.paperId.toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredReviews = useMemo(() => {
+        return reviews.filter(r => {
+            const matchesSearch =
+                r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (r.reviewerName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                r.paperId.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
+            const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
-    });
+            return matchesSearch && matchesStatus;
+        });
+    }, [reviews, searchQuery, statusFilter]);
+
 
     const selectedPaper = unassigned.find(p => p.id.toString() === selectedSubmissionId);
     const hasExistingPdf = !!selectedPaper?.pdfUrl;
@@ -259,189 +478,17 @@ function ReviewsContent() {
 
                 <div className="grid grid-cols-1 gap-4">
                     {filteredReviews.map((item) => (
-                        <Card key={item.id} className="border-primary/5 shadow-vip hover:shadow-2xl hover:scale-[1.005] transition-all group overflow-hidden bg-card relative">
-                            <div className={`absolute top-0 left-0 w-1.5 h-full ${item.status === 'completed' ? 'bg-emerald-500/20' : 'bg-blue-500/20'}`} />
-                            <CardContent className="p-0">
-                                <div className="p-8 flex flex-col xl:flex-row xl:items-start justify-between gap-8">
-                                    <div className="flex-1 space-y-4 min-w-0">
-                                        <div className="flex items-center gap-3">
-                                        <Badge className={`h-8 2xl:h-10 px-3 2xl:px-5 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase tracking-[0.2em] shadow-sm rounded-lg ${item.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border-none' : 'bg-blue-500/10 text-blue-600 border-none'}`}>
-                                            {item.status.replace('_', ' ')}
-                                        </Badge>
-                                        <div className="flex items-center gap-3 bg-primary/5 px-4 2xl:px-6 py-1.5 2xl:py-2.5 rounded-full border border-primary/5">
-                                            <Badge variant="ghost" className="p-0 hover:bg-transparent"><User className="w-4 h-4 2xl:w-6 2xl:h-6 text-primary/30" /></Badge>
-                                            <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary/60 tracking-widest uppercase">Node: {item.paperId}</span>
-                                        </div>
-                                        <div className={`flex items-center gap-2.5 ${item.status === 'completed' ? 'text-primary/40' : 'text-orange-600'}`}>
-                                            <Clock className="w-4 h-4 2xl:w-6 2xl:h-6" />
-                                            <span className="text-xs 2xl:text-base font-semibold uppercase tracking-widest ">Due: {new Date(item.deadline).toLocaleDateString()}</span>
-                                        </div>
-                                    </div>
-                                    <h3 className="text-base xl:text-lg 2xl:text-2xl font-semibold text-primary dark:text-white leading-tight tracking-tight group-hover:text-secondary transition-all duration-500">
-                                        {item.title}
-                                    </h3>
-                                        <div className="flex flex-wrap gap-10 items-center border-t border-primary/5 pt-6">
-                                            <div className="space-y-2">
-                                                <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-primary uppercase tracking-widest leading-relaxed">Assigned Technical Reviewer</span>
-                                                <div className="flex items-center gap-3 text-sm font-semibold text-foreground dark:text-white ">
-                                                    <User className="w-4.5 h-4.5 text-primary/40" />
-                                                    <span>{item.reviewerName}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {item.commentsToAuthor && (
-                                            <div className="mt-6 p-6 bg-primary/2 rounded-xl border border-primary/5 text-sm text-primary/80 font-medium leading-relaxed shadow-inner">
-                                                <span className="text-primary font-semibold opacity-40 pr-2 text-lg">"</span>
-                                                {item.commentsToAuthor}
-                                                <span className="text-primary font-semibold opacity-40 pl-2 text-lg">"</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="shrink-0 flex flex-col gap-3 xl:w-64 border-t xl:border-t-0 pt-6 xl:pt-0 border-primary/5">
-                                        <div className="flex items-center gap-2 w-full">
-                                            {item.manuscriptPath && (
-                                                <Button asChild variant="outline" className="flex-1 h-12 gap-2 font-semibold text-[9px] uppercase tracking-widest rounded-xl border-primary/10 text-primary hover:bg-primary transition-all shadow-sm cursor-pointer">
-                                                    <a href={item.manuscriptPath} className="flex items-center justify-center w-full" download>
-                                                        <Download className="w-3.5 h-3.5 text-secondary mr-1" /> Source
-                                                    </a>
-                                                </Button>
-                                            )}
-                                            {item.feedbackFilePath && (
-                                                <Button asChild variant="outline" className="flex-1 h-12 gap-2 font-semibold text-[9px] uppercase tracking-widest rounded-xl border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all shadow-sm cursor-pointer">
-                                                    <a href={item.feedbackFilePath} className="flex items-center justify-center w-full" download>
-                                                        <FileText className="w-3.5 h-3.5 mr-1" /> Intel
-                                                    </a>
-                                                </Button>
-                                            )}
-                                        </div>
-
-                                        {item.status !== 'completed' && user?.role === 'reviewer' && (
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button className="w-full h-14 gap-3 font-semibold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:scale-[1.05] hover:opacity-90 hover:text-white dark:hover:text-slate-900 active:scale-95 transition-all cursor-pointer">
-                                                        <FileUp className="w-4 h-4" /> Submit Intel
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="sm:max-w-xl rounded-xl p-10 bg-card border-primary/5 shadow-2xl">
-                                                    <DialogHeader className="space-y-2">
-                                                        <DialogTitle className="text-2xl font-semibold text-foreground tracking-tight uppercase">Final Evaluation</DialogTitle>
-                                                        <DialogDescription className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest leading-relaxed opacity-60">
-                                                            Commit technical feedback for Node: <span className="text-primary">{item.paperId}</span>.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <form action={async (formData) => {
-                                                        try {
-                                                            const result = await uploadMutation.mutateAsync({ assignmentId: item.id, formData });
-                                                            if (result.success) {
-                                                                toast.success('Feedback committed');
-                                                            } else {
-                                                                toast.error(result.error);
-                                                            }
-                                                        } catch (e) {
-                                                            toast.error('Failed to submit findings');
-                                                        }
-                                                    }} className="space-y-6 pt-6">
-                                                        <div className="space-y-3">
-                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">Summary of Findings</label>
-                                                            <textarea
-                                                                name="feedbackText"
-                                                                required
-                                                                rows={4}
-                                                                className="w-full bg-primary/5 border-none rounded-xl p-5 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/5 text-primary resize-none placeholder:text-primary/30"
-                                                                placeholder="Initial vector of technical feedback..."
-                                                            />
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">Deep Analysis Node (File)</label>
-                                                            <div className={`relative group border-2 border-dashed ${feedbackFiles[item.id] ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-primary/20 bg-primary/5'} rounded-xl p-10 transition-all hover:bg-primary/5 hover:border-primary/40`}>
-                                                                <input
-                                                                    title="file"
-                                                                    name="feedbackFile"
-                                                                    type="file"
-                                                                    onChange={(e) => setFeedbackFiles(prev => ({ ...prev, [item.id]: e.target.files?.[0] || null }))}
-                                                                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                                                                />
-                                                                <div className="flex flex-col items-center justify-center pointer-events-none space-y-4">
-                                                                    {feedbackFiles[item.id] ? (
-                                                                        <>
-                                                                            <CheckCircle className="w-8 h-8 text-emerald-500 animate-bounce" />
-                                                                            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest text-center truncate max-w-[250px]">{feedbackFiles[item.id]?.name}</p>
-                                                                            <Button
-                                                                                type="button"
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault();
-                                                                                    setFeedbackFiles(prev => ({ ...prev, [item.id]: null }));
-                                                                                }}
-                                                                                className="pointer-events-auto mt-2 text-rose-500 hover:bg-rose-500/10 font-semibold text-[10px] uppercase tracking-widest"
-                                                                            >
-                                                                                REMOVE PAYLOAD
-                                                                            </Button>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <div className="w-14 h-14 rounded-xl bg-muted shadow-sm flex items-center justify-center text-primary/40 group-hover:text-primary group-hover:scale-110 transition-all">
-                                                                                <FileUp className="w-6 h-6" />
-                                                                            </div>
-                                                                            <p className="text-xs font-semibold text-primary/60 dark:text-primary/80 uppercase tracking-widest">Upload Evaluation Payload</p>
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <DialogFooter className="pt-6">
-                                                            <Button type="submit" className="w-full h-16 bg-primary text-white dark:text-slate-900 font-semibold text-xs uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 rounded-xl hover:scale-[1.01] hover:opacity-90 hover:text-white dark:hover:text-slate-900 active:scale-[0.99] transition-all cursor-pointer">
-                                                                COMMIT FINDINGS
-                                                            </Button>
-                                                        </DialogFooter>
-                                                    </form>
-                                                </DialogContent>
-                                            </Dialog>
-                                        )}
-
-                                        {item.status === 'completed' && isInternalStaff && !['accepted', 'rejected', 'published', 'paid'].includes(item.submissionStatus) && (
-                                            <div className="grid grid-cols-1 gap-4 2xl:gap-6 mt-4 pt-8 2xl:mt-6 2xl:pt-10 border-t border-primary/5">
-                                                <Button
-                                                    onClick={async () => {
-                                                        if (confirm('Authorize acceptance for this manuscript?')) {
-                                                            const res = await decideSubmission(item.submissionId, 'accepted');
-                                                            if (res.success) {
-                                                                toast.success('Accepted');
-                                                                refetchReviews();
-                                                            }
-                                                            else toast.error(res.error);
-                                                        }
-                                                    }}
-                                                    className="w-full h-14 2xl:h-20 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs 2xl:text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                                                >
-                                                    <CheckCircle className="w-5 h-5 2xl:w-7 2xl:h-7 mr-3" /> AUTHORIZE ACCEPT
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={async () => {
-                                                        if (confirm('Commit final rejection?')) {
-                                                            const res = await decideSubmission(item.submissionId, 'rejected');
-                                                            if (res.success) {
-                                                                toast.success('Rejected');
-                                                                refetchReviews();
-                                                            }
-                                                            else toast.error(res.error);
-                                                        }
-                                                    }}
-                                                    className="w-full h-14 2xl:h-20 font-semibold text-xs 2xl:text-sm uppercase tracking-widest border-rose-500/20 text-rose-600 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                                                >
-                                                    <X className="w-5 h-5 2xl:w-7 2xl:h-7 mr-3" /> COMMIT REJECT
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <ReviewItemCard 
+                            key={item.id} 
+                            item={item} 
+                            user={user} 
+                            isInternalStaff={isInternalStaff}
+                            onAccept={handleAccept}
+                            onReject={handleReject}
+                            onFeedbackSubmit={handleFeedbackSubmit}
+                        />
                     ))}
+
 
                     {filteredReviews.length === 0 && !loading && (
                         <div className="flex flex-col items-center justify-center py-40 bg-primary/2 border-2 border-dashed border-primary/5 rounded-xl space-y-8">

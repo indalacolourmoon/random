@@ -72,7 +72,7 @@ export async function getApplications(filters?: { role?: string, status?: string
 
         return { success: true, data: finalData };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Applications Error:", error);
         return { success: false, error: message };
     }
@@ -177,7 +177,7 @@ export async function approveApplication(id: number): Promise<ActionResponse> {
         revalidatePath("/admin/users");
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Approve Application Error:", error);
         return { success: false, error: "Failed to approve application: " + message };
     }

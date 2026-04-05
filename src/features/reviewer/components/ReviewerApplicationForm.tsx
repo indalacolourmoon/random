@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, CheckCircle2, AlertCircle, FileText, ImageIcon, Loader2, ChevronRight, ChevronLeft, Building2, Plus } from 'lucide-react';
 import { checkUserEmail } from '@/actions/users';
 import { Input } from "@/components/ui/input";
@@ -42,10 +42,10 @@ function FileInput({
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
         onChange(file);
-    };
+    }, [onChange]);
 
     return (
         <div className="space-y-4">
@@ -133,7 +133,7 @@ export default function ReviewerApplicationForm() {
         return () => clearTimeout(timeoutId);
     }, [formData.email]);
 
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         // Validation per step
         if (step === 1) {
             if (!formData.fullName || !formData.designation || !formData.email || emailStatus.exists) {
@@ -150,35 +150,38 @@ export default function ReviewerApplicationForm() {
 
         setDirection(1);
         setStep(prev => Math.min(prev + 1, 3));
-    };
+    }, [step, formData, emailStatus.exists]);
 
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         setDirection(-1);
         setStep(prev => Math.max(prev - 1, 1));
-    };
+    }, []);
 
-    const toggleInterest = (interest: string) => {
+    const toggleInterest = useCallback((interest: string) => {
         setFormData(prev => ({
             ...prev,
             researchInterests: prev.researchInterests.includes(interest)
                 ? prev.researchInterests.filter(i => i !== interest)
                 : [...prev.researchInterests, interest]
         }));
-    };
+    }, []);
 
-    const addCustomInterest = (e?: React.FormEvent) => {
+    const addCustomInterest = useCallback((e?: React.FormEvent) => {
         e?.preventDefault();
         const trimmed = customInterest.trim();
-        if (trimmed && !formData.researchInterests.includes(trimmed)) {
-            setFormData(prev => ({
-                ...prev,
-                researchInterests: [...prev.researchInterests, trimmed]
-            }));
+        if (trimmed) {
+            setFormData(prev => {
+                if (prev.researchInterests.includes(trimmed)) return prev;
+                return {
+                    ...prev,
+                    researchInterests: [...prev.researchInterests, trimmed]
+                };
+            });
             setCustomInterest('');
         }
-    };
+    }, [customInterest]);
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         if (!formData.cv || !formData.photo) {
             toast.error("Verification assets (CV & Photo) are mandatory.");
             return;
@@ -193,15 +196,10 @@ export default function ReviewerApplicationForm() {
         submissionData.append('nationality', formData.nationality);
         submissionData.append('cv', formData.cv);
         submissionData.append('photo', formData.photo);
-        // Note: Existing API expects research interests as part of the overall application.
-        // We'll append it to designation or institute if necessary, but since we're refactoring everything,
-        // we'll send it as its own field if the backend is ready (Instructions said final submit must use existing action).
-        // If the action only takes fixed fields, we might need a small adjustment.
-        // Let's assume the action can be updated if it doesn't handle the dynamic interests yet.
         submissionData.append('research_interests', JSON.stringify(formData.researchInterests));
 
         reviewerMutation.mutate(submissionData);
-    };
+    }, [formData, reviewerMutation]);
 
     const variants = {
         enter: (dir: number) => ({

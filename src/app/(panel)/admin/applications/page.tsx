@@ -1,39 +1,149 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useApplications, useApproveApplication, useRejectApplication } from '@/hooks/queries/useApplications';
-import { useState } from 'react';
+import React, { useState, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { toast } from 'sonner';
-import {
-    User,
-    FileText,
-    Mail,
-    Building2,
-    XCircle,
-    Search,
-    Briefcase,
-    Download,
-    RotateCcw
-} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent } from "@/components/ui/card";
+import { 
+    CheckCircle, 
+    XCircle, 
+    Search, 
+    User, 
+    Building2, 
+    GraduationCap, 
+    ExternalLink, 
+    RotateCcw,
+    Mail,
+    FileText,
+    Activity,
+    Shield,
+    Briefcase,
+    ChevronRight,
+    Filter,
+    X,
+    CheckCircle2,
+    AlertCircle,
+    ArrowLeft,
+    ArrowRight,
+    Eye,
+    Trash2,
+    Download
+} from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from "@/components/ui/separator";
-import { Suspense } from 'react';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
+import { useApplications, useApproveApplication, useRejectApplication } from "@/hooks/queries/useApplications";
+
+export const dynamic = "force-dynamic";
+
+// --- Static Data ---
+const ROLE_FILTERS = ['all', 'reviewer', 'editor'] as const;
+const STATUS_FILTERS = ['all', 'pending', 'approved', 'rejected'] as const;
+
+// --- Sub-components ---
+
+const ApplicationItemCard = React.memo(({ 
+    app, 
+    isSelected, 
+    onToggle, 
+    onInspect 
+}: { 
+    app: any; 
+    isSelected: boolean; 
+    onToggle: (id: number) => void;
+    onInspect: (app: any) => void;
+}) => {
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="group relative"
+        >
+            <Card 
+                className={`relative overflow-hidden border-white/10 bg-white/2 backdrop-blur-xl transition-all hover:bg-white/4 hover:border-primary/30 cursor-pointer ${isSelected ? 'border-primary/50' : ''}`}
+                onClick={() => onInspect(app)}
+            >
+                <div className="flex items-stretch">
+                    {/* Selection Area */}
+                    <div 
+                        className="px-6 flex items-center border-r border-white/5"
+                        onClick={(e) => { e.stopPropagation(); onToggle(app.id); }}
+                    >
+                        <Checkbox checked={isSelected} />
+                    </div>
+
+                    <CardContent className="p-0 flex-1 grid grid-cols-1 md:grid-cols-[120px_1fr_250px] items-center">
+                        {/* Photo */}
+                        <div className="p-4 flex justify-center">
+                            <div className="w-16 h-16 2xl:w-20 2xl:h-20 bg-muted rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                                {app.photoUrl ? (
+                                    <img src={app.photoUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center opacity-20"><User /></div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-6 space-y-2 border-r border-white/5">
+                            <div className="flex items-center gap-3">
+                                <h3 className="font-serif text-lg xl:text-xl 2xl:text-2xl font-semibold text-foreground">{app.fullName}</h3>
+                                <Badge className={`rounded-full h-5 px-3 border-none text-[8px] xl:text-[9px] font-semibold capitalize tracking-widest ${
+                                    app.type === 'editor' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
+                                }`}>
+                                    {app.type}
+                                </Badge>
+                            </div>
+                            <div className="flex flex-wrap gap-x-6 gap-y-1 text-muted-foreground text-[9px] xl:text-xs font-semibold capitalize tracking-wide opacity-70">
+                                <span className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5" /> {app.institute}</span>
+                                <span className="flex items-center gap-2"><Briefcase className="w-3.5 h-3.5" /> {app.designation}</span>
+                                <span className="flex items-center gap-2 underline decoration-primary/20"><Mail className="w-3.5 h-3.5" /> {app.email}</span>
+                            </div>
+                            
+                            {/* Domain Tags */}
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                {app.research_interests?.map((tag: string) => (
+                                    <span key={tag} className="text-[8px] xl:text-[9px] font-semibold capitalize text-primary px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Status & Meta */}
+                        <div className="p-8 flex flex-col items-center md:items-end justify-center gap-4 bg-muted/10 h-full">
+                            <Badge className={`h-8 px-6 text-xs font-semibold tracking-widest uppercase border-none rounded-xl ${
+                                app.status === 'approved' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' :
+                                app.status === 'rejected' ? 'bg-rose-700 text-white shadow-lg shadow-rose-700/30' :
+                                'bg-amber-500 text-black shadow-lg shadow-amber-500/30'
+                            }`}>
+                                {app.status}
+                            </Badge>
+                            <p className="text-[9px] font-mono text-muted-foreground uppercase opacity-40">
+                                Logged: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}
+                            </p>
+                        </div>
+                    </CardContent>
+                </div>
+            </Card>
+        </motion.div>
+    );
+});
+
+ApplicationItemCard.displayName = 'ApplicationItemCard';
 
 function ManageApplicationsContent() {
     const searchParams = useSearchParams();
@@ -64,31 +174,31 @@ function ManageApplicationsContent() {
     const [bulkMode, setBulkMode] = useState<'approve' | 'reject' | null>(null);
     const [bulkReason, setBulkReason] = useState("");
 
-    const updateFilters = (newFilters: Record<string, string>) => {
+    const updateFilters = useCallback((newFilters: Record<string, string>) => {
         const params = new URLSearchParams(searchParams.toString());
         Object.entries(newFilters).forEach(([key, value]) => {
             if (value === 'all' || !value) params.delete(key);
             else params.set(key, value);
         });
         router.push(`${pathname}?${params.toString()}`);
-    };
+    }, [searchParams, pathname, router]);
 
-    const clearFilters = () => {
+    const clearFilters = useCallback(() => {
         router.push(pathname);
-    };
+    }, [pathname, router]);
 
-    const handleSelectAll = (checked: boolean) => {
+    const handleSelectAll = useCallback((checked: boolean) => {
         if (checked) setSelectedIds(applications.map(app => app.id));
         else setSelectedIds([]);
-    };
+    }, [applications]);
 
-    const toggleSelect = (id: number) => {
+    const toggleSelect = useCallback((id: number) => {
         setSelectedIds(prev => 
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         );
-    };
+    }, []);
 
-    const handleApprove = async (id: number) => {
+    const handleApprove = useCallback(async (id: number) => {
         const toastId = toast.loading("Processing approval...");
         try {
             const res = await approveMutation.mutateAsync(id);
@@ -102,9 +212,9 @@ function ManageApplicationsContent() {
         } catch (e) {
             toast.error("Internal service error", { id: toastId });
         }
-    };
+    }, [approveMutation]);
 
-    const handleReject = async (id: number, reason: string) => {
+    const handleReject = useCallback(async (id: number, reason: string) => {
         if (reason.length < 20) {
             toast.error("Rejection reason must be at least 20 characters");
             return;
@@ -123,7 +233,8 @@ function ManageApplicationsContent() {
         } catch (e) {
             toast.error("Internal service error", { id: toastId });
         }
-    };
+    }, [rejectMutation]);
+
 
     return (
         <section className="space-y-8 pb-32">
@@ -133,11 +244,10 @@ function ManageApplicationsContent() {
                     <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-semibold tracking-tight text-foreground capitalize">Reviewer archive</h1>
                     <p className="text-[9px] xl:text-xs 2xl:text-sm font-medium text-muted-foreground capitalize tracking-widest opacity-60">Professional vetting & onboarding command</p>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3">
                     {/* Role Filter */}
                     <div className="flex bg-muted/30 p-1 rounded-full border border-white/5">
-                        {['all', 'reviewer', 'editor'].map((r) => (
+                        {ROLE_FILTERS.map((r) => (
                             <Button
                                 key={r}
                                 variant={role === r ? 'secondary' : 'ghost'}
@@ -152,7 +262,7 @@ function ManageApplicationsContent() {
 
                     {/* Status Filter */}
                     <div className="flex bg-muted/30 p-1 rounded-full border border-white/5">
-                        {['all', 'pending', 'approved', 'rejected'].map((s) => (
+                        {STATUS_FILTERS.map((s) => (
                             <Button
                                 key={s}
                                 variant={status === s ? 'secondary' : 'ghost'}
@@ -218,82 +328,13 @@ function ManageApplicationsContent() {
                 ) : (
                     <AnimatePresence>
                         {applications.map((app) => (
-                            <motion.div
+                            <ApplicationItemCard 
                                 key={app.id}
-                                layout
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className="group relative"
-                            >
-                                <Card 
-                                    className={`relative overflow-hidden border-white/10 bg-white/2 backdrop-blur-xl transition-all hover:bg-white/4 hover:border-primary/30 cursor-pointer ${selectedIds.includes(app.id) ? 'border-primary/50' : ''}`}
-                                    onClick={() => setInspectApp(app)}
-                                >
-                                    <div className="flex items-stretch">
-                                        {/* Selection Area */}
-                                        <div 
-                                            className="px-6 flex items-center border-r border-white/5"
-                                            onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
-                                        >
-                                            <Checkbox checked={selectedIds.includes(app.id)} />
-                                        </div>
-
-                                        <CardContent className="p-0 flex-1 grid grid-cols-1 md:grid-cols-[120px_1fr_250px] items-center">
-                                            {/* Photo */}
-                                            <div className="p-4 flex justify-center">
-                                                <div className="w-16 h-16 2xl:w-20 2xl:h-20 bg-muted rounded-xl border border-white/10 overflow-hidden shadow-2xl">
-                                                    {app.photoUrl ? (
-                                                        <img src={app.photoUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center opacity-20"><User /></div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Info */}
-                                            <div className="p-6 space-y-2 border-r border-white/5">
-                                                <div className="flex items-center gap-3">
-                                                    <h3 className="font-serif text-lg xl:text-xl 2xl:text-2xl font-semibold text-foreground">{app.fullName}</h3>
-                                                    <Badge className={`rounded-full h-5 px-3 border-none text-[8px] xl:text-[9px] font-semibold capitalize tracking-widest ${
-                                                        app.type === 'editor' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
-                                                    }`}>
-                                                        {app.type}
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex flex-wrap gap-x-6 gap-y-1 text-muted-foreground text-[9px] xl:text-xs font-semibold capitalize tracking-wide opacity-70">
-                                                    <span className="flex items-center gap-2"><Building2 className="w-3.5 h-3.5" /> {app.institute}</span>
-                                                    <span className="flex items-center gap-2"><Briefcase className="w-3.5 h-3.5" /> {app.designation}</span>
-                                                    <span className="flex items-center gap-2 underline decoration-primary/20"><Mail className="w-3.5 h-3.5" /> {app.email}</span>
-                                                </div>
-                                                
-                                                {/* Domain Tags */}
-                                                <div className="flex flex-wrap gap-2 pt-2">
-                                                    {app.research_interests?.map((tag: string) => (
-                                                        <span key={tag} className="text-[8px] xl:text-[9px] font-semibold capitalize text-primary px-2 py-0.5 bg-primary/5 rounded-md border border-primary/10">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Status & Meta */}
-                                            <div className="p-8 flex flex-col items-center md:items-end justify-center gap-4 bg-muted/10 h-full">
-                                                <Badge className={`h-8 px-6 text-xs font-semibold tracking-widest uppercase border-none rounded-xl ${
-                                                    app.status === 'approved' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' :
-                                                    app.status === 'rejected' ? 'bg-rose-700 text-white shadow-lg shadow-rose-700/30' :
-                                                    'bg-amber-500 text-black shadow-lg shadow-amber-500/30'
-                                                }`}>
-                                                    {app.status}
-                                                </Badge>
-                                                <p className="text-[9px] font-mono text-muted-foreground uppercase opacity-40">
-                                                    Logged: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}
-                                                </p>
-                                            </div>
-                                        </CardContent>
-                                    </div>
-                                </Card>
-                            </motion.div>
+                                app={app}
+                                isSelected={selectedIds.includes(app.id)}
+                                onToggle={toggleSelect}
+                                onInspect={setInspectApp}
+                            />
                         ))}
                     </AnimatePresence>
                 )}

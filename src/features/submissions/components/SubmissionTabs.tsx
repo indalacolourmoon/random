@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useCallback } from 'react';
 
 const statuses = [
     { label: 'All', value: 'all' },
@@ -16,7 +17,7 @@ export default function SubmissionTabs({ currentStatus = 'all' }: { currentStatu
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const handleTabClick = (status: string) => {
+    const handleTabClick = useCallback((status: string) => {
         const params = new URLSearchParams(searchParams.toString());
         if (status === 'all') {
             params.delete('status');
@@ -24,7 +25,7 @@ export default function SubmissionTabs({ currentStatus = 'all' }: { currentStatu
             params.set('status', status);
         }
         router.push(`?${params.toString()}`);
-    };
+    }, [searchParams, router]);
 
     return (
         <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar">

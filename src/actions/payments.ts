@@ -50,7 +50,7 @@ export async function getPayments(): Promise<ActionResponse<PaymentRow[]>> {
         // Simplified for now (assuming 1 version for simplicity or handling in UI)
         return { success: true, data: results as PaymentRow[] };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Payments Error:", error);
         return { success: false, error: "Failed to fetch payments: " + message };
     }
@@ -84,7 +84,7 @@ export async function updatePaymentStatus(paymentId: number, status: 'pending' |
         revalidatePath('/admin/payments');
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Update Payment Error:", error);
         return { success: false, error: "Failed to update payment: " + message };
     }
@@ -101,7 +101,7 @@ export async function initializePayment(submissionId: number, amount: number, cu
         revalidatePath('/admin/payments');
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Initialize Payment Error:", error);
         return { success: false, error: "Failed to initialize payment: " + message };
     }
@@ -137,7 +137,7 @@ export async function getAcceptedUnpaidPapers(): Promise<ActionResponse<UnpaidPa
 
         return { success: true, data: results };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Accepted Unpaid Error:", error);
         return { success: false, error: "Failed to fetch unpaid papers: " + message };
     }
@@ -160,7 +160,7 @@ export async function waivePayment(submissionId: number): Promise<ActionResponse
         revalidatePath('/admin/payments');
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Waive Payment Error:", error);
         return { success: false, error: "Failed to waive payment: " + message };
     }

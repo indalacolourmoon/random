@@ -38,7 +38,7 @@ export async function getEditorialBoard(): Promise<ActionResponse<UserWithProfil
         }));
         return { success: true, data };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Editorial Board Error:", error);
         return { success: false, error: message };
     }
@@ -64,7 +64,7 @@ export async function getUsers(role?: "admin" | "editor" | "reviewer" | "author"
         }));
         return { success: true, data };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Users Error:", error);
         return { success: false, error: message };
     }
@@ -134,7 +134,7 @@ export async function createUser(formData: FormData): Promise<ActionResponse> {
         revalidatePath('/admin/users');
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Create User Error:", error);
         if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ER_DUP_ENTRY') {
             return { success: false, error: "Email already exists" };
@@ -164,7 +164,7 @@ export async function getPasswordSetupInfo(token: string): Promise<ActionRespons
         if (!invitation[0]) return { success: false, error: "Link expired or invalid" };
         return { success: true, data: invitation[0] };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Setup Info Error:", error);
         return { success: false, error: message };
     }
@@ -202,7 +202,7 @@ export async function setupPassword(formData: FormData): Promise<ActionResponse>
             return { success: true };
         });
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Setup Password Error:", error);
         return { success: false, error: "Failed to setup password: " + message };
     }
@@ -297,6 +297,9 @@ export async function deleteUser(id: string): Promise<ActionResponse> {
             
             await tx.delete(users).where(eq(users.id, id));
             
+            // Defensive deletion of profile photo. Note: Although cascade delete 
+            // should remove the profile row, we explicitly unlink the file 
+            // to ensure storage is cleaned up regardless of foreign key behavior.
             if (profile[0]?.photoUrl) {
                 await safeDeleteFile(profile[0].photoUrl);
             }
@@ -335,7 +338,7 @@ export async function getUserProfile(): Promise<ActionResponse<UserWithProfile>>
         };
         return { success: true, data };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get User Profile Error:", error);
         return { success: false, error: message };
     }
@@ -391,7 +394,7 @@ export async function updateUserProfile(formData: FormData): Promise<ActionRespo
         revalidatePath(`/${session.user.role}/profile`);
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Update User Profile Error:", error);
         return { success: false, error: "Failed to update profile: " + message };
     }

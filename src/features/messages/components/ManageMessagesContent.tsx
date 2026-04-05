@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { toast } from "sonner"
 import { InboxFilters } from "./InboxFilters"
@@ -27,33 +27,35 @@ export function ManageMessagesContent() {
     const [selectedMessage, setSelectedMessage] = useState<any>(null)
     const [selectedIds, setSelectedIds] = useState<number[]>([])
 
-    const counts = {
-        all: messages.length,
-        pending: messages.filter(m => m.status === 'pending').length,
-        resolved: messages.filter(m => m.status === 'resolved').length,
-        archived: messages.filter(m => m.status === 'archived').length
-    }
+    const messagesData = messages || []
 
-    const updateFilters = (newFilters: Record<string, string>) => {
+    const counts = useMemo(() => ({
+        all: messagesData.length,
+        pending: messagesData.filter(m => m.status === 'pending').length,
+        resolved: messagesData.filter(m => m.status === 'resolved').length,
+        archived: messagesData.filter(m => m.status === 'archived').length
+    }), [messagesData])
+
+    const updateFilters = useCallback((newFilters: Record<string, string>) => {
         const params = new URLSearchParams(searchParams.toString())
         Object.entries(newFilters).forEach(([key, value]) => {
             if (value === 'all' || !value) params.delete(key)
             else params.set(key, value)
         })
         router.push(`${pathname}?${params.toString()}`)
-    }
+    }, [searchParams, pathname, router])
 
-    const handleSelectMessage = (message: any) => {
+    const handleSelectMessage = useCallback((message: any) => {
         setSelectedMessage(message)
-    }
+    }, [])
 
-    const handleToggleSelect = (id: number) => {
+    const handleToggleSelect = useCallback((id: number) => {
         setSelectedIds(prev => 
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         )
-    }
+    }, [])
 
-    const handleUpdateStatus = async (id: number, newStatus: 'resolved' | 'archived') => {
+    const handleUpdateStatus = useCallback(async (id: number, newStatus: 'resolved' | 'archived') => {
         const toastId = toast.loading(`Updating status to ${newStatus}...`)
         try {
             const res = await updateMutation.mutateAsync({ id, status: newStatus })
@@ -68,9 +70,9 @@ export function ManageMessagesContent() {
         } catch (e) {
             toast.error("Internal service error", { id: toastId })
         }
-    }
+    }, [updateMutation, selectedMessage?.id])
 
-    const handleBulkUpdate = async (newStatus: 'resolved' | 'archived') => {
+    const handleBulkUpdate = useCallback(async (newStatus: 'resolved' | 'archived') => {
         if (selectedIds.length === 0) return
         const toastId = toast.loading(`Bulk updating ${selectedIds.length} messages...`)
         try {
@@ -84,9 +86,9 @@ export function ManageMessagesContent() {
         } catch (e) {
             toast.error("Internal service error", { id: toastId })
         }
-    }
+    }, [bulkMutation, selectedIds])
 
-    const handleRevert = async (id: number) => {
+    const handleRevert = useCallback(async (id: number) => {
         const toastId = toast.loading("Reverting status...")
         try {
             const res = await revertMutation.mutateAsync(id)
@@ -101,7 +103,8 @@ export function ManageMessagesContent() {
         } catch (e) {
             toast.error("Internal service error", { id: toastId })
         }
-    }
+    }, [revertMutation, selectedMessage?.id])
+
 
     return (
         <div className="flex flex-col xl:flex-row h-full gap-8 overflow-hidden">

@@ -1,5 +1,4 @@
-'use client';
-
+import { memo } from 'react';
 import { Download, User, BookOpen, Eye, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +24,7 @@ interface PaperCardProps {
     basePath?: string;
 }
 
-export default function PaperCard({ paper, basePath = '/archives' }: PaperCardProps) {
+const PaperCard = memo(function PaperCard({ paper, basePath = '/archives' }: PaperCardProps) {
     return (
         <Card className="border-primary/5 shadow-3xl hover:shadow-vip transition-all duration-700 group overflow-hidden bg-card relative rounded-[3rem] border-t-2 border-t-transparent hover:border-t-secondary/40">
             <div className="absolute inset-0 bg-primary/[0.01] -z-10 group-hover:bg-primary/[0.03] transition-colors" />
@@ -106,4 +105,6 @@ export default function PaperCard({ paper, basePath = '/archives' }: PaperCardPr
             </CardContent>
         </Card>
     );
-}
+});
+
+export default PaperCard;

@@ -58,7 +58,7 @@ export async function getMessages(filters?: { status?: 'pending' | 'resolved' | 
 
         return { success: true, data: rows as ContactMessageRow[] };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Messages Error:", error);
         return { success: false, error: message };
     }
@@ -81,7 +81,7 @@ export async function updateMessageStatus(id: number, status: 'resolved' | 'arch
         revalidatePath('/admin/messages');
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Update Message Status Error:", error);
         return { success: false, error: "Failed to update record: " + message };
     }
@@ -104,7 +104,7 @@ export async function bulkUpdateMessageStatus(ids: number[], status: 'resolved' 
         revalidatePath('/admin/messages');
         return { success: true, data: { count: ids.length } };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Bulk Update Message Error:", error);
         return { success: false, error: message };
     }
@@ -124,7 +124,7 @@ export async function deleteMessage(id: number): Promise<ActionResponse> {
         revalidatePath('/admin/messages');
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Delete Message Error:", error);
         return { success: false, error: message };
     }
@@ -193,7 +193,7 @@ export async function submitContactMessage(formData: FormData): Promise<ActionRe
 
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Submit Message Error:", error);
         return { success: false, error: message };
     }

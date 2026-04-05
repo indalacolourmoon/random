@@ -67,7 +67,7 @@ export async function getAuthorDashboard(): Promise<ActionResponse<{ submissions
 
         return { success: true, data: { submissions: rows } };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Author Dashboard Error:", error);
         return { success: false, error: "Failed to load dashboard: " + message, data: { submissions: [] } };
     }
@@ -154,7 +154,7 @@ export async function getAuthorSubmission(submissionId: number): Promise<ActionR
             }
         };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Get Author Submission Error:", error);
         return { success: false, error: "Failed to fetch submission details: " + message };
     }
@@ -197,7 +197,7 @@ export async function checkResubmissionEligibility(submissionId: number): Promis
 
         return { success: true, data: { eligible: true, daysRemaining } };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         return { success: false, error: message, data: { eligible: false, daysRemaining: 0 } };
     }
 }
@@ -315,7 +315,7 @@ export async function resubmitPaper(submissionId: number, formData: FormData): P
         return { success: true };
 
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Resubmission Failure:", error);
         return { success: false, error: message || "Failed to process revision." };
     }
@@ -441,7 +441,7 @@ export async function runCleanupInactiveAuthors(): Promise<ActionResponse<{ dele
         revalidatePath('/admin/users');
         return { success: true, data: { deletedCount }, message: `Cleanup complete. Deleted ${deletedCount} inactive authors.` };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("Cleanup Error:", error);
         return { success: false, error: "Cleanup failed: " + message };
     }

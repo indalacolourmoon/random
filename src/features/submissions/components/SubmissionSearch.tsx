@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useTransition, useState } from 'react';
+import { useTransition, useState, useCallback } from 'react';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Button } from '@/components/ui/button';
 
@@ -21,7 +21,7 @@ export default function SubmissionSearch({
     const [isPending, startTransition] = useTransition();
     const [query, setQuery] = useState(searchParams.get('q') || '');
 
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
         if (query) {
             params.set('q', query);
@@ -32,21 +32,21 @@ export default function SubmissionSearch({
         startTransition(() => {
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
         });
-    };
+    }, [pathname, searchParams, query, router]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         setQuery(val);
         if (onLocalFilter) {
             onLocalFilter(val);
         }
-    };
+    }, [onLocalFilter]);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             handleSearch();
         }
-    };
+    }, [handleSearch]);
 
     return (
         <div className="flex flex-col sm:flex-row gap-3 w-full">

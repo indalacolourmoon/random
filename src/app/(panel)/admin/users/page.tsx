@@ -3,7 +3,7 @@
 import { Users, UserPlus, Shield, Mail, Trash2, ShieldCheck, UserCog, Info, CheckCircle, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useUsers, useCreateUser, useDeleteUser } from '@/hooks/queries/useUsers';
 import { useSession } from 'next-auth/react';
-import { useState, useTransition } from 'react';
+import React, { useState, useTransition, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { runCleanupInactiveAuthors } from '@/actions/author-submissions';
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +29,105 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
+const getRoleVariant = (role: string) => {
+    switch (role) {
+        case 'admin': return 'bg-primary text-white border-none dark:bg-primary/20 dark:text-primary';
+        case 'editor': return 'bg-blue-600/10 text-blue-600 border-none hover:bg-blue-600/20 dark:bg-blue-600/20 dark:text-blue-600';
+        case 'reviewer': return 'bg-emerald-600/10 text-emerald-600 border-none hover:bg-emerald-600/20 dark:bg-emerald-600/20 dark:text-emerald-600';
+        default: return 'bg-muted text-muted-foreground border-none';
+    }
+};
+
+const ROLE_GUIDE_DATA = [
+    {
+        role: 'Admin',
+        title: 'The Architect',
+        desc: 'Configuration and system oversight.',
+        variant: 'primary',
+        actions: ['Creating accounts', 'Site security', 'Metadata (ISSN)', 'Bug fixing']
+    },
+    {
+        role: 'Editor',
+        title: 'The Decision-Maker',
+        desc: 'Content Flow & Life Cycle management.',
+        variant: 'blue',
+        actions: ['Screening', 'Assigning reviewers', 'Final decisions', 'Scheduling releases']
+    },
+    {
+        role: 'Reviewer',
+        title: 'The Expert Witness',
+        desc: 'Technical evaluation & control.',
+        variant: 'emerald',
+        actions: ['Reading manuscripts', 'Error/Plagiarism check', 'Providing advice']
+    }
+] as const;
+
+const PERMISSIONS_TABLE_DATA = [
+    { role: 'Admin', focus: 'Infrastructure', publish: true, staff: true },
+    { role: 'Editor', focus: 'Workflow', publish: true, staff: false },
+    { role: 'Reviewer', focus: 'Accuracy', publish: false, staff: false },
+] as const;
+
+const UserItemCard = React.memo(({ user, currentUserId, onDelete }: { user: any, currentUserId: string | null, onDelete: (user: any) => void }) => (
+    <Card key={user.id} className="border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden bg-card/50 backdrop-blur-sm">
+        <CardContent className="p-5">
+            <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-all duration-300 border border-border/10 shrink-0 shadow-inner">
+                    <UserCog className="w-8 h-8" />
+                </div>
+                <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground tracking-wider truncate leading-none mb-2 transition-all duration-500 text-sm xl:text-base 2xl:text-xl">{user.profile?.fullName || 'No Name'}</h3>
+                    <Badge className={`h-5 xl:h-6 2xl:h-8 px-2 xl:px-3 2xl:px-5 text-[9px] xl:text-xs 2xl:text-sm font-semibold tracking-widest border-none shadow-sm transition-all duration-500 capitalize ${getRoleVariant(user.role)}`}>
+                        {user.role}
+                    </Badge>
+                </div>
+                {user.role === 'admin' && (
+                    <div className="ml-auto opacity-20 group-hover:opacity-100 transition-opacity">
+                        <Shield className="w-4 h-4 text-emerald-600" />
+                    </div>
+                )}
+            </div>
+
+            <div className="space-y-4 mb-6 2xl:space-y-6">
+                <div className="flex items-center gap-3 text-[9px] xl:text-xs 2xl:text-sm font-semibold text-muted-foreground/80 truncate bg-muted/30 px-3 py-2 xl:px-4 xl:py-2.5 2xl:px-6 2xl:py-3.5 rounded-xl border border-border/5">
+                    <Mail className="w-3.5 h-3.5 xl:w-4 xl:h-4 2xl:w-5 2xl:h-5 opacity-40 text-primary" />
+                    <span>{user.email}</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-[10px] 2xl:text-base font-semibold text-muted-foreground tracking-widest px-1">
+                    <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6 opacity-30" />
+                    <span>Member since {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'}</span>
+                </div>
+            </div>
+
+            <Separator className="mb-4 opacity-50" />
+
+             <div className="pt-2 2xl:pt-6">
+                <p className="text-[9px] xl:text-xs 2xl:text-sm font-semibold text-muted-foreground capitalize tracking-widest mb-3 2xl:mb-6">Administrative controls</p>
+                <div className="flex items-center justify-between gap-4">
+                    <Badge variant="outline" className="text-[10px] 2xl:text-base font-mono font-semibold text-muted-foreground/50 tracking-widest bg-muted/20 border-border/20 px-2.5 py-1 2xl:px-4 2xl:py-2">
+                        ID-{String(user.id).padStart(3, '0')}
+                    </Badge>
+                    {currentUserId === String(user.id) ? (
+                        <Badge variant="outline" className="h-10 2xl:h-16 px-5 2xl:px-10 text-xs 2xl:text-lg font-semibold tracking-widest text-emerald-600 border-emerald-500/20 bg-emerald-500/5 rounded-xl uppercase flex items-center gap-2.5">
+                            <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6" /> My Active Session
+                        </Badge>
+                    ) : (
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => onDelete(user)}
+                            className="h-10 2xl:h-16 px-5 2xl:px-10 gap-2.5 bg-rose-600 hover:bg-rose-700 text-white border-none rounded-xl 2xl:rounded-2xl transition-all text-xs 2xl:text-lg font-semibold uppercase tracking-widest shadow-lg shadow-rose-600/20 active:scale-95 cursor-pointer"
+                        >
+                            <Trash2 className="w-4.5 h-4.5 2xl:w-6 2xl:h-6" /> Delete Account
+                        </Button>
+                    )}
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+));
+UserItemCard.displayName = 'UserItemCard';
+
 export default function UserManagement() {
     const { data: session } = useSession();
     const { data: users = [], isLoading: loading } = useUsers();
@@ -40,7 +139,9 @@ export default function UserManagement() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isCleaning, startCleanup] = useTransition();
 
-    const handleCleanup = () => {
+    const currentUserId = useMemo(() => session?.user ? String((session.user as any).id) : null, [session]);
+
+    const handleCleanup = useCallback(() => {
         startCleanup(async () => {
             try {
                 const result = await runCleanupInactiveAuthors();
@@ -53,18 +154,44 @@ export default function UserManagement() {
                 toast.error("An unexpected error occurred during cleanup");
             }
         });
-    };
+    }, []);
+
+    const handleCreateUser = useCallback(async (formData: FormData) => {
+        try {
+            const result = await createUserMutation.mutateAsync(formData);
+            if (result.success) {
+                setShowAddModal(false);
+                toast.success("Staff member invited successfully");
+            } else {
+                toast.error(result.error);
+            }
+        } catch (error) {
+            toast.error("Failed to invite staff member");
+        }
+    }, [createUserMutation]);
+
+    const handleDeleteConfirm = useCallback(async () => {
+        if (!userToDelete) return;
+        setIsDeleting(true);
+        try {
+            const result = await deleteUserMutation.mutateAsync(userToDelete.id);
+            if (result?.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Staff access revoked");
+                setUserToDelete(null);
+            }
+        } catch (error) {
+            toast.error("Failed to revoke staff access");
+        }
+        setIsDeleting(false);
+    }, [userToDelete, deleteUserMutation]);
+
+    const handleSetUserToDelete = useCallback((user: any) => {
+        setUserToDelete(user);
+    }, []);
 
     if (loading) return <div className="p-20 text-center font-semibold text-muted-foreground  tracking-widest text-xs animate-pulse ">Scanning Directory...</div>;
-
-    const getRoleVariant = (role: string) => {
-        switch (role) {
-            case 'admin': return 'bg-primary text-white border-none dark:bg-primary/20 dark:text-primary';
-            case 'editor': return 'bg-blue-600/10 text-blue-600 border-none hover:bg-blue-600/20 dark:bg-blue-600/20 dark:text-blue-600';
-            case 'reviewer': return 'bg-emerald-600/10 text-emerald-600 border-none hover:bg-emerald-600/20 dark:bg-emerald-600/20 dark:text-emerald-600';
-            default: return 'bg-muted text-muted-foreground border-none';
-        }
-    };
 
     return (
         <section className="space-y-6">
@@ -97,19 +224,7 @@ export default function UserManagement() {
                                 Access keys and credentials will be sent via email.
                             </DialogDescription>
                         </DialogHeader>
-                        <form action={async (formData) => {
-                            try {
-                                const result = await createUserMutation.mutateAsync(formData);
-                                if (result.success) {
-                                    setShowAddModal(false);
-                                    toast.success("Staff member invited successfully");
-                                } else {
-                                    toast.error(result.error);
-                                }
-                            } catch (error) {
-                                toast.error("Failed to invite staff member");
-                            }
-                        }} className="space-y-4">
+                        <form action={handleCreateUser} className="space-y-4">
                             <div className="space-y-2">
                                 <label htmlFor="staff-fullName" className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground tracking-widest px-1 uppercase">Full Name</label>
                                 <Input id="staff-fullName" name="fullName" required className="h-12 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary/30 font-semibold text-sm rounded-xl" placeholder="Dr. Jane Smith" />
@@ -146,62 +261,12 @@ export default function UserManagement() {
                         <p className="text-[10px] font-medium text-muted-foreground  tracking-widest ">Start by adding your first team member.</p>
                     </div>
                 ) : users.map((user) => (
-                    <Card key={user.id} className="border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden bg-card/50 backdrop-blur-sm">
-                        <CardContent className="p-5">
-                            <div className="flex items-center gap-4 mb-5">
-                                <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-all duration-300 border border-border/10 shrink-0 shadow-inner">
-                                    <UserCog className="w-8 h-8" />
-                                </div>
-                                <div className="min-w-0">
-                                    <h3 className="font-semibold text-foreground tracking-wider truncate leading-none mb-2 transition-all duration-500 text-sm xl:text-base 2xl:text-xl">{user.profile?.fullName || 'No Name'}</h3>
-                                    <Badge className={`h-5 xl:h-6 2xl:h-8 px-2 xl:px-3 2xl:px-5 text-[9px] xl:text-xs 2xl:text-sm font-semibold tracking-widest border-none shadow-sm transition-all duration-500 capitalize ${getRoleVariant(user.role)}`}>
-                                        {user.role}
-                                    </Badge>
-                                </div>
-                                {user.role === 'admin' && (
-                                    <div className="ml-auto opacity-20 group-hover:opacity-100 transition-opacity">
-                                        <Shield className="w-4 h-4 text-emerald-600" />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="space-y-4 mb-6 2xl:space-y-6">
-                                <div className="flex items-center gap-3 text-[9px] xl:text-xs 2xl:text-sm font-semibold text-muted-foreground/80 truncate bg-muted/30 px-3 py-2 xl:px-4 xl:py-2.5 2xl:px-6 2xl:py-3.5 rounded-xl border border-border/5">
-                                    <Mail className="w-3.5 h-3.5 xl:w-4 xl:h-4 2xl:w-5 2xl:h-5 opacity-40 text-primary" />
-                                    <span>{user.email}</span>
-                                </div>
-                                <div className="flex items-center gap-2.5 text-[10px] 2xl:text-base font-semibold text-muted-foreground tracking-widest px-1">
-                                    <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6 opacity-30" />
-                                    <span>Member since {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'}</span>
-                                </div>
-                            </div>
-
-                            <Separator className="mb-4 opacity-50" />
-
-                             <div className="pt-2 2xl:pt-6">
-                                <p className="text-[9px] xl:text-xs 2xl:text-sm font-semibold text-muted-foreground capitalize tracking-widest mb-3 2xl:mb-6">Administrative controls</p>
-                                <div className="flex items-center justify-between gap-4">
-                                    <Badge variant="outline" className="text-[10px] 2xl:text-base font-mono font-semibold text-muted-foreground/50 tracking-widest bg-muted/20 border-border/20 px-2.5 py-1 2xl:px-4 2xl:py-2">
-                                        ID-{String(user.id).padStart(3, '0')}
-                                    </Badge>
-                                    {session?.user && String((session.user as any).id) === String(user.id) ? (
-                                        <Badge variant="outline" className="h-10 2xl:h-16 px-5 2xl:px-10 text-xs 2xl:text-lg font-semibold tracking-widest text-emerald-600 border-emerald-500/20 bg-emerald-500/5 rounded-xl uppercase flex items-center gap-2.5">
-                                            <ShieldCheck className="w-4 h-4 2xl:w-6 2xl:h-6" /> My Active Session
-                                        </Badge>
-                                    ) : (
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() => setUserToDelete(user)}
-                                            className="h-10 2xl:h-16 px-5 2xl:px-10 gap-2.5 bg-rose-600 hover:bg-rose-700 text-white border-none rounded-xl 2xl:rounded-2xl transition-all text-xs 2xl:text-lg font-semibold uppercase tracking-widest shadow-lg shadow-rose-600/20 active:scale-95 cursor-pointer"
-                                        >
-                                            <Trash2 className="w-4.5 h-4.5 2xl:w-6 2xl:h-6" /> Delete Account
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <UserItemCard
+                        key={user.id}
+                        user={user}
+                        currentUserId={currentUserId}
+                        onDelete={handleSetUserToDelete}
+                    />
                 ))}
             </div>
 
@@ -239,21 +304,7 @@ export default function UserManagement() {
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={async () => {
-                                setIsDeleting(true);
-                                try {
-                                    const result = await deleteUserMutation.mutateAsync(userToDelete.id);
-                                    if (result?.error) {
-                                        toast.error(result.error);
-                                    } else {
-                                        toast.success("Staff access revoked");
-                                        setUserToDelete(null);
-                                    }
-                                } catch (error) {
-                                    toast.error("Failed to revoke staff access");
-                                }
-                                setIsDeleting(false);
-                            }}
+                            onClick={handleDeleteConfirm}
                             disabled={isDeleting}
                             className="flex-1 h-11 text-[11px] font-semibold uppercase tracking-widest rounded-xl shadow-lg shadow-destructive/20"
                         >
@@ -271,29 +322,7 @@ export default function UserManagement() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 2xl:gap-8 transition-all duration-500">
-                    {[
-                        {
-                            role: 'Admin',
-                            title: 'The Architect',
-                            desc: 'Configuration and system oversight.',
-                            variant: 'primary',
-                            actions: ['Creating accounts', 'Site security', 'Metadata (ISSN)', 'Bug fixing']
-                        },
-                        {
-                            role: 'Editor',
-                            title: 'The Decision-Maker',
-                            desc: 'Content Flow & Life Cycle management.',
-                            variant: 'blue',
-                            actions: ['Screening', 'Assigning reviewers', 'Final decisions', 'Scheduling releases']
-                        },
-                        {
-                            role: 'Reviewer',
-                            title: 'The Expert Witness',
-                            desc: 'Technical evaluation & control.',
-                            variant: 'emerald',
-                            actions: ['Reading manuscripts', 'Error/Plagiarism check', 'Providing advice']
-                        }
-                    ].map((guide) => (
+                    {ROLE_GUIDE_DATA.map((guide) => (
                         <Card key={guide.role} className="border-border/50 shadow-sm">
                             <CardContent className="p-6">
                                 <div className="flex flex-col gap-3 mb-5">
@@ -330,11 +359,7 @@ export default function UserManagement() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {[
-                                { role: 'Admin', focus: 'Infrastructure', publish: true, staff: true },
-                                { role: 'Editor', focus: 'Workflow', publish: true, staff: false },
-                                { role: 'Reviewer', focus: 'Accuracy', publish: false, staff: false },
-                            ].map((row) => (
+                            {PERMISSIONS_TABLE_DATA.map((row) => (
                                 <TableRow key={row.role} className="border-border/50 hover:bg-muted/20 transition-colors">
                                     <TableCell className="px-6 py-4 2xl:px-10 2xl:py-8 font-semibold text-sm 2xl:text-2xl text-foreground">{row.role}</TableCell>
                                     <TableCell className="px-6 py-4 2xl:px-10 2xl:py-8 text-xs 2xl:text-xl font-semibold text-muted-foreground uppercase">{row.focus}</TableCell>

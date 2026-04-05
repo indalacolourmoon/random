@@ -18,8 +18,12 @@ interface BrandingMetadata {
 
 export async function brandPdf(inputPath: string, outputPath: string, metadata: BrandingMetadata) {
     try {
+        // Normalize paths by stripping leading slashes to prevent path.join from ignoring root segments
+        const cleanIn = inputPath.replace(/^\/+/, '');
+        const cleanOut = outputPath.replace(/^\/+/, '');
+
         // 1. Read the existing PDF
-        const fullInputPath = path.join(process.cwd(), 'public', inputPath);
+        const fullInputPath = path.join(process.cwd(), 'public', cleanIn);
         const pdfBytes = await fs.readFile(fullInputPath);
         const pdfDoc = await PDFDocument.load(pdfBytes);
         const pages = pdfDoc.getPages();
@@ -180,7 +184,7 @@ export async function brandPdf(inputPath: string, outputPath: string, metadata: 
 
         // 6. Save the branded PDF
         const brandedBytes = await pdfDoc.save();
-        const fullOutputPath = path.join(process.cwd(), 'public', outputPath);
+        const fullOutputPath = path.join(process.cwd(), 'public', cleanOut);
         await fs.mkdir(path.dirname(fullOutputPath), { recursive: true });
         await fs.writeFile(fullOutputPath, brandedBytes);
 

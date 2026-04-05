@@ -10,15 +10,15 @@ interface SubmitClientProps {
     settings: Record<string, string>;
 }
 
+const REQUIREMENTS = [
+    { title: "Formatting", desc: "Manuscripts must follow the IEEE standard format." },
+    { title: "Originality", desc: "Submissions must be original and not published elsewhere." },
+    { title: "Ethics", desc: "Full adherence to COPE ethical standards is mandatory." },
+    { title: "Copyright", desc: "A signed copyright transfer form is required upon acceptance." }
+];
+
 export default function SubmitClient({ settings }: SubmitClientProps) {
     const journalShortName = settings.journal_short_name || "IJITEST";
-
-    const requirements = [
-        { title: "Formatting", desc: "Manuscripts must follow the IEEE standard format." },
-        { title: "Originality", desc: "Submissions must be original and not published elsewhere." },
-        { title: "Ethics", desc: "Full adherence to COPE ethical standards is mandatory." },
-        { title: "Copyright", desc: "A signed copyright transfer form is required upon acceptance." }
-    ];
 
     return (
         <section className="container-responsive section-padding">
@@ -53,7 +53,7 @@ export default function SubmitClient({ settings }: SubmitClientProps) {
                         <h3 className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest text-primary pl-4 border-l-2 border-primary/30 m-0 uppercase">Quick Checklist</h3>
                         <div className="p-8 2xl:p-12 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm border-l-[6px] border-l-secondary/10 hover:border-l-secondary transition-all group">
                             <div className="space-y-8">
-                                {requirements.map((item, idx) => (
+                                {REQUIREMENTS.map((item, idx) => (
                                     <div key={idx} className="flex gap-4">
                                         <div className="w-6 h-6 2xl:w-10 2xl:h-10 rounded-full bg-secondary/5 border border-secondary/10 flex items-center justify-center shrink-0">
                                             <CheckCircle2 className="w-3.5 h-3.5 2xl:w-6 2xl:h-6 text-secondary" />

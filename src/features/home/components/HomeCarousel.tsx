@@ -3,25 +3,26 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
-
-const slides = [
-    { id: 1, image: "/slides/slide1.jpeg" },
-    { id: 2, image: "/slides/slide2.jpg" },
-    { id: 3, image: "/slides/slide3.jpg" }
-];
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const MAIN_TITLE = "International Journal of Innovative Trends in Engineering Science and Technology";
 
 export default function HomeCarousel() {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const slides = useMemo(() => [
+        { id: 1, image: "/slides/slide1.jpeg" },
+        { id: 2, image: "/slides/slide2.jpg" },
+        { id: 3, image: "/slides/slide3.jpg" }
+    ], []);
+
+    const nextSlide = useCallback(() => {
+        setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }, [slides.length]);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % slides.length);
-        }, 6000);
+        const timer = setInterval(nextSlide, 6000);
         return () => clearInterval(timer);
-    }, []);
+    }, [nextSlide]);
 
     return (
         <section className="relative h-[300px] sm:h-[350px] lg:h-[400px] xl:h-[480px] 2xl:h-[600px] bg-slate-950 overflow-hidden">

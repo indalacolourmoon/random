@@ -1,7 +1,30 @@
-'use client';
-
 import ReviewerApplicationForm from "@/features/reviewer/components/ReviewerApplicationForm";
 import { CheckCircle2, Globe, Users, Award, ShieldCheck } from 'lucide-react';
+
+const BENEFITS = [
+    {
+        icon: Globe,
+        title: "Global Recognition",
+        desc: "Featured in our archives as a pillar of scientific integrity and scholarly quality."
+    },
+    {
+        icon: Users,
+        title: "Academic Networking",
+        desc: "Direct synergy with world-class editors and researchers at the frontier of technology."
+    },
+    {
+        icon: Award,
+        title: "Certification",
+        desc: "Official certifications and recognition for your contributions to peer-review excellence."
+    }
+];
+
+const REQUIREMENTS = [
+    "Ph.D. Doctorate in Engineering or related Technical Field",
+    "Active research background with recent publications",
+    "Verified publication history (minimum 5 peer-reviewed papers)",
+    "Affiliation with a recognized academic or research institution"
+];
 
 interface JoinUsClientProps {
     settings: Record<string, string>;
@@ -9,31 +32,6 @@ interface JoinUsClientProps {
 
 export default function JoinUsClient({ settings }: JoinUsClientProps) {
     const journalShortName = settings.journal_short_name || "IJITEST";
-
-    const benefits = [
-        {
-            icon: Globe,
-            title: "Global Recognition",
-            desc: "Featured in our archives as a pillar of scientific integrity and scholarly quality."
-        },
-        {
-            icon: Users,
-            title: "Academic Networking",
-            desc: "Direct synergy with world-class editors and researchers at the frontier of technology."
-        },
-        {
-            icon: Award,
-            title: "Certification",
-            desc: "Official certifications and recognition for your contributions to peer-review excellence."
-        }
-    ];
-
-    const requirements = [
-        "Ph.D. Doctorate in Engineering or related Technical Field",
-        "Active research background with recent publications",
-        "Verified publication history (minimum 5 peer-reviewed papers)",
-        "Affiliation with a recognized academic or research institution"
-    ];
 
     return (
         <section className="container-responsive py-12 sm:py-24" aria-labelledby="join-us-heading">
@@ -50,7 +48,7 @@ export default function JoinUsClient({ settings }: JoinUsClientProps) {
                     </header>
 
                     <div className="grid grid-cols-1 gap-6" role="list" aria-label="Benefits of joining">
-                        {benefits.map((benefit, i) => (
+                        {BENEFITS.map((benefit, i) => (
                             <article key={i} role="listitem" className="p-6 sm:p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary group">
                                 <div className="flex gap-6 items-center">
                                     <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center shrink-0 text-primary group-hover:bg-primary group-hover:text-white transition-colors" aria-hidden="true">
@@ -70,7 +68,7 @@ export default function JoinUsClient({ settings }: JoinUsClientProps) {
                         <div className="relative z-10 space-y-8">
                             <h3 id="eligibility-heading" className="tracking-wider text-primary font-black uppercase">Eligibility Standards</h3>
                             <ul className="space-y-4">
-                                {requirements.map((item, i) => (
+                                {REQUIREMENTS.map((item, i) => (
                                     <li key={i} className="flex items-start gap-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest ">
                                         <div className="w-6 h-6 bg-white/10 rounded-lg flex items-center justify-center shrink-0" aria-hidden="true">
                                             <CheckCircle2 className="w-4 h-4 text-secondary" />

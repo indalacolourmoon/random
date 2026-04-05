@@ -46,7 +46,7 @@ export async function getPublishedPapers(): Promise<ActionResponse<PublishedPape
         return { success: true, data };
     } catch (error) {
         console.error("Get Published Papers Error:", error);
-        return { success: false, error: error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error) };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
@@ -92,7 +92,7 @@ export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPa
         return { success: true, data };
     } catch (error) {
         console.error("Get Latest Issue Papers Error:", error);
-        return { success: false, error: error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error) };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
@@ -130,7 +130,7 @@ export async function getArchivePapers(): Promise<ActionResponse<PublishedPaperU
         return { success: true, data };
     } catch (error) {
         console.error("Get Archive Papers Error:", error);
-        return { success: false, error: error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error) };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
@@ -139,6 +139,11 @@ export async function getArchivePapers(): Promise<ActionResponse<PublishedPaperU
  */
 export async function getPaperById(id: string): Promise<ActionResponse<PublishedPaperUI>> {
     try {
+        const numericId = Number(id);
+        const whereClause = isNaN(numericId)
+            ? eq(submissions.paperId, id)
+            : eq(publications.submissionId, numericId);
+
         const rows = await db.select({
             publication: publications,
             submission: submissions,
@@ -147,7 +152,7 @@ export async function getPaperById(id: string): Promise<ActionResponse<Published
             authorProfile: userProfiles
         })
         .from(publications)
-        .where(eq(publications.submissionId, parseInt(id)))
+        .where(whereClause)
         .leftJoin(submissions, eq(publications.submissionId, submissions.id))
         .leftJoin(submissionVersions, and(
             eq(submissions.id, submissionVersions.submissionId),
@@ -172,7 +177,7 @@ export async function getPaperById(id: string): Promise<ActionResponse<Published
         return { success: true, data };
     } catch (error) {
         console.error("Get Paper By ID Error:", error);
-        return { success: false, error: error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error) };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 

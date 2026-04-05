@@ -161,7 +161,7 @@ export async function getProfileData(userId: string, role: 'admin' | 'editor' | 
 
         return { success: true, data: profileData as ProfileData };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("getProfileData error:", error);
         return { success: false, error: "Failed to fetch profile: " + message };
     }
@@ -191,7 +191,7 @@ export async function updateProfileField(userId: string, field: string, value: s
         revalidatePath("/(panel)", "layout");
         return { success: true, data: trimmedValue };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("updateProfileField error:", error);
         return { success: false, error: "Failed to update field: " + message };
     }
@@ -244,7 +244,7 @@ export async function updateResearchInterests(userId: string, interests: string[
         revalidatePath("/(panel)", "layout");
         return { success: true, data: cleanInterests };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("updateResearchInterests error:", error);
         return { success: false, error: "Failed to update interests: " + message };
     }
@@ -294,7 +294,7 @@ export async function updateProfilePhoto(userId: string, formData: FormData): Pr
         revalidatePath("/(panel)", "layout");
         return { success: true, data: photoUrl };
     } catch (error) {
-        const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+        const message = error instanceof Error ? error.message : String(error);
         console.error("updateProfilePhoto error:", error);
         return { success: false, error: "Failed to update photo: " + message };
     }

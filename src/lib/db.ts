@@ -26,6 +26,9 @@ const poolOptions = {
 /**
  * Global Singleton for Database
  * This prevents creating multiple connection pools during Next.js hot-reloading in development.
+ * 
+ * NOTE: If the schema is split into multiple files in the future, ensure all are 
+ * imported and passed here, or update the 'schema' object accordingly.
  */
 const createDb = () => drizzle(mysql.createPool(poolOptions), { schema, mode: "default" });
 

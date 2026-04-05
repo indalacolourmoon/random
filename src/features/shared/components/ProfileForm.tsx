@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { updateUserProfile } from '@/actions/users';
 
 // Import sub-components
@@ -30,7 +28,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    async function handleAction(formData: FormData) {
+    const handleAction = useCallback(async (formData: FormData) => {
         setIsSubmitting(true);
         setStatus(null);
 
@@ -47,9 +45,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         } finally {
             setIsSubmitting(false);
         }
-    }
+    }, []);
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -58,7 +56,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             };
             reader.readAsDataURL(file);
         }
-    };
+    }, []);
+
+    const handlePhotoClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
 
     return (
         <div className="max-w-4xl mx-auto pb-20">
@@ -70,7 +72,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     role={user.role}
                     photoUrl={user.photo_url}
                     previewUrl={previewUrl}
-                    onPhotoClick={() => fileInputRef.current?.click()}
+                    onPhotoClick={handlePhotoClick}
                 />
 
                 {/* Hidden File Input */}

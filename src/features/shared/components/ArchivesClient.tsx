@@ -2,7 +2,7 @@
 
 import { FileText, ChevronRight, Search, Info } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import PaperCard from '@/features/archives/components/PaperCard';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -26,12 +26,14 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
     const [searchQuery, setSearchQuery] = useState('');
     const journalShortName = settings.journal_short_name || "IJITEST";
 
-    const filteredPapers = (papers || []).filter((p: any) =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.author_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.keywords?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.paper_id.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredPapers = useMemo(() => {
+        return (papers || []).filter((p: any) =>
+            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.author_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.keywords?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.paper_id.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [papers, searchQuery]);
 
     return (
         <section className="container-responsive section-padding max-w-7xl 2xl:max-w-[1700px] mx-auto">

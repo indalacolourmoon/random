@@ -1,5 +1,4 @@
-"use client"
-
+import { memo } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,6 +15,82 @@ interface MessageListProps {
     onToggleSelect: (id: number) => void
     loading?: boolean
 }
+
+const MessageItem = memo(({ 
+    message, 
+    isSelected, 
+    isChecked, 
+    onSelect, 
+    onToggleSelect 
+}: { 
+    message: ContactMessageRow, 
+    isSelected: boolean, 
+    isChecked: boolean, 
+    onSelect: (msg: ContactMessageRow) => void, 
+    onToggleSelect: (id: number) => void 
+}) => {
+    const isPending = message.status === 'pending'
+    
+    return (
+        <div
+            className={cn(
+                "group relative flex items-start gap-4 p-5 transition-all duration-300 cursor-pointer border-l-2",
+                isSelected 
+                    ? "bg-primary/5 border-primary shadow-[inset_0_0_20px_rgba(var(--primary),0.02)]" 
+                    : isPending 
+                        ? "border-amber-500/50 hover:bg-muted/30" 
+                        : "border-transparent hover:bg-muted/20"
+            )}
+            onClick={() => onSelect(message)}
+        >
+            <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                <Checkbox 
+                    checked={isChecked}
+                    onCheckedChange={() => onToggleSelect(message.id)}
+                    className="border-white/10 data-[state=checked]:bg-primary transition-transform group-hover:scale-110"
+                />
+            </div>
+
+            <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-center justify-between gap-4">
+                    <h3 className={cn(
+                        "font-serif text-base tracking-tight truncate transition-colors",
+                        isPending ? "font-black text-foreground" : "font-bold text-muted-foreground"
+                    )}>
+                        {message.name}
+                    </h3>
+                    <span className="text-[9px] font-mono font-black text-muted-foreground/40 uppercase tracking-tighter shrink-0">
+                        {formatDistanceToNow(message.createdAt ? new Date(message.createdAt) : new Date(), { addSuffix: true })}
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <p className={cn(
+                        "text-[10px] uppercase tracking-widest truncate font-black",
+                        isPending ? "text-primary/70" : "text-muted-foreground/30"
+                    )}>
+                        {message.subject || "No Subject"}
+                    </p>
+                    <div className={cn(
+                        "w-1 h-1 rounded-full",
+                        message.status === 'pending' ? 'bg-amber-500' : 
+                        message.status === 'resolved' ? 'bg-emerald-500' : 'bg-slate-500'
+                    )} />
+                </div>
+
+                <p className="text-[11px] 2xl:text-sm font-medium text-muted-foreground/60 line-clamp-1 leading-relaxed transition-colors group-hover:text-foreground/80">
+                    {message.message}
+                </p>
+            </div>
+            
+            {isPending && !isSelected && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/40" />
+            )}
+        </div>
+    )
+})
+
+MessageItem.displayName = "MessageItem"
 
 export function MessageList({
     messages,
@@ -57,70 +132,16 @@ export function MessageList({
     return (
         <ScrollArea className="h-full">
             <div className="flex flex-col divide-y divide-white/3">
-                {messages.map((message) => {
-                    const isSelected = selectedId === message.id
-                    const isChecked = selectedIds.includes(message.id)
-                    const isPending = message.status === 'pending'
-                    
-                    return (
-                        <div
-                            key={message.id}
-                            className={cn(
-                                "group relative flex items-start gap-4 p-5 transition-all duration-300 cursor-pointer border-l-2",
-                                isSelected 
-                                    ? "bg-primary/5 border-primary shadow-[inset_0_0_20px_rgba(var(--primary),0.02)]" 
-                                    : isPending 
-                                        ? "border-amber-500/50 hover:bg-muted/30" 
-                                        : "border-transparent hover:bg-muted/20"
-                            )}
-                            onClick={() => onSelect(message)}
-                        >
-                            <div className="pt-1" onClick={(e) => e.stopPropagation()}>
-                                <Checkbox 
-                                    checked={isChecked}
-                                    onCheckedChange={() => onToggleSelect(message.id)}
-                                    className="border-white/10 data-[state=checked]:bg-primary transition-transform group-hover:scale-110"
-                                />
-                            </div>
-
-                            <div className="flex-1 min-w-0 space-y-2">
-                                <div className="flex items-center justify-between gap-4">
-                                    <h3 className={cn(
-                                        "font-serif text-base tracking-tight truncate transition-colors",
-                                        isPending ? "font-black text-foreground" : "font-bold text-muted-foreground"
-                                    )}>
-                                        {message.name}
-                                    </h3>
-                                    <span className="text-[9px] font-mono font-black text-muted-foreground/40 uppercase tracking-tighter shrink-0">
-                                        {formatDistanceToNow(message.createdAt ? new Date(message.createdAt) : new Date(), { addSuffix: true })}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <p className={cn(
-                                        "text-[10px] uppercase tracking-widest truncate font-black",
-                                        isPending ? "text-primary/70" : "text-muted-foreground/30"
-                                    )}>
-                                        {message.subject || "No Subject"}
-                                    </p>
-                                    <div className={cn(
-                                        "w-1 h-1 rounded-full",
-                                        message.status === 'pending' ? 'bg-amber-500' : 
-                                        message.status === 'resolved' ? 'bg-emerald-500' : 'bg-slate-500'
-                                    )} />
-                                </div>
-
-                                <p className="text-[11px] 2xl:text-sm font-medium text-muted-foreground/60 line-clamp-1 leading-relaxed transition-colors group-hover:text-foreground/80">
-                                    {message.message}
-                                </p>
-                            </div>
-                            
-                            {isPending && !isSelected && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/40" />
-                            )}
-                        </div>
-                    )
-                })}
+                {messages.map((message) => (
+                    <MessageItem 
+                        key={message.id}
+                        message={message}
+                        isSelected={selectedId === message.id}
+                        isChecked={selectedIds.includes(message.id)}
+                        onSelect={onSelect}
+                        onToggleSelect={onToggleSelect}
+                    />
+                ))}
             </div>
         </ScrollArea>
     )

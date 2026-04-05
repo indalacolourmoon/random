@@ -1,0 +1,47 @@
+IJITEST – International Journal of Innovative Trends in Engineering Science and Technology
+
+**Purpose**
+A scholarly publishing platform that hosts a peer‑reviewed journal covering engineering, science, and technology. It provides a public‑facing site for readers and authors, and a protected admin/dashboard for editors, reviewers, and staff.
+
+**Key Public Features (under the `(main)` layout)**
+- Home page with a carousel, welcome text, journal statistics, aim & scope, and side widgets:
+  * Current issue preview, announcements, author quick links, call‑for‑papers, resources, ethics information.
+- Static pages such as About, Archives, Submission, Peer‑Review, and contact information (handled by Next.js pages in `src/app/(main)`).
+- Open Graph and Twitter meta tags for rich sharing, custom favicons, and SEO‑friendly metadata.
+- Server‑side data fetching via React Query hooks and `getSettingsData` to populate site‑wide settings (journal name, short name, etc.).
+
+**Authentication & Protected Area (under the `(panel)` layout)**
+- Uses **next‑auth** with session handling (`src/app/api/auth/[...nextauth]/route.ts`).
+- `AuthProvider` and `AuthContext` wrap the entire app, exposing `session` to components.
+- Admin/editor dashboard includes sidebar navigation for managing submissions, reviews, payments, applications, and site settings.
+
+**Data Layer**
+- MySQL database accessed through **Drizzle ORM** (`src/db/schema.ts`, `src/db/index.ts`).
+- Core tables: `users`, `volumes_issues`, `submissions`, `reviews`, `payments`, `applications`, `contact_messages`, `settings`.
+- Migration scripts managed with **drizzle‑kit** (`npm run db:generate`, `npm run db:push`).
+- Helper scripts for seeding, inspection, and maintenance (`scripts/scripts.ts`).
+
+**State Management & UI**
+- **React Query** for async data fetching and caching.
+- Global UI state (theme, modal visibility, etc.) stored in **Zustand** stores under `src/store`.
+- UI built with **Tailwind CSS v4** and **shadcn/ui** component library.
+- Icons via `lucide-react`; motion via `framer-motion`.
+
+**Auxiliary Services**
+- Email notifications (`nodemailer`).
+- PDF generation and branding (`pdf-lib`, `docxtemplater`).
+- Payment processing with **Razorpay**.
+- Form handling with **react‑hook‑form** and validation via **zod**.
+
+**Development Commands** (see `CLAUDE.md`)
+- `npm run dev` – start Next.js dev server.
+- `npm run build` / `npm start` – production build & serve.
+- `npm run lint` – ESLint with auto‑fix.
+- Database: `npm run db:generate`, `npm run db:push`, `npm run db:script -- <subcommand>`.
+
+**Overall Architecture**
+- Next.js 16 App Router divides the UI into two top‑level layouts: public `(main)` and authenticated `(panel)`.
+- API routes live under `src/app/api` and server actions handle business logic.
+- The site is fully SEO‑optimized, supports dark/light theming, and uses modern React patterns.
+
+*This file provides a concise overview of the IJITEST website’s structure and core functionality.*

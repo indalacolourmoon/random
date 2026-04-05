@@ -9,19 +9,78 @@
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 22.3s
+✓ Compiled successfully in 17.0s
   Running TypeScript ...
-Failed to type check.
+  Finished TypeScript in 38.4s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/36) ...
+  Generating static pages using 15 workers (9/36) 
+  Generating static pages using 15 workers (18/36) 
+  Generating static pages using 15 workers (27/36) 
+✓ Generating static pages using 15 workers (36/36) in 4.6s
+  Finalizing page optimization ...
 
-./src/app/(panel)/admin/reviews/page.tsx:295:47
-Type error: Property 'feedback' does not exist on type 'ReviewAssignment'.
+Route (app)                            Revalidate  Expire
+┌ ○ /                                          1h      1y
+├ ○ /_not-found
+├ ○ /about                                     1h      1y
+├ ƒ /admin
+├ ○ /admin/applications
+├ ○ /admin/messages
+├ ○ /admin/payments
+├ ƒ /admin/profile
+├ ○ /admin/publications
+├ ○ /admin/reviews
+├ ○ /admin/settings
+├ ƒ /admin/submissions
+├ ƒ /admin/submissions/[id]
+├ ○ /admin/users
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/cron/cleanup-authors
+├ ○ /archives                                  1h      1y
+├ ● /archives/[id]
+├ ○ /auth/forgot-password
+├ ○ /auth/setup-password
+├ ƒ /author
+├ ƒ /author/profile
+├ ƒ /author/submissions
+├ ƒ /author/submissions/[id]
+├ ƒ /author/submissions/[id]/resubmit
+├ ○ /contact                                   1h      1y
+├ ○ /current-issue                             1h      1y
+├ ƒ /current-issue/[id]
+├ ƒ /editor
+├ ○ /editor/applications
+├ ○ /editor/messages
+├ ƒ /editor/profile
+├ ○ /editor/publications
+├ ○ /editor/reviews
+├ ƒ /editor/submissions
+├ ƒ /editor/submissions/[id]
+├ ○ /editorial-board                           1h      1y
+├ ○ /ethics                                    1h      1y
+├ ○ /guidelines
+├ ○ /indexing                                  1h      1y
+├ ○ /join-us                                   1h      1y
+├ ƒ /login
+├ ƒ /payment/[id]
+├ ○ /peer-review                               1h      1y
+├ ○ /privacy                                   1h      1y
+├ ƒ /reviewer
+├ ○ /reviewer-guidelines                       1h      1y
+├ ƒ /reviewer/profile
+├ ○ /reviewer/reviews
+├ ƒ /reviewer/submissions/[id]
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+├ ○ /submit                                    1h      1y
+├ ○ /terms                                     1h      1y
+└ ○ /track                                     1h      1y
 
-  [90m293 |[0m ...                                     </div>
-  [90m294 |[0m ...
-[31m[1m>[0m [90m295 |[0m ...                                     {item.feedback && (
-  [90m    |[0m                                               [31m[1m^[0m
-  [90m296 |[0m ...                                         <div className=[32m"mt-6 p-6 bg-primary/[0.02] ro...[0m
-  [90m297 |[0m ...                                             <span className=[32m"text-primary font-semibo...[0m
-  [90m298 |[0m ...[32m                                             {item.feedback}[0m
-Next.js build worker exited with code: 1 and signal: null
- ELIFECYCLE  Command failed with exit code 1.
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
