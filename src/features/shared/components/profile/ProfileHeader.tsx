@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { Camera, User, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -35,10 +36,12 @@ export const ProfileHeader = React.memo(({
                 <div className="relative group/photo">
                     <div className="w-32 h-32 rounded-2xl bg-muted border border-border shadow-inner overflow-hidden flex items-center justify-center transition-all relative">
                         {previewUrl || photoUrl ? (
-                            <img
-                                src={previewUrl || photoUrl}
+                            <Image
+                                src={previewUrl || photoUrl || ''}
                                 alt="Profile"
-                                className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-500"
+                                fill
+                                className="object-cover group-hover/photo:scale-110 transition-transform duration-500"
+                                unoptimized={!!previewUrl}
                             />
                         ) : (
                             <User className="w-12 h-12 text-muted-foreground/30" />

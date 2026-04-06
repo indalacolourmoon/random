@@ -27,7 +27,7 @@ import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import fs from 'fs/promises';
 import path from 'path';
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, isNull } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -47,7 +47,7 @@ export async function getSubmissionById(id: number): Promise<ActionResponse<Subm
             payment: payments
         })
         .from(submissions)
-        .where(eq(submissions.id, id))
+        .where(and(eq(submissions.id, id), isNull(submissions.deletedAt)))
         .leftJoin(users, eq(submissions.correspondingAuthorId, users.id))
         .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
         .leftJoin(volumesIssues, eq(submissions.issueId, volumesIssues.id))
@@ -151,11 +151,14 @@ export async function getSubmissionById(id: number): Promise<ActionResponse<Subm
  */
 export async function getAllSubmissions(filters?: { status?: string }): Promise<ActionResponse<SubmissionUI[]>> {
     try {
-        const query = db.select({ id: submissions.id }).from(submissions);
+        let query = db.select({ id: submissions.id }).from(submissions).$dynamic();
+        
+        const conditions = [isNull(submissions.deletedAt)];
         if (filters?.status && filters.status !== 'all') {
-            query.where(eq(submissions.status, filters.status as typeof submissions.$inferSelect.status));
+            conditions.push(eq(submissions.status, filters.status as typeof submissions.$inferSelect.status));
         }
-        query.orderBy(desc(submissions.submittedAt));
+        
+        query = query.where(and(...conditions)).orderBy(desc(submissions.submittedAt));
 
         const ids = await query;
         const results = await Promise.all(ids.map(async s => {
@@ -192,7 +195,7 @@ export async function decideSubmission(id: number, decision: 'accepted' | 'rejec
                 // Prepare payment record if not zero charge
                 await tx.insert(payments).values({
                     submissionId: id,
-                    amount: parseFloat(apcAmount).toString(), // Safe parsing to decimal string
+                    amount: Number(apcAmount).toFixed(2), // Fixed-point formatting for decimal column
                     currency: apcCurrency,
                     status: 'pending'
                 }).onDuplicateKeyUpdate({ set: { status: 'pending' } });
@@ -302,7 +305,9 @@ export async function deleteSubmission(id: number): Promise<ActionResponse> {
                 // Normalize file path to avoid double slashes
                 const normalizedPath = file.fileUrl.replace(/^\/+/, '');
                 await fs.unlink(path.join(process.cwd(), 'public', normalizedPath));
-            } catch { /* ignore */ }
+            } catch (err) { 
+                console.error(`Failed to delete file ${file.fileUrl}:`, err);
+            }
         }
 
         revalidatePath('/admin/submissions');
@@ -324,6 +329,11 @@ export async function uploadManuscriptPdf(submissionId: number, formData: FormDa
 
         const pdfFile = formData.get("pdfFile") as File;
         if (!pdfFile || pdfFile.size === 0) return { success: false, error: "PDF file is required." };
+
+        // MIME Validation
+        if (pdfFile.type !== 'application/pdf' && !pdfFile.name.toLowerCase().endsWith('.pdf')) {
+            return { success: false, error: "Invalid file type. Only PDF files are allowed for the finalized manuscript." };
+        }
 
         // 1. Get Latest Version
         const versionRows = await db.select()

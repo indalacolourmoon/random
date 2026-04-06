@@ -1,0 +1,2 @@
+ALTER TABLE `activity_logs` MODIFY COLUMN `entity_id` varchar(255) NOT NULL;--> statement-breakpoint
+ALTER TABLE `payments` MODIFY COLUMN `status` enum('pending','paid','verified','failed','waived') NOT NULL DEFAULT 'pending';

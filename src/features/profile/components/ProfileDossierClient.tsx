@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 import { 
     Building2, 
     Globe, 
@@ -152,10 +153,11 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
                                     <div className="w-40 h-40 2xl:w-60 2xl:h-60 rounded-full border-4 border-primary/20 p-2 shadow-2xl ring-1 ring-white/10">
                                         <div className="w-full h-full rounded-full bg-muted overflow-hidden flex items-center justify-center relative">
                                             {data.photo_url ? (
-                                                <img 
+                                                <Image 
                                                     src={data.photo_url} 
                                                     alt={data.name} 
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110" 
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 group-hover/avatar:scale-110" 
                                                 />
                                             ) : (
                                                 <div className="font-serif text-5xl font-black text-primary/40 uppercase">

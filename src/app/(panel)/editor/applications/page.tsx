@@ -3,6 +3,9 @@
 export const dynamic = "force-dynamic";
 import { useApplications, useApproveApplication, useRejectApplication } from '@/hooks/queries/useApplications';
 import { useState, Suspense } from 'react';
+import NextImage from 'next/image';
+import dayjs from '@/lib/dayjs';
+import { List } from 'react-window';
 import { toast } from 'sonner';
 import {
     User,
@@ -155,119 +158,121 @@ function ManageApplicationsContent() {
                         <p className="text-xs font-semibold text-muted-foreground tracking-[0.2em] uppercase">No join requests detected </p>
                     </div>
                 ) : (
-                    <AnimatePresence mode="popLayout">
-                        {filteredApps.map((app) => (
-                            <motion.div
-                                key={app.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                            >
-                                <Card className="border-border/50 shadow-sm overflow-hidden hover:border-primary/20 transition-all group">
-                                    <div className="flex flex-col md:flex-row">
-                                        <div className="p-5 flex-1 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
-                                            <div className="w-24 h-24 rounded-xl bg-muted border border-border/50 shrink-0 overflow-hidden group-hover:shadow-xl transition-all shadow-inner relative">
-                                                {app.photoUrl ? (
-                                                    <img src={app.photoUrl} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <User className="w-10 h-10 text-muted-foreground/30" />
+                    <div style={{ height: 'calc(100vh - 400px)', minHeight: '600px' }}>
+                        <List
+                            rowCount={filteredApps.length}
+                            rowHeight={400}
+                            style={{ height: '100%', width: '100%' }}
+                            className="custom-scrollbar"
+                            rowProps={{
+                                filteredApps,
+                                rejectionReason,
+                                setRejectionReason,
+                                processingId,
+                                handleReject,
+                                handleApprove
+                            }}
+                            rowComponent={({ index, style, filteredApps, rejectionReason, setRejectionReason, processingId, handleReject, handleApprove }: any) => {
+                                const app = filteredApps[index];
+                                return (
+                                    <div style={style} className="pb-4">
+                                        <Card className="border-border/50 shadow-sm overflow-hidden hover:border-primary/20 transition-all group">
+                                            <div className="flex flex-col md:flex-row">
+                                                <div className="p-5 flex-1 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+                                                    <div className="w-24 h-24 rounded-xl bg-muted border border-border/50 shrink-0 overflow-hidden group-hover:shadow-xl transition-all shadow-inner relative">
+                                                        {app.photoUrl ? (
+                                                            <NextImage 
+                                                                src={app.photoUrl} 
+                                                                alt="" 
+                                                                width={96} 
+                                                                height={96} 
+                                                                className="w-full h-full object-cover" 
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                <User className="w-10 h-10 text-muted-foreground/30" />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
 
-                                            <div className="space-y-3 flex-1 text-center sm:text-left min-w-0">
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                                                    <h3 className="font-serif text-lg xl:text-xl font-semibold text-foreground tracking-tight capitalize">{app.fullName}</h3>
-                                                    <Badge className={`h-6 px-2.5 text-[10px] font-semibold tracking-widest capitalize border-none ${app.type === 'editor'
-                                                        ? 'bg-purple-500/10 text-purple-600'
-                                                        : 'bg-emerald-500/10 text-emerald-600'
-                                                        }`}>
-                                                        {app.type}
-                                                    </Badge>
+                                                    <div className="space-y-3 flex-1 text-center sm:text-left min-w-0">
+                                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                                                            <h3 className="font-serif text-lg xl:text-xl font-semibold text-foreground tracking-tight capitalize">{app.fullName}</h3>
+                                                            <Badge className={`h-6 px-2.5 text-[10px] font-semibold tracking-widest capitalize border-none ${app.type === 'editor'
+                                                                ? 'bg-purple-500/10 text-purple-600'
+                                                                : 'bg-emerald-500/10 text-emerald-600'
+                                                                }`}>
+                                                                {app.type}
+                                                            </Badge>
+                                                        </div>
+
+                                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-2.5 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                                                            <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary/60" /> {app.email}</p>
+                                                            <p className="flex items-center gap-2"><Building2 className="w-4 h-4 text-primary/60" /> {app.institute}</p>
+                                                            <p className="flex items-center gap-2"><Briefcase className="w-4 h-4 text-primary/60" /> {app.designation}</p>
+                                                        </div>
+
+                                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2">
+                                                            <Button asChild variant="secondary" size="sm" className="h-10 px-5 gap-2.5 text-xs font-semibold tracking-widest rounded-xl hover:bg-muted border border-border/20 cursor-pointer">
+                                                                <a href={app.cvUrl || '#'} target="_blank" className="flex items-center gap-2.5 cursor-pointer">
+                                                                    <FileText className="w-4.5 h-4.5" /> View Academic Profile
+                                                                </a>
+                                                            </Button>
+                                                            <p className="text-[11px] font-semibold text-muted-foreground opacity-50 tracking-widest uppercase">
+                                                                Authenticated: {dayjs(app.createdAt).format('DD MMM YYYY')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-2.5 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-                                                    <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary/60" /> {app.email}</p>
-                                                    <p className="flex items-center gap-2"><Building2 className="w-4 h-4 text-primary/60" /> {app.institute}</p>
-                                                    <p className="flex items-center gap-2"><Briefcase className="w-4 h-4 text-primary/60" /> {app.designation}</p>
-                                                </div>
-
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2">
-                                                    <Button asChild variant="secondary" size="sm" className="h-10 px-5 gap-2.5 text-xs font-semibold tracking-widest rounded-xl hover:bg-muted border border-border/20 cursor-pointer">
-                                                        <a href={app.cvUrl || '#'} target="_blank" className="flex items-center gap-2.5 cursor-pointer">
-                                                            <FileText className="w-4.5 h-4.5" /> View Academic Profile
-                                                        </a>
-                                                    </Button>
-                                                    <p className="text-[11px] font-semibold text-muted-foreground opacity-50 tracking-widest uppercase">
-                                                        Authenticated: {new Date(app.createdAt || Date.now()).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-muted/10 md:w-72 p-6 border-t md:border-t-0 md:border-l border-border/50 flex flex-col justify-center gap-3">
-                                             {rejectionReason?.id === app.id && rejectionReason && (
-                                                 <div className="space-y-3 mb-3 animate-in fade-in slide-in-from-top-1">
-                                                     <textarea
-                                                         className="w-full h-24 p-3 text-[10px] bg-background border border-border/50 rounded-xl focus:ring-1 focus:ring-red-500/20 outline-none resize-none font-medium text-foreground placeholder:text-muted-foreground/50"
-                                                         placeholder="Reason for rejection (min 20 characters)..."
-                                                         value={rejectionReason.text}
-                                                         onChange={(e) => setRejectionReason({ id: app.id, text: e.target.value })}
-                                                     />
-                                                     <Button
-                                                         variant="ghost"
-                                                         size="sm"
-                                                         onClick={() => setRejectionReason(null)}
-                                                         className="h-8 w-full text-[10px] font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground"
-                                                     >
-                                                         Cancel
-                                                     </Button>
-                                                 </div>
-                                             )}
-                                             
-                                             <Button
-                                                 disabled={processingId !== null}
-                                                 onClick={() => handleReject(app.id)}
-                                                 variant={rejectionReason?.id === app.id ? "destructive" : "outline"}
-                                                 className={`w-full h-12 gap-2.5 font-semibold tracking-widest transition-all rounded-xl cursor-pointer ${rejectionReason?.id === app.id 
-                                                     ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/20' 
-                                                     : 'border-red-500/20 text-red-600 hover:bg-red-500 hover:text-white'
-                                                 } ${rejectionReason?.id === app.id ? 'text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs' : 'text-xs'}`}
-                                             >
-                                                 {processingId === app.id ? (
-                                                     <span className="animate-pulse">Declining...</span>
-                                                 ) : (
-                                                     <>
-                                                         {rejectionReason?.id === app.id ? 'Confirm Rejection' : 'Reject Request'}
-                                                         <X className="w-4.5 h-4.5" />
-                                                     </>
-                                                 )}
-                                             </Button>
-
-                                             {!rejectionReason && (
-                                                 <Button
-                                                     disabled={processingId !== null}
-                                                     onClick={() => handleApprove(app.id)}
-                                                     className="w-full h-12 gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs tracking-widest border-none shadow-lg shadow-emerald-600/20 transition-all rounded-xl cursor-pointer"
-                                                 >
-                                                     {processingId === app.id ? (
-                                                         <span className="animate-pulse">Authorizing...</span>
-                                                     ) : (
-                                                         <>
-                                                             Approve Proposal
-                                                             <CheckCircle className="w-4.5 h-4.5" />
-                                                         </>
+                                                <div className="bg-muted/10 md:w-72 p-6 border-t md:border-t-0 md:border-l border-border/50 flex flex-col justify-center gap-3">
+                                                     {rejectionReason?.id === app.id && (
+                                                         <div className="space-y-3 mb-3 animate-in fade-in slide-in-from-top-1">
+                                                             <textarea
+                                                                 className="w-full h-24 p-3 text-[10px] bg-background border border-border/50 rounded-xl focus:ring-1 focus:ring-red-500/20 outline-none resize-none font-medium text-foreground placeholder:text-muted-foreground/50"
+                                                                 placeholder="Reason for rejection..."
+                                                                 value={rejectionReason.text}
+                                                                 onChange={(e) => setRejectionReason({ id: app.id, text: e.target.value })}
+                                                             />
+                                                             <Button
+                                                                 variant="ghost"
+                                                                 size="sm"
+                                                                 onClick={() => setRejectionReason(null)}
+                                                                 className="h-8 w-full text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                                                             >
+                                                                 Cancel
+                                                             </Button>
+                                                         </div>
                                                      )}
-                                                 </Button>
-                                             )}
-                                         </div>
+                                                     
+                                                     <Button
+                                                         disabled={processingId !== null}
+                                                         onClick={() => handleReject(app.id)}
+                                                         variant={rejectionReason?.id === app.id ? "destructive" : "outline"}
+                                                         className="w-full h-12 gap-2.5 font-semibold tracking-widest rounded-xl"
+                                                     >
+                                                         {processingId === app.id ? 'Declining...' : rejectionReason?.id === app.id ? 'Confirm' : 'Reject Request'}
+                                                         <X className="w-4.5 h-4.5" />
+                                                     </Button>
+
+                                                     {!rejectionReason && (
+                                                         <Button
+                                                             disabled={processingId !== null}
+                                                             onClick={() => handleApprove(app.id)}
+                                                             className="w-full h-12 gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl"
+                                                         >
+                                                             {processingId === app.id ? 'Authorizing...' : 'Approve Proposal'}
+                                                             <CheckCircle className="w-4.5 h-4.5" />
+                                                         </Button>
+                                                     )}
+                                                 </div>
+                                            </div>
+                                        </Card>
                                     </div>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                                );
+                            }}
+                        />
+                    </div>
                 )}
             </div>
         </section>

@@ -4,7 +4,7 @@ import { Mail, User, Clock, CheckCircle, Archive, Trash2, RotateCcw, Send } from
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { format } from "date-fns"
+import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -72,7 +72,7 @@ export function MessageDetail({
                                 <div className="w-1 h-1 rounded-full bg-white/10" />
                                 <div className="flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-primary/40" />
-                                    {format(new Date(message.createdAt), "MMM d, yyyy 'at' HH:mm")}
+                                    {dayjs(message.createdAt).format("MMM D, YYYY [at] HH:mm")}
                                 </div>
                             </div>
                         </div>
@@ -144,7 +144,7 @@ export function MessageDetail({
                                     <div className="space-y-1">
                                         <p className="text-muted-foreground/40 uppercase tracking-tighter">Timestamp</p>
                                         <p className="font-bold text-foreground">
-                                            {format(new Date(message.resolvedAt), "yy.MM.dd | HH:mm:ss")}
+                                            {dayjs(message.resolvedAt).format("YY.MM.DD | HH:mm:ss")}
                                         </p>
                                     </div>
                                 )}

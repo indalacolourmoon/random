@@ -428,7 +428,7 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const activityLogs = mysqlTable("activity_logs", {
     id: int("id").primaryKey().autoincrement().notNull(),
     entityType: varchar("entity_type", { length: 50 }).notNull(),
-    entityId: int("entity_id").notNull(), // This is usually an ID but can be a UUID string too, maybe text is better?
+    entityId: varchar("entity_id", { length: 255 }).notNull(), // Supports both auto-increment IDs and UUID strings
     action: varchar("action", { length: 100 }).notNull(),
     performedBy: varchar("performed_by", { length: 36 }).references(() => users.id),
     metadata: text("metadata"),

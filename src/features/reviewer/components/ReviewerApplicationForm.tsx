@@ -1,5 +1,5 @@
 "use client";
-
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, CheckCircle2, AlertCircle, FileText, ImageIcon, Loader2, ChevronRight, ChevronLeft, Building2, Plus } from 'lucide-react';
@@ -389,7 +389,13 @@ export default function ReviewerApplicationForm() {
                                                     {countries.map(c => (
                                                         <SelectItem key={c.code} value={c.name} className="py-3 rounded-xl">
                                                             <div className="flex items-center gap-3">
-                                                                <img src={getFlagUrl(c.name)} alt="" className="w-5 h-3.5 object-cover rounded shadow-sm" />
+                                                                <Image 
+                                                                    src={getFlagUrl(c.name)} 
+                                                                    alt={`${c.name} flag`} 
+                                                                    width={20} 
+                                                                    height={14} 
+                                                                    className="object-cover rounded shadow-sm shrink-0" 
+                                                                />
                                                                 <span className="font-bold text-primary uppercase tracking-widest text-[10px]">{c.name}</span>
                                                             </div>
                                                         </SelectItem>

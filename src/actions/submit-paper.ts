@@ -7,16 +7,18 @@ import {
     submissionVersions,
     submissionAuthors,
     users,
-    userProfiles
+    userProfiles,
+    settings
 } from "@/db/schema";
 import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
-import { count, eq, inArray } from "drizzle-orm";
+import { count, eq, inArray, sql } from "drizzle-orm";
 import crypto from 'crypto';
 import { ActionResponse } from "@/db/types";
+import { isNull } from "drizzle-orm";
 
 const submissionSchema = z.object({
     author_name: z.string().min(2, "Author name is required"),
@@ -62,8 +64,19 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
 
         const manuscriptFile = formData.get("manuscript") as File;
         const copyrightFile = formData.get("copyright_form") as File;
+        
         if (!manuscriptFile || manuscriptFile.size === 0) return { success: false, error: "Manuscript file is mandatory" };
         if (!copyrightFile || copyrightFile.size === 0) return { success: false, error: "Copyright form is mandatory" };
+
+        // .docx ONLY Policy
+        const docxMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        const isDocx = (f: File) => 
+            f.name.toLowerCase().endsWith(".docx") || 
+            f.type === docxMime;
+
+        if (!isDocx(manuscriptFile) || !isDocx(copyrightFile)) {
+            return { success: false, error: "Strict Policy: Only .docx files are accepted for both Manuscript and Copyright Form." };
+        }
 
         // 2. Transactional Database Operations (Save everything BUT don't upload files yet)
         const result = await db.transaction(async (tx) => {
@@ -104,10 +117,22 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
                     .where(eq(userProfiles.userId, userId));
             }
 
-            // B. Paper Metadata Generation
-            const [countRes] = await tx.select({ value: count() }).from(submissions);
-            const total = countRes?.value || 0;
-            const paperId = `IJITEST-${new Date().getFullYear()}-${String(total + 1).padStart(4, "0")}`;
+            // B. Paper Metadata Generation (Gapless Sequential Locking)
+            const currentYear = new Date().getFullYear().toString();
+            const seqKey = `submission_sequence_${currentYear}`;
+            
+            // Ensure sequence entry exists
+            await tx.execute(sql`INSERT INTO settings (setting_key, setting_value) VALUES (${seqKey}, '0') ON DUPLICATE KEY UPDATE setting_key = setting_key`);
+            
+            // Lock and Fetch current sequence
+            const [seqResult] = await tx.execute(sql`SELECT setting_value as value FROM settings WHERE setting_key = ${seqKey} FOR UPDATE`);
+            const lastSeq = parseInt((seqResult as any).value || "0");
+            const newSeq = lastSeq + 1;
+            
+            // Update sequence
+            await tx.update(settings).set({ settingValue: newSeq.toString() }).where(eq(settings.settingKey, seqKey));
+            
+            const paperId = `IJITEST-${currentYear}-${String(newSeq).padStart(4, "0")}`;
 
             // C. Insert Core Submission
             const [submissionInsert] = await tx.insert(submissions).values({
@@ -144,19 +169,22 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
                     const coAuthors = JSON.parse(validated.data.co_authors);
                     if (Array.isArray(coAuthors)) {
                         coAuthors.forEach((ca, idx) => {
+                            if (!ca.name || !ca.email) return; // Skip empty rows if any
                             authorsList.push({
                                 submissionId: subId,
                                 name: ca.name,
                                 email: ca.email,
-                                phone: ca.phone,
-                                designation: ca.designation,
-                                institution: ca.institution,
+                                phone: ca.phone || null,
+                                designation: ca.designation || null,
+                                institution: ca.institution || null,
                                 isCorresponding: false,
                                 orderIndex: idx + 1,
                             });
                         });
                     }
-                } catch {}
+                } catch (e) {
+                    throw new Error("Invalid co-author data format. Please check your inputs.");
+                }
             }
             await tx.insert(submissionAuthors).values(authorsList);
 
@@ -188,7 +216,12 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
             await fs.writeFile(path.join(uploadDir, result.cName), Buffer.from(await copyrightFile.arrayBuffer()));
             fileCleanupList.push(path.join(uploadDir, result.cName));
         } catch (uploadErr) {
-            // If upload fails, we must cleanup the DB record we just created to avoid "zombie" submissions
+            // File-system cleanup for orphaned files
+            for (const filePath of fileCleanupList) {
+                try { await fs.unlink(filePath); } catch {}
+            }
+            
+            // DB-cleanup for zombie submission
             await db.delete(submissions).where(eq(submissions.id, result.subId));
             throw new Error("File upload failed. Our servers might be busy. Please try again.");
         }

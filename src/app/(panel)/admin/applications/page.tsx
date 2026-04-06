@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, Suspense } from 'react';
+import NextImage from 'next/image';
+import { List } from 'react-window';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -42,6 +44,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQueryStates, parseAsString } from 'nuqs';
+import ConfettiExplosion from 'react-confetti-explosion';
+import dayjs from 'dayjs';
+import { Drawer } from 'vaul';
 
 import { useApplications, useApproveApplication, useRejectApplication } from "@/hooks/queries/useApplications";
 
@@ -86,11 +92,16 @@ const ApplicationItemCard = React.memo(({
                     </div>
 
                     <CardContent className="p-0 flex-1 grid grid-cols-1 md:grid-cols-[120px_1fr_250px] items-center">
-                        {/* Photo */}
-                        <div className="p-4 flex justify-center">
+                         <div className="p-4 flex justify-center">
                             <div className="w-16 h-16 2xl:w-20 2xl:h-20 bg-muted rounded-xl border border-white/10 overflow-hidden shadow-2xl">
                                 {app.photoUrl ? (
-                                    <img src={app.photoUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                    <NextImage 
+                                        src={app.photoUrl} 
+                                        alt="" 
+                                        width={80} 
+                                        height={80} 
+                                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center opacity-20"><User /></div>
                                 )}
@@ -133,7 +144,7 @@ const ApplicationItemCard = React.memo(({
                                 {app.status}
                             </Badge>
                             <p className="text-[9px] font-mono text-muted-foreground uppercase opacity-40">
-                                Logged: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}
+                                Logged: {app.createdAt ? dayjs(app.createdAt).format('DD MMM YYYY') : 'N/A'}
                             </p>
                         </div>
                     </CardContent>
@@ -150,10 +161,17 @@ function ManageApplicationsContent() {
     const router = useRouter();
     const pathname = usePathname();
 
-    // URL Filter State
-    const role = searchParams.get('role') || 'all';
-    const status = searchParams.get('status') || 'all';
-    const interest = searchParams.get('interest') || '';
+    // URL Filter State (Refactored to nuqs)
+    const [filters, setFilters] = useQueryStates({
+        role: parseAsString.withDefault('all'),
+        status: parseAsString.withDefault('all'),
+        interest: parseAsString.withDefault('')
+    }, {
+        shallow: false, // Ensure it triggers server-side data fetching (Suspense)
+        history: 'replace'
+    });
+
+    const { role, status, interest } = filters;
 
     const { data: applications = [], isLoading: loading } = useApplications({ 
         role, 
@@ -169,23 +187,19 @@ function ManageApplicationsContent() {
     const [rejectionMode, setRejectionMode] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
     const [approveConfirm, setApproveConfirm] = useState(false);
+    const [isExploding, setIsExploding] = useState(false);
     
     // Bulk state
     const [bulkMode, setBulkMode] = useState<'approve' | 'reject' | null>(null);
     const [bulkReason, setBulkReason] = useState("");
 
-    const updateFilters = useCallback((newFilters: Record<string, string>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        Object.entries(newFilters).forEach(([key, value]) => {
-            if (value === 'all' || !value) params.delete(key);
-            else params.set(key, value);
-        });
-        router.push(`${pathname}?${params.toString()}`);
-    }, [searchParams, pathname, router]);
+    const updateFilters = useCallback((newFilters: Partial<typeof filters>) => {
+        setFilters(newFilters);
+    }, [setFilters]);
 
     const clearFilters = useCallback(() => {
-        router.push(pathname);
-    }, [pathname, router]);
+        setFilters({ role: 'all', status: 'all', interest: '' });
+    }, [setFilters]);
 
     const handleSelectAll = useCallback((checked: boolean) => {
         if (checked) setSelectedIds(applications.map(app => app.id));
@@ -203,6 +217,7 @@ function ManageApplicationsContent() {
         try {
             const res = await approveMutation.mutateAsync(id);
             if (res.success) {
+                setIsExploding(true);
                 toast.success("Application approved and user invited", { id: toastId });
                 setInspectApp(null);
                 setApproveConfirm(false);
@@ -237,7 +252,20 @@ function ManageApplicationsContent() {
 
 
     return (
-        <section className="space-y-8 pb-32">
+        <section className="relative space-y-8 pb-32">
+            {/* Success Celebration */}
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-100">
+                {isExploding && (
+                    <ConfettiExplosion 
+                        force={0.8}
+                        duration={3000}
+                        particleCount={250}
+                        width={1600}
+                        onComplete={() => setIsExploding(false)}
+                    />
+                )}
+            </div>
+
             {/* Header Area */}
             <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-white/5 pb-8 backdrop-blur-sm sticky top-0 z-10 py-4 bg-background/80">
                 <div className="space-y-0.5 2xl:space-y-1">
@@ -326,17 +354,30 @@ function ManageApplicationsContent() {
                         <p className="font-mono text-[10px] uppercase">No matching dossiers found in sector</p>
                     </Card>
                 ) : (
-                    <AnimatePresence>
-                        {applications.map((app) => (
-                            <ApplicationItemCard 
-                                key={app.id}
-                                app={app}
-                                isSelected={selectedIds.includes(app.id)}
-                                onToggle={toggleSelect}
-                                onInspect={setInspectApp}
-                            />
-                        ))}
-                    </AnimatePresence>
+                    <div style={{ height: 'calc(100vh - 400px)', minHeight: '600px' }}>
+                        <List
+                            rowCount={applications.length}
+                            rowHeight={160}
+                            style={{ height: '100%', width: '100%' }}
+                            className="custom-scrollbar"
+                            rowProps={{
+                                applications,
+                                selectedIds,
+                                toggleSelect,
+                                setInspectApp
+                            }}
+                            rowComponent={({ index, style, applications, selectedIds, toggleSelect, setInspectApp }: any) => (
+                                <div style={style} className="pb-4">
+                                    <ApplicationItemCard 
+                                        app={applications[index]}
+                                        isSelected={selectedIds.includes(applications[index].id)}
+                                        onToggle={toggleSelect}
+                                        onInspect={setInspectApp}
+                                    />
+                                </div>
+                            )}
+                        />
+                    </div>
                 )}
             </div>
 
@@ -379,215 +420,227 @@ function ManageApplicationsContent() {
                 )}
             </AnimatePresence>
 
-            {/* Inspect Modal */}
-            <Dialog open={!!inspectApp} onOpenChange={(o) => { if(!o) { setInspectApp(null); setRejectionMode(false); setApproveConfirm(false); } }}>
-                <DialogContent className="max-w-6xl w-[95vw] p-0 border-white/10 bg-black overflow-hidden rounded-3xl">
-                    {inspectApp && (
-                        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] h-[80vh]">
-                            {/* Profile Panel */}
-                            <div className="p-10 bg-muted/10 border-r border-white/5 space-y-8 overflow-y-auto custom-scrollbar">
-                                <div className="space-y-6 text-center lg:text-left">
-                                    <div className="w-40 h-40 2xl:w-48 2xl:h-48 rounded-3xl bg-muted border border-white/10 mx-auto lg:mx-0 overflow-hidden shadow-2xl ring-1 ring-white/5">
-                                        {inspectApp.photoUrl ? (
-                                            <img src={inspectApp.photoUrl} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center opacity-20 scale-150"><User /></div>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h2 className="font-serif text-3xl 2xl:text-4xl font-semibold">{inspectApp.fullName}</h2>
-                                        <p className="font-mono text-xs text-primary uppercase tracking-widest">{inspectApp.designation}</p>
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-white/5" />
-
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-6 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                                        <div className="space-y-1">
-                                            <span className="opacity-40">Institution</span>
-                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.institute}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="opacity-40">Nationality</span>
-                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.nationality}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="opacity-40">Role Target</span>
-                                            <p className="text-[11px] text-foreground font-semibold">{inspectApp.type}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="opacity-40">Status</span>
-                                            <p className={`text-[11px] font-semibold ${
-                                                 inspectApp.status === 'approved' ? 'text-emerald-500' : 
-                                                 inspectApp.status === 'rejected' ? 'text-rose-500' : 'text-amber-500'
-                                            }`}>{inspectApp.status}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground opacity-40">Expertise Tags</span>
-                                        <div className="flex flex-wrap gap-2">
-                                            {inspectApp.research_interests?.map((tag: string) => (
-                                                <span key={tag} className="text-[9px] font-semibold uppercase text-primary px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {inspectApp.status === 'rejected' && inspectApp.rejectionReason && (
-                                        <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl space-y-2">
-                                            <span className="font-mono text-[9px] uppercase tracking-widest text-rose-500">Rejection Reasoning</span>
-                                            <p className="text-xs text-rose-200/60 leading-relaxed italic">&quot;{inspectApp.rejectionReason}&quot;</p>
-                                        </div>
-                                    )}
-
-                                    {inspectApp.reviewedAt && (
-                                         <div className="pt-8 opacity-40 text-[8px] font-mono uppercase tracking-[0.2em] leading-loose">
-                                            Audited At: {inspectApp.reviewedAt ? new Date(inspectApp.reviewedAt).toLocaleString() : 'N/A'}
-                                            <br />
-                                            Auditor ID: 0000{inspectApp.reviewedBy}
-                                         </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Verification Panel */}
-                            <div className="flex flex-col bg-background">
-                                <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <FileText className="text-primary w-5 h-5" />
-                                        <span className="font-semibold text-xs uppercase tracking-widest">Research Dossier</span>
-                                    </div>
-                                    <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg border border-white/5 px-4 text-[10px] font-semibold uppercase">
-                                        <a href={inspectApp.cvUrl} download>
-                                            <Download className="w-3.5 h-3.5 mr-2" /> Download Original
-                                        </a>
-                                    </Button>
-                                </div>
-
-                                <div className="flex-1 bg-muted/20 relative">
-                                    {inspectApp.cvUrl?.toLowerCase().endsWith('.pdf') ? (
-                                        <iframe 
-                                            src={inspectApp.cvUrl} 
-                                            title="Candidate CV Preview"
-                                            className="w-full h-full border-none grayscale contrast-125"
-                                        />
-                                    ) : (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-20 text-center space-y-6">
-                                            <div className="p-8 bg-muted rounded-full border border-white/5 opacity-40">
-                                                <FileText className="w-16 h-16" />
+            {/* Inspect Drawer (Mobile and Desktop) */}
+            <Drawer.Root open={!!inspectApp} onOpenChange={(o) => { if(!o) { setInspectApp(null); setRejectionMode(false); setApproveConfirm(false); } }}>
+                <Drawer.Portal>
+                    <Drawer.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
+                    <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col h-[90vh] bg-black border-t border-white/10 rounded-t-[32px] outline-none">
+                        <div className="mx-auto w-12 h-1.5 shrink-0 rounded-full bg-white/10 my-4" />
+                        <div className="flex-1 overflow-y-auto px-4 pb-12 custom-scrollbar">
+                            {inspectApp && (
+                                <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] min-h-full">
+                                    {/* Profile Panel */}
+                                    <div className="p-8 lg:p-10 bg-muted/10 border-r border-white/5 space-y-8 rounded-2xl lg:rounded-none">
+                                        <div className="space-y-6 text-center lg:text-left">
+                                            <div className="w-40 h-40 2xl:w-48 2xl:h-48 rounded-3xl bg-muted border border-white/10 mx-auto lg:mx-0 overflow-hidden shadow-2xl ring-1 ring-white/5">
+                                                {inspectApp.photoUrl ? (
+                                                    <NextImage 
+                                                        src={inspectApp.photoUrl} 
+                                                        alt="" 
+                                                        width={300} 
+                                                        height={300} 
+                                                        className="w-full h-full object-cover" 
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center opacity-20 scale-150"><User /></div>
+                                                )}
                                             </div>
-                                            <div className="space-y-2">
-                                                <h4 className="font-serif text-2xl font-semibold">Incompatible Preview</h4>
-                                                <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">Non-PDF Research Documentation Detected</p>
+                                            <div className="space-y-1">
+                                                <h2 className="font-serif text-3xl 2xl:text-4xl font-semibold">{inspectApp.fullName}</h2>
+                                                <p className="font-mono text-xs text-primary uppercase tracking-widest">{inspectApp.designation}</p>
                                             </div>
-                                            <Button asChild className="rounded-2xl h-14 px-8 bg-white text-black font-semibold hover:bg-white/90">
+                                        </div>
+
+                                        <Separator className="bg-white/5" />
+
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-2 gap-6 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                                                <div className="space-y-1">
+                                                    <span className="opacity-40">Institution</span>
+                                                    <p className="text-[11px] text-foreground font-semibold">{inspectApp.institute}</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="opacity-40">Nationality</span>
+                                                    <p className="text-[11px] text-foreground font-semibold">{inspectApp.nationality}</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="opacity-40">Role Target</span>
+                                                    <p className="text-[11px] text-foreground font-semibold">{inspectApp.type}</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="opacity-40">Status</span>
+                                                    <p className={`text-[11px] font-semibold ${
+                                                         inspectApp.status === 'approved' ? 'text-emerald-500' : 
+                                                         inspectApp.status === 'rejected' ? 'text-rose-500' : 'text-amber-500'
+                                                    }`}>{inspectApp.status}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground opacity-40">Expertise Tags</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {inspectApp.research_interests?.map((tag: string) => (
+                                                        <span key={tag} className="text-[9px] font-semibold uppercase text-primary px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {inspectApp.status === 'rejected' && inspectApp.rejectionReason && (
+                                                <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl space-y-2">
+                                                    <span className="font-mono text-[9px] uppercase tracking-widest text-rose-500">Rejection Reasoning</span>
+                                                    <p className="text-xs text-rose-200/60 leading-relaxed italic">&quot;{inspectApp.rejectionReason}&quot;</p>
+                                                </div>
+                                            )}
+
+                                            {inspectApp.reviewedAt && (
+                                                 <div className="pt-8 opacity-40 text-[8px] font-mono uppercase tracking-[0.2em] leading-loose">
+                                                    Audited At: {inspectApp.reviewedAt ? dayjs(inspectApp.reviewedAt).format('DD MMM YYYY, HH:mm') : 'N/A'}
+                                                    <br />
+                                                    Auditor ID: 0000{inspectApp.reviewedBy}
+                                                 </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Verification Panel */}
+                                    <div className="flex flex-col bg-background rounded-2xl lg:rounded-none overflow-hidden">
+                                        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <FileText className="text-primary w-5 h-5" />
+                                                <span className="font-semibold text-xs uppercase tracking-widest">Research Dossier</span>
+                                            </div>
+                                            <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg border border-white/5 px-4 text-[10px] font-semibold uppercase">
                                                 <a href={inspectApp.cvUrl} download>
-                                                    Retrieve & Download Document
+                                                    <Download className="w-3.5 h-3.5 mr-2" /> Download Original
                                                 </a>
                                             </Button>
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Actions Footer */}
-                                {inspectApp.status === 'pending' && (
-                                    <div className="p-8 border-t border-white/5 bg-muted/5">
-                                        <AnimatePresence mode="wait">
-                                            {rejectionMode ? (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className="space-y-6"
-                                                >
-                                                    <div className="space-y-3">
-                                                        <div className="flex justify-between items-end">
-                                                            <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mandatory Vetting Reason (Audit Log)</label>
-                                                            <span className={`text-[10px] font-mono ${rejectionReason.length < 20 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                                {rejectionReason.length}/20 min
-                                                            </span>
-                                                        </div>
-                                                        <textarea
-                                                            value={rejectionReason}
-                                                            onChange={(e) => setRejectionReason(e.target.value)}
-                                                            placeholder="State the academic grounds for rejection... (Minimum 20 characters required)"
-                                                            className="w-full h-32 bg-black border border-rose-500/30 rounded-2xl p-4 text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all resize-none"
-                                                        />
-                                                    </div>
-                                                    <div className="flex gap-4">
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            onClick={() => setRejectionMode(false)}
-                                                            className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest"
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                        <Button 
-                                                            disabled={rejectionReason.length < 20}
-                                                            onClick={() => handleReject(inspectApp.id, rejectionReason)}
-                                                            className="flex-2 h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase tracking-widest shadow-xl shadow-rose-900/40"
-                                                        >
-                                                            Confirm Terminal Rejection
-                                                        </Button>
-                                                    </div>
-                                                </motion.div>
-                                            ) : approveConfirm ? (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className="space-y-6 text-center"
-                                                >
-                                                    <div className="space-y-2">
-                                                        <h4 className="font-serif text-xl font-semibold">Proceed with Onboarding?</h4>
-                                                        <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">
-                                                            Approving {inspectApp.fullName} as {inspectApp.type}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex gap-4">
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            onClick={() => setApproveConfirm(false)}
-                                                            className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest"
-                                                        >
-                                                            Abort
-                                                        </Button>
-                                                        <Button 
-                                                            onClick={() => handleApprove(inspectApp.id)}
-                                                            className="flex-2 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
-                                                        >
-                                                            Confirm Approval & Invite
-                                                        </Button>
-                                                    </div>
-                                                </motion.div>
+                                        <div className="flex-1 min-h-[500px] bg-muted/20 relative">
+                                            {inspectApp.cvUrl?.toLowerCase().endsWith('.pdf') ? (
+                                                <iframe 
+                                                    src={inspectApp.cvUrl} 
+                                                    title="Candidate CV Preview"
+                                                    className="w-full h-full border-none grayscale contrast-125"
+                                                />
                                             ) : (
-                                                <div className="flex gap-4">
-                                                    <Button 
-                                                        variant="outline" 
-                                                        onClick={() => setRejectionMode(true)}
-                                                        className="flex-1 h-16 rounded-2xl border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white font-semibold uppercase tracking-widest"
-                                                    >
-                                                        Reject Candidate
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => setApproveConfirm(true)}
-                                                        className="flex-2 h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
-                                                    >
-                                                        Approve Request
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center p-20 text-center space-y-6">
+                                                    <div className="p-8 bg-muted rounded-full border border-white/5 opacity-40">
+                                                        <FileText className="w-16 h-16" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <h4 className="font-serif text-2xl font-semibold">Incompatible Preview</h4>
+                                                        <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">Non-PDF Research Documentation Detected</p>
+                                                    </div>
+                                                    <Button asChild className="rounded-2xl h-14 px-8 bg-white text-black font-semibold hover:bg-white/90">
+                                                        <a href={inspectApp.cvUrl} download>
+                                                            Retrieve & Download Document
+                                                        </a>
                                                     </Button>
                                                 </div>
                                             )}
-                                        </AnimatePresence>
+                                        </div>
+
+                                        {/* Actions Footer */}
+                                        {inspectApp.status === 'pending' && (
+                                            <div className="p-8 border-t border-white/5 bg-muted/5">
+                                                <AnimatePresence mode="wait">
+                                                    {rejectionMode ? (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, scale: 0.95 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            exit={{ opacity: 0 }}
+                                                            className="space-y-6"
+                                                        >
+                                                            <div className="space-y-3">
+                                                                <div className="flex justify-between items-end">
+                                                                    <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mandatory Vetting Reason (Audit Log)</label>
+                                                                    <span className={`text-[10px] font-mono ${rejectionReason.length < 20 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                        {rejectionReason.length}/20 min
+                                                                    </span>
+                                                                </div>
+                                                                <textarea
+                                                                    value={rejectionReason}
+                                                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                                                    placeholder="State the academic grounds for rejection... (Minimum 20 characters required)"
+                                                                    className="w-full h-32 bg-black border border-rose-500/30 rounded-2xl p-4 text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all resize-none"
+                                                                />
+                                                            </div>
+                                                            <div className="flex gap-4">
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    onClick={() => setRejectionMode(false)}
+                                                                    className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest"
+                                                                >
+                                                                    Cancel
+                                                                </Button>
+                                                                <Button 
+                                                                    disabled={rejectionReason.length < 20}
+                                                                    onClick={() => handleReject(inspectApp.id, rejectionReason)}
+                                                                    className="flex-2 h-14 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-semibold uppercase tracking-widest shadow-xl shadow-rose-900/40"
+                                                                >
+                                                                    Confirm Terminal Rejection
+                                                                </Button>
+                                                            </div>
+                                                        </motion.div>
+                                                    ) : approveConfirm ? (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, scale: 0.95 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            exit={{ opacity: 0 }}
+                                                            className="space-y-6 text-center"
+                                                        >
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-serif text-xl font-semibold">Proceed with Onboarding?</h4>
+                                                                <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-60">
+                                                                    Approving {inspectApp.fullName} as {inspectApp.type}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex gap-4">
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    onClick={() => setApproveConfirm(false)}
+                                                                    className="flex-1 h-14 rounded-2xl font-semibold uppercase tracking-widest"
+                                                                >
+                                                                    Abort
+                                                                </Button>
+                                                                <Button 
+                                                                    onClick={() => handleApprove(inspectApp.id)}
+                                                                    className="flex-2 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                                >
+                                                                    Confirm Approval & Invite
+                                                                </Button>
+                                                            </div>
+                                                        </motion.div>
+                                                    ) : (
+                                                        <div className="flex gap-4">
+                                                            <Button 
+                                                                variant="outline" 
+                                                                onClick={() => setRejectionMode(true)}
+                                                                className="flex-1 h-16 rounded-2xl border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white font-semibold uppercase tracking-widest"
+                                                            >
+                                                                Reject Candidate
+                                                            </Button>
+                                                            <Button 
+                                                                onClick={() => setApproveConfirm(true)}
+                                                                className="flex-2 h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold uppercase tracking-widest shadow-xl shadow-emerald-900/40"
+                                                            >
+                                                                Approve Request
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+                    </Drawer.Content>
+                </Drawer.Portal>
+            </Drawer.Root>
 
             {/* Bulk Confirmation Modals */}
             <Dialog open={bulkMode === 'approve'} onOpenChange={() => setBulkMode(null)}>

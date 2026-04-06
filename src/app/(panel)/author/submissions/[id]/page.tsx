@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Download, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
+import dayjs from "@/lib/dayjs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default async function AuthorSubmissionDetailsPage({ params }: { params: { id: string } }) {
@@ -36,7 +36,7 @@ export default async function AuthorSubmissionDetailsPage({ params }: { params: 
                     <div className="flex items-center gap-3 text-sm text-primary/40 font-bold uppercase tracking-widest leading-none">
                         <span>{sub.paperId}</span>
                         <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
-                        <span>Submitted on {format(new Date(sub.submittedAt), "MMMM dd, yyyy")}</span>
+                        <span>Submitted on {dayjs(sub.submittedAt).format("MMMM DD, YYYY")}</span>
                     </div>
                 </div>
                 <Badge className={`px-5 py-2 rounded-xl border text-xs font-black uppercase tracking-widest ${getStatusColor(sub.status)}`}>
@@ -73,7 +73,7 @@ export default async function AuthorSubmissionDetailsPage({ params }: { params: 
                                 </div>
                                 <div className="space-y-1 text-right">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-primary/30">Last Updated</span>
-                                    <p className="text-sm font-bold text-primary">{format(new Date(sub.updatedAt!), "MMM dd, yyyy")}</p>
+                                    <p className="text-sm font-bold text-primary">{dayjs(sub.updatedAt!).format("MMM DD, YYYY")}</p>
                                 </div>
                             </div>
                         </CardContent>

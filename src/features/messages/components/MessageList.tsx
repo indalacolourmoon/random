@@ -2,7 +2,7 @@ import { memo } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatDistanceToNow } from "date-fns"
+import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 
 import { ContactMessageRow } from "@/actions/messages"
@@ -60,7 +60,7 @@ const MessageItem = memo(({
                         {message.name}
                     </h3>
                     <span className="text-[9px] font-mono font-black text-muted-foreground/40 uppercase tracking-tighter shrink-0">
-                        {formatDistanceToNow(message.createdAt ? new Date(message.createdAt) : new Date(), { addSuffix: true })}
+                        {dayjs(message.createdAt || new Date()).fromNow()}
                     </span>
                 </div>
 

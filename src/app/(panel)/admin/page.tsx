@@ -1,6 +1,6 @@
 import {
     FileStack, Users, Activity, AlertCircle, TrendingUp, ArrowRight, UserPlus, FileText, Clock, ExternalLink,
-    CreditCard, ClipboardList, Download
+    CreditCard, ClipboardList, Download, Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { db } from '@/lib/db';
@@ -28,6 +28,8 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import { performance } from 'perf_hooks';
+import { NumberTicker } from '@/components/ui/number-ticker';
+import * as ss from 'simple-statistics';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,10 +70,10 @@ export default async function AdminDashboard() {
         const currentIssue = currentIssueRes[0]?.year ? `${currentIssueRes[0].year} Edition` : '2026 Edition';
 
         const stats = [
-            { label: 'Revenue (Paid)', value: `₹${totalRevenue.toLocaleString()}`, icon: <TrendingUp className="w-4 h-4" />, variant: 'emerald' },
-            { label: 'Active Staff', value: String(totalUsers), icon: <Users className="w-4 h-4" />, variant: 'blue' },
-            { label: 'Submissions', value: String(totalSubmissions), icon: <FileStack className="w-4 h-4" />, variant: 'indigo' },
-            { label: 'Pending APC', value: `₹${pendingRevenue.toLocaleString()}`, icon: <CreditCard className="w-4 h-4" />, variant: 'amber' },
+            { label: 'Revenue (Paid)', value: totalRevenue, icon: <TrendingUp className="w-4 h-4" />, variant: 'emerald', prefix: '₹' },
+            { label: 'Active Staff', value: totalUsers, icon: <Users className="w-4 h-4" />, variant: 'blue' },
+            { label: 'Submissions', value: totalSubmissions, icon: <FileStack className="w-4 h-4" />, variant: 'indigo' },
+            { label: 'Pending APC', value: pendingRevenue, icon: <CreditCard className="w-4 h-4" />, variant: 'amber', prefix: '₹' },
         ];
 
         // 2. Recent Lists with Type Safety
@@ -148,7 +150,16 @@ export default async function AdminDashboard() {
 
         const totalMem = os.totalmem();
         const freeMem = os.freemem();
-        const memUsedPercent = (((totalMem - freeMem) / totalMem) * 100).toFixed(2);
+        const memUsedPercentNum = ((totalMem - freeMem) / totalMem) * 100;
+        const memUsedPercent = memUsedPercentNum.toFixed(2);
+
+        // Calculate System Health Score using simple-statistics
+        const healthFactors = [
+            Math.max(0, 100 - memUsedPercentNum),
+            Math.max(0, 100 - (Number(dbLatency) / 100) * 100), // Latency factor
+            Math.max(0, 100 - storagePercent)
+        ];
+        const systemHealthScore = ss.mean(healthFactors).toFixed(1);
 
         return (
             <section className="space-y-6">
@@ -191,7 +202,9 @@ export default async function AdminDashboard() {
                                 </div>
                                 <div className="space-y-1 2xl:space-y-2">
                                     <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-semibold text-muted-foreground capitalize tracking-widest opacity-60">{stat.label}</p>
-                                    <h3 className=" font-semibold text-foreground tracking-wider text-2xl 2xl:text-3xl">{stat.value}</h3>
+                                    <h3 className=" font-semibold text-foreground tracking-wider text-2xl 2xl:text-3xl">
+                                        <NumberTicker value={stat.value} prefix={stat.prefix} />
+                                    </h3>
                                 </div>
                             </CardContent>
                         </Card>
@@ -406,7 +419,8 @@ export default async function AdminDashboard() {
                                     {[
                                         { label: 'Latency', value: `${dbLatency}ms`, status: Number(dbLatency) < 5 ? 'Optimal' : 'Nominal', icon: Activity },
                                         { label: 'Storage', value: `${storageMB}MB / ${storageLimit}MB`, status: storagePercent < 80 ? 'Healthy' : 'Near Limit', icon: Download },
-                                        { label: 'System Load', value: `${memUsedPercent}%`, status: Number(memUsedPercent) < 70 ? 'Optimal' : 'Elevated', icon: Users }
+                                        { label: 'System Load', value: `${memUsedPercent}%`, status: Number(memUsedPercent) < 70 ? 'Optimal' : 'Elevated', icon: Users },
+                                        { label: 'Health Score', value: `${systemHealthScore}%`, status: Number(systemHealthScore) > 90 ? 'Excellent' : 'Good', icon: Shield }
                                     ].map((metric) => (
                                         <div key={metric.label} className="p-4 rounded-xl bg-muted/20 border border-border/30 space-y-1.5 transition-all hover:bg-muted/30">
                                             <div className="flex justify-between items-center text-[9px] uppercase font-semibold tracking-widest text-muted-foreground opacity-60">
