@@ -1,7 +1,7 @@
 
 export default function TopBar({ settings }: { settings?: Record<string, string> }) {
     const journalName = settings?.journal_name || "International Journal of Innovative Trends in Engineering Science and Technology (IJITEST)";
-    const issn = settings?.issn || "XXXX-XXXX (ONLINE)";
+    const issn = settings?.issn ||"XXXX-XXXX (ONLINE)";
     const publisher = settings?.publisher || "FELIX ACADEMIC PUBLICATIONS";
 
     return (
