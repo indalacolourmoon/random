@@ -30,7 +30,7 @@ export default function Navbar({ settings }: { settings?: Record<string, string>
         <nav
             id="journal-navbar"
             className={`sticky top-0 z-50 w-full transition-all duration-700 ${isScrolled
-                ? 'bg-white/90 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.05)] py-0.5'
+                ? 'bg-background/95 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.05)] py-0.5'
                 : 'bg-background/95 backdrop-blur-xl border-b border-primary/5 py-0'}`}>
             <div className="container-responsive">
                 <div className={`flex justify-between items-center transition-all duration-700 ${isScrolled ? 'h-14 lg:h-16 2xl:h-24' : 'h-16 lg:h-20 xl:h-24 2xl:h-32'}`}>

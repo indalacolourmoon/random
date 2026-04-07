@@ -84,8 +84,12 @@ export async function verifyRazorpayPayment(data: {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, submissionId } = data;
 
-        // 1. Verify Signature
-        const secret = process.env.RAZORPAY_KEY_SECRET || '';
+        const secret = process.env.RAZORPAY_KEY_SECRET;
+        if (!secret) {
+            console.error("RAZORPAY_KEY_SECRET is not set");
+            return { success: false, error: "Payment configuration error. Please contact support." };
+        }
+
         const generated_signature = crypto
             .createHmac("sha256", secret)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
@@ -104,10 +108,8 @@ export async function verifyRazorpayPayment(data: {
             })
             .where(eq(payments.submissionId, submissionId));
  
-        // 3. Update Submission Status
-        await db.update(submissions)
-            .set({ status: 'payment_pending' }) // Should be accepted or payment_pending? Flow says payment_pending -> paid -> published
-            .where(eq(submissions.id, submissionId));
+        // 3. Keep submission at 'accepted' — payment is confirmed, admin will assign to issue
+        // (no status change needed here — 'accepted' is already the correct state post-payment)
 
         // 4. Notify Author
         try {
@@ -128,11 +130,9 @@ export async function verifyRazorpayPayment(data: {
             const sub = subData[0];
             if (sub) {
                 const template = emailTemplates.paymentVerified(sub.authorName, sub.title, sub.paperId);
-                await sendEmail({
-                    to: sub.authorEmail,
-                    subject: template.subject,
-                    html: template.html
-                });
+                // Fire-and-forget — payment is already recorded, email failure is non-critical
+                sendEmail({ to: sub.authorEmail, subject: template.subject, html: template.html })
+                    .catch(e => console.error("Payment confirmation email failed:", e));
             }
         } catch (emailErr) {
             console.error("Failed to send payment verification email:", emailErr);

@@ -27,7 +27,7 @@ export default function AnnouncementBar() {
                     <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-secondary border border-white/20 animate-pulse">
                         <Megaphone className="w-4 h-4" />
                     </div>
-                    <p className="text-[10px] sm:text-xs font-black tracking-[0.2em] text-white m-0 flex items-center gap-2 uppercase">
+                    <p className="text-white opacity-80 m-0 flex items-center gap-2">
                         Latest Publication: <span className="text-secondary pl-1 sparkle-text">{monthYear} Issue Now Live</span>
                         <Sparkles className="w-3 h-3 text-secondary animate-bounce" />
                     </p>
@@ -37,7 +37,7 @@ export default function AnnouncementBar() {
 
                 <Link 
                     href="/current-issue" 
-                    className="group/link flex items-center gap-2 text-white/90 hover:text-white transition-colors py-1 px-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest no-underline"
+                    className="group/link flex items-center gap-2 text-white/90 hover:text-white transition-colors py-1 px-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 no-underline"
                 >
                     View All Articles
                     <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />

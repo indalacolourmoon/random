@@ -6,6 +6,8 @@ import {
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/layout/PageHeader";
 import Link from 'next/link';
+import { Section } from '@/components/layout/Section';
+import { SidebarLayout } from '@/components/layout/SidebarLayout';
 
 interface GuidelinesContentProps {
     settings: Record<string, string>;
@@ -71,14 +73,14 @@ export default function GuidelinesContent({ settings }: GuidelinesContentProps) 
             content: (
                 <div className="space-y-8">
                     <div>
-                        <h3 className="text-secondary font-black mb-4">1. Text and Type Area (Margins)</h3>
+                        <h3 className="text-secondary  mb-4">1. Text and Type Area (Margins)</h3>
                         <p>Paper should of standard format (8.5 &ldquo; x 11&rdquo;) with the text fully justified.</p>
                         <p className="mt-2 ">Margins : Top 0.7&rdquo;, Bottom 0.7&rdquo;, Right 0.6&rdquo;, Left 0.6&rdquo;</p>
                         <p className="mt-2">Paper should be in two column format with column width 3.42&rdquo; and space between columns be 0.2&rdquo;. No figures should fall out of this text page.</p>
                     </div>
 
                     <div>
-                        <h3 className="text-secondary font-black mb-4">2. Titles Format</h3>
+                        <h3 className="text-secondary  mb-4">2. Titles Format</h3>
                         <ul className="space-y-2 list-none pl-0">
                             <li>• <b>Paper Title :</b> Capitalize Each Word case, 14 point type (Times Roman Bold)</li>
                             <li>• <b>Author(s) and Affiliation :</b> Capitalize Each Word case, 10 point type (Times Roman)</li>
@@ -89,22 +91,22 @@ export default function GuidelinesContent({ settings }: GuidelinesContentProps) 
                     </div>
 
                     <div>
-                        <h3 className="text-secondary font-black mb-4">3. Text</h3>
+                        <h3 className="text-secondary  mb-4">3. Text</h3>
                         <p>Text type should be 10 point Times Roman. Text should be single spaced. First line of all paragraphs should be indented and there should be one line gap between consecutive paragraphs.</p>
                     </div>
 
                     <div>
-                        <h3 className="text-secondary font-black mb-4">4. Heads / Sub Heads</h3>
+                        <h3 className="text-secondary  mb-4">4. Heads / Sub Heads</h3>
                         <p>Levels of subheads should be easily distinguishable from each other with the use of numbers. There should be one line spaces before each subhead and one line space after each subhead.</p>
                     </div>
 
                     <div>
-                        <h3 className="text-secondary font-black mb-4">5. Figures and Tables</h3>
+                        <h3 className="text-secondary  mb-4">5. Figures and Tables</h3>
                         <p>Legends/Captions should be 9 point (Times Roman). Figure legend should be beneath the figure (Figure 1, Figure 2 etc..) and table legend should be above the table (Table 1, Table 2 etc….). Both must be cited in text.</p>
                     </div>
 
                     <div>
-                        <h3 className="text-secondary font-black mb-4">6. References</h3>
+                        <h3 className="text-secondary  mb-4">6. References</h3>
                         <p className="mb-4">References text type should be 10 point (Times Roman) at the end of the paper. Format as follows:</p>
                         <div className="space-y-4 bg-primary/5 p-6 rounded-2xl border border-primary/10 font-mono text-xs overflow-x-auto">
                             <p>[1] Jesmin Nahar and Tasadduq Imam et al,&rdquo; Association rule mining to detect factors which contribute to heart disease in males and females&rdquo;, Journal of Expert Systems with Applications Vol.40, PP.1086&ndash;1093, 2013</p>
@@ -174,54 +176,58 @@ export default function GuidelinesContent({ settings }: GuidelinesContentProps) 
                 ]}
             />
 
-            <section className="container-responsive section-padding">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 sm:gap-16 2xl:gap-24">
-                    {/* Navigation Sidebar */}
-                    <aside className="hidden lg:block lg:col-span-1 sticky top-32 h-fit space-y-4">
-                        <h3 className="text-primary mb-6 m-0 font-black tracking-widest uppercase">Quick Navigation</h3>
-                        <nav className="space-y-4 border-l border-primary/10 pl-4">
-                            {sections.map((section, idx) => (
-                                <a
-                                    key={idx}
-                                    href={`#guideline-${idx}`}
-                                    className="text-primary/60 hover:text-secondary block py-1 m-0 text-sm 2xl:text-lgJournal Portals font-medium transition-colors"
-                                >
-                                    {section.title}
-                                </a>
-                            ))}
-                        </nav>
-                    </aside>
-
-                    {/* Content Area */}
-                    <div className="lg:col-span-3 space-y-12">
+            <Section>
+                <SidebarLayout
+                    cols={4}
+                    sidebarClassName="hidden lg:block sticky top-32 h-fit"
+                    sidebar={
+                        <>
+                            <h3 className="text-primary mb-6 m-0  tracking-widest uppercase opacity-60">Quick Navigation</h3>
+                            <nav className="space-y-4 border-l border-primary/10 pl-4">
+                                {sections.map((section, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={`#guideline-${idx}`}
+                                        className="text-primary/60 hover:text-secondary block py-1 m-0 text-sm font-medium transition-colors"
+                                    >
+                                        {section.title}
+                                    </a>
+                                ))}
+                            </nav>
+                        </>
+                    }
+                >
+                    <div className="space-y-12">
                         {sections.map((section, idx) => (
                             <section key={idx} id={`guideline-${idx}`} className="scroll-mt-32">
-                                <h2 className="text-secondary tracking-wider mb-3 flex items-baseline gap-4 font-black">
+                                <h2 className="text-secondary tracking-wider mb-3 flex items-baseline gap-4 ">
                                     {section.title}
                                 </h2>
-                                <div className="text-justify text-primary/80 space-y-3 2xl:space-y-6 font-medium leading-relaxed border-l-[3px] border-secondary/20 pl-8 2xl:pl-12 text-sm 2xl:text-xl">
+                                <div className="text-justify text-primary/80 space-y-3 2xl:space-y-6 font-medium leading-relaxed border-l-[3px] border-secondary/20 pl-8 2xl:pl-12">
                                     {section.content}
                                 </div>
                             </section>
                         ))}
+                    </div>
+                </SidebarLayout>
+            </Section>
 
-                        {/* Support Card */}
-                        <section className="bg-primary p-10 sm:p-14 2xl:p-24 rounded-[2.5rem] 2xl:rounded-[5rem] text-white relative overflow-hidden shadow-2xl">
-                            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
-                            <div className="relative z-10 space-y-6 text-center">
-                                <h2 className="font-black text-white m-0">Need Assistance?</h2>
-                                <p className="text-white/60 max-w-xl mx-auto font-medium m-0">For any queries regarding paper submission or formatting, contact our editorial team.</p>
-                                <a
-                                    href={`mailto:${supportEmail}`}
-                                    className="text-secondary hover:text-white transition-colors border-b-2 border-secondary/30 hover:border-white pb-2 inline-block font-bold text-xl lg:text-3xl"
-                                >
-                                    {supportEmail}
-                                </a>
-                            </div>
-                        </section>
+            {/* Support Card - Separated for Emphasis */}
+            <Section background="gradient" padding={false} className="pb-24">
+                <div className="bg-primary p-10 sm:p-14 2xl:p-24 rounded-[2.5rem] 2xl:rounded-[5rem] text-white relative overflow-hidden shadow-2xl">
+                    <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
+                    <div className="relative z-10 space-y-6 text-center">
+                        <h2 className=" text-white m-0">Need Assistance?</h2>
+                        <p className="text-white/60 max-w-xl mx-auto font-medium m-0">For any queries regarding paper submission or formatting, contact our editorial team.</p>
+                        <a
+                            href={`mailto:${supportEmail}`}
+                            className="text-secondary hover:text-white transition-colors border-b-2 border-secondary/30 hover:border-white pb-2 inline-block font-bold text-xl lg:text-3xl"
+                        >
+                            {supportEmail}
+                        </a>
                     </div>
                 </div>
-            </section>
+            </Section>
         </main>
     );
 }

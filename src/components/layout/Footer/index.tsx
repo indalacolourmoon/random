@@ -24,8 +24,8 @@ export default function Footer({ settings }: { settings?: Record<string, string>
 
                     <div className="lg:col-span-1 space-y-8">
                         <div>
-                            <h1 className="mb-4 text-white m-0 font-black">IJITEST</h1>
-                            <p className="text-slate-400 font-medium m-0">
+                            <h1 className="mb-4 text-white m-0">IJITEST</h1>
+                            <p className="text-white/70 m-0">
                                 International Journal of Innovative Trends in Engineering Science and Technology (IJITEST) is a peer-reviewed scholarly journal dedicated to elite research dissemination.
                             </p>
                         </div>
@@ -35,8 +35,8 @@ export default function Footer({ settings }: { settings?: Record<string, string>
 
                     {/* Journal Portals */}
                     <div className="lg:col-span-2">
-                        <h3 className="text-white mb-10 border-b border-white/10 pb-4 inline-block m-0 text-[10px] 2xl:text-[14px] font-black tracking-[0.3em] uppercase">Journal Portals</h3>
-                        <ul className="grid grid-cols-2 gap-x-12 gap-y-4 text-xs font-bold text-slate-400 list-none p-0">
+                        <h3 className="text-white mb-10 border-b border-white/10 pb-4 inline-block m-0">Journal Portals</h3>
+                        <ul className="grid grid-cols-2 gap-x-12 gap-y-4 text-white/70 list-none p-0">
                             <li><Link href="/about" className="hover:text-secondary transition-colors cursor-pointer">About Journal</Link></li>
                             <li><Link href="/editorial-board" className="hover:text-secondary transition-colors cursor-pointer">Editorial Board</Link></li>
                             <li><Link href="/guidelines" className="hover:text-secondary transition-colors cursor-pointer">Author Guidelines</Link></li>
@@ -55,36 +55,36 @@ export default function Footer({ settings }: { settings?: Record<string, string>
                     {/* Contact & Support */}
                     <div className="space-y-10">
                         <div>
-                            <h3 className="text-white mb-10 border-b border-white/10 pb-4 inline-block m-0 text-[10px] 2xl:text-[14px] font-black tracking-[0.3em] uppercase">Support HQ</h3>
+                            <h3 className="text-white mb-10 border-b border-white/10 pb-4 inline-block m-0">Support HQ</h3>
                             <div className="space-y-6 2xl:space-y-12">
-                                <div className="flex gap-4 group/support">
+                                <div className="flex items-center gap-4 group/support">
                                     <div className="w-10 h-10 2xl:w-16 2xl:h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover/support:scale-110 group-hover/support:bg-white/10 transition-all duration-500 overflow-hidden relative">
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/support:animate-shine pointer-events-none" />
                                         <ShieldCheck className="w-4 h-4 2xl:w-8 2xl:h-8 text-secondary" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-500 mb-1 m-0">COPE Compliant</p>
-                                        <p className="text-sm text-white tracking-wider m-0">Institutional Standards</p>
+                                        <p className="text-white/80 mb-1 m-0 text-xs 2xl:text-base">COPE Compliant</p>
+                                        <p className="text-white m-0 font-semibold">Institutional Standards</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 group/support">
+                                <div className="flex items-center gap-4 group/support">
                                     <div className="w-10 h-10 2xl:w-16 2xl:h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover/support:scale-110 group-hover/support:bg-white/10 transition-all duration-500 overflow-hidden relative">
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/support:animate-shine pointer-events-none" />
                                         <Phone className="w-4 h-4 2xl:w-8 2xl:h-8 text-secondary" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-500 mb-1 m-0">Direct Line</p>
-                                        <p className="text-sm text-white tracking-wider m-0">+91 8919643590</p>
+                                        <p className="text-white/80 mb-1 m-0 text-xs 2xl:text-base">Direct Line</p>
+                                        <p className="text-white m-0 font-semibold">+91 8919643590</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 group/support">
+                                <div className="flex items-center gap-4 group/support">
                                     <div className="w-10 h-10 2xl:w-16 2xl:h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover/support:scale-110 group-hover/support:bg-white/10 transition-all duration-500 overflow-hidden relative">
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/support:animate-shine pointer-events-none" />
                                         <MapPin className="w-4 h-4 2xl:w-8 2xl:h-8 text-secondary" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-500 mb-1 m-0">Office Location</p>
-                                        <p className="text-sm font-medium text-slate-400 m-0">
+                                        <p className="text-white/80 mb-1 m-0 text-xs 2xl:text-base">Office Location</p>
+                                        <p className="text-white/70 m-0 text-sm 2xl:text-lg italic">
                                             Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India
                                         </p>
                                     </div>
@@ -97,10 +97,10 @@ export default function Footer({ settings }: { settings?: Record<string, string>
                 {/* Bottom Bar */}
                 <div className="pt-10 border-t border-white/5 flex flex-col lg:flex-row justify-between items-center gap-8">
                     <div className="flex flex-col items-center lg:items-start gap-2">
-                        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-500 m-0">
-                            &copy; {copyrightYear} <span className="text-white">{publisher}</span>
+                        <p className="text-white/80 m-0">
+                            &copy; {copyrightYear} <span className="text-white font-bold">{publisher}</span>
                         </p>
-                        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-600 m-0">All Rights Reserved</p>
+                        <p className="opacity-40 m-0">All Rights Reserved</p>
                     </div>
 
                     <div className="flex items-center gap-6">

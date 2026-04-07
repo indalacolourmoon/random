@@ -73,17 +73,9 @@ export default async function ReviewerDashboard() {
 
         return (
             <section className="space-y-6 pb-20">
-                {/* Header Section */}
-                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-primary/5 pb-8">
-                    <div className="space-y-2">
-                        <h1 className=" font-black text-foreground tracking-widest uppercase leading-none text-2xl xl:text-3xl 2xl:text-3xl">
-                            Reviewer Portal
-                        </h1>
-                        <p className="text-xs sm:text-sm 2xl:text-lg font-medium text-muted-foreground border-l-2 border-primary/10 pl-4 mt-2 transition-all duration-500">
-                            Technical evaluation and quality oversight for {user?.fullName}.
-                        </p>
-                    </div>
-                </header>
+
+               
+                
 
                 {/* Role Banner */}
                 <Card className="bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-100 dark:border-emerald-500/10 transition-all duration-500">
@@ -94,8 +86,8 @@ export default async function ReviewerDashboard() {
                             </div>
                             <div className="flex-1 text-center md:text-left space-y-2">
                                 <Badge variant="outline" className="text-[10px] 2xl:text-sm font-bold tracking-widest uppercase border-emerald-200 dark:border-emerald-500/20 text-emerald-600 px-3 py-1 2xl:px-4 2xl:py-1.5">Peer Reviewer Protocol</Badge>
-                                <h2 className=" font-black text-foreground tracking-wider uppercase text-lg xl:text-xl 2xl:text-2xl">Active Mission: Ensure Scientific Integrity</h2>
-                                <p className="text-sm 2xl:text-base text-muted-foreground max-w-2xl 2xl:max-w-3xl font-medium opacity-80 leading-relaxed transition-all duration-500">
+                                <h2>Active Mission: Ensure Scientific Integrity</h2>
+                                <p className="max-w-2xl 2xl:max-w-3xl opacity-80">
                                     Your expert evaluation maintains the rigorous standards of our scientific community. Every review is a contribution to global knowledge.
                                 </p>
                             </div>
@@ -108,8 +100,8 @@ export default async function ReviewerDashboard() {
                         <Card key={stat.label} className="border-border/50 shadow-sm bg-background/50 backdrop-blur-sm group hover:border-primary/20 transition-all">
                             <CardContent className="p-6 2xl:p-8 flex items-center justify-between">
                                 <div className="space-y-1">
-                                    <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/60 tracking-widest uppercase">{stat.label}</p>
-                                    <h3 className=" font-black text-foreground 2xl:text-2xl">{stat.value}</h3>
+                                    <p className="opacity-60">{stat.label}</p>
+                                    <h3>{stat.value}</h3>
                                 </div>
                                 <div className="w-12 h-12 2xl:w-16 2xl:h-16 rounded-xl bg-muted/50 flex items-center justify-center transition-transform group-hover:scale-110">
                                     <div className="[&>svg]:w-5 [&>svg]:h-5 [&>svg]:2xl:w-8 [&>svg]:2xl:h-8">
@@ -132,7 +124,7 @@ export default async function ReviewerDashboard() {
                             <Card className="lg:col-span-2 border-border/50 shadow-sm bg-background/50">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                                     <div className="space-y-1">
-                                        <CardTitle className="text-sm font-bold text-primary uppercase tracking-wider">Technical Queue</CardTitle>
+                                        <CardTitle>Technical Queue</CardTitle>
                                     </div>
                                     <Button asChild variant="ghost" size="sm" className="h-8 px-4 text-xs font-bold uppercase text-primary hover:bg-secondary rounded-lg transition-all cursor-pointer">
                                         <Link href="/reviewer/reviews" className="flex items-center gap-2 cursor-pointer">
@@ -153,8 +145,8 @@ export default async function ReviewerDashboard() {
                                                         {sub.paperId.split('-').pop()}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <h4 className=" font-semibold text-foreground truncate group-hover:text-primary transition-colors 2xl:text-base">{sub.title || "Untitled"}</h4>
-                                                        <p className="text-[10px] 2xl:text-sm text-muted-foreground font-medium uppercase opacity-70">
+                                                        <h4 className="truncate group-hover:text-primary transition-colors">{sub.title || "Untitled"}</h4>
+                                                        <p className="opacity-70">
                                                             By {sub.authorName} • {new Date(sub.assignedAt).toLocaleDateString()}
                                                         </p>
                                                     </div>
@@ -171,8 +163,8 @@ export default async function ReviewerDashboard() {
 
                             <Card className="border-border shadow-sm bg-background/50 flex flex-col p-6 space-y-6">
                                 <div className="space-y-2">
-                                    <h4 className="text-[9px] sm:text-[10px] xl:text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Operational Protocol</h4>
-                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed opacity-80">Please ensure all evaluations follow the double-blind review system guidelines.</p>
+                                    <h4>Operational Protocol</h4>
+                                    <p className="opacity-80">Please ensure all evaluations follow the double-blind review system guidelines.</p>
                                 </div>
                                 <div className="space-y-3">
                                     {[
@@ -217,7 +209,7 @@ export default async function ReviewerDashboard() {
                                                 {paper.status}
                                             </Badge>
                                         </div>
-                                        <h3 className=" font-semibold text-foreground line-clamp-2 h-10 group-hover:text-primary transition-colors leading-wider">{paper.title}</h3>
+                                        <h3>{paper.title}</h3>
                                         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-4 border-t border-border/10">
                                             <span className="flex items-center gap-1.5 font-medium uppercase"><Clock className="w-3 h-3 opacity-50" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
                                             <Button asChild variant="ghost" size="sm" className="h-7 px-3 text-primary hover:bg-primary/15 rounded-md font-bold uppercase text-[9px] cursor-pointer">

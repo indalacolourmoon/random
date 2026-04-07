@@ -72,7 +72,7 @@ export default function SystemSettings() {
                         <div className="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin mx-auto" />
                         <div className="absolute inset-0 w-20 h-20 -m-2 blur-xl bg-primary/20 animate-pulse rounded-full" />
                     </div>
-                    <p className="font-black text-primary/40 tracking-[0.4em] text-xs animate-pulse uppercase">Accessing System Core...</p>
+                    <p className="opacity-40 animate-pulse">Accessing System Core...</p>
                 </div>
             </div>
         );
@@ -98,10 +98,10 @@ export default function SystemSettings() {
                             <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/20 text-primary bg-primary/5 text-[10px] font-black tracking-[0.2em] uppercase">
                                 Root Administrator Console
                             </Badge>
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black text-primary tracking-tight leading-[1.1]">
-                                System <span className="text-primary/40 underline decoration-primary/10 underline-offset-8">Settings</span>
+                            <h1 className="text-primary">
+                                System <span className="underline decoration-primary/10 underline-offset-8">Settings</span>
                             </h1>
-                            <p className="text-sm font-medium text-primary/40 pl-1">
+                            <p className="opacity-40">
                                 Configure the bedrock parameters of your journal environment.
                             </p>
                         </div>
@@ -133,8 +133,8 @@ export default function SystemSettings() {
                                         <Globe className="w-7 h-7" />
                                     </div>
                                     <div className="space-y-1">
-                                        <CardTitle className="text-lg font-black tracking-[0.2em] uppercase text-primary">Journal Identity</CardTitle>
-                                        <CardDescription className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Global branding & verification protocols.</CardDescription>
+                                        <CardTitle>Journal Identity</CardTitle>
+                                        <CardDescription className="opacity-30">Global branding & verification protocols.</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -187,8 +187,8 @@ export default function SystemSettings() {
                                         <CreditCard className="w-7 h-7" />
                                     </div>
                                     <div className="space-y-1">
-                                        <CardTitle className="text-lg font-black tracking-[0.2em] uppercase text-primary">Econometrics</CardTitle>
-                                        <CardDescription className="text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">Transmission fees & processing parameters.</CardDescription>
+                                        <CardTitle>Econometrics</CardTitle>
+                                        <CardDescription className="opacity-40">Transmission fees & processing parameters.</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -240,8 +240,8 @@ export default function SystemSettings() {
                                         <Headphones className="w-7 h-7" />
                                     </div>
                                     <div className="space-y-1">
-                                        <CardTitle className="text-lg font-black tracking-[0.2em] uppercase text-primary">Operations Center</CardTitle>
-                                        <CardDescription className="text-[10px] font-bold text-amber-600/40 uppercase tracking-widest">Support pathways & physical HQ logistics.</CardDescription>
+                                        <CardTitle>Operations Center</CardTitle>
+                                        <CardDescription className="opacity-40">Support pathways & physical HQ logistics.</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -286,8 +286,8 @@ export default function SystemSettings() {
                                         <Layout className="w-7 h-7" />
                                     </div>
                                     <div className="space-y-1">
-                                        <CardTitle className="text-xl font-black tracking-tight text-primary uppercase">Asset Repository</CardTitle>
-                                        <CardDescription className="text-xs font-medium text-slate-400">Manage downloadable templates & legal covenants.</CardDescription>
+                                        <CardTitle>Asset Repository</CardTitle>
+                                        <CardDescription className="opacity-40">Manage downloadable templates & legal covenants.</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -300,7 +300,7 @@ export default function SystemSettings() {
                                                 <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none font-black text-[9px] tracking-widest uppercase rounded-lg px-3 py-1">
                                                     MS-DOCX / PDF
                                                 </Badge>
-                                                <h4 className="text-lg font-black text-primary">Blueprints Dossier</h4>
+                                                <h4>Blueprints Dossier</h4>
                                             </div>
                                             <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600">
                                                 <FileText className="w-6 h-6" />
@@ -314,7 +314,7 @@ export default function SystemSettings() {
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-20 h-full w-full"
                                             />
                                             <Upload className="w-8 h-8 text-slate-300 group-hover/field:text-blue-500 group-hover/field:scale-110 transition-all" />
-                                            <span className="text-[10px] font-black text-slate-400 group-hover/field:text-blue-600 tracking-widest uppercase">Select New Asset</span>
+                                            <span className="opacity-40 group-hover/field:text-blue-600">Select New Asset</span>
                                         </div>
 
                                         {settings.template_url && (
@@ -323,7 +323,7 @@ export default function SystemSettings() {
                                                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
                                                         <FileText className="w-4 h-4" />
                                                     </div>
-                                                    <p className="text-xs font-bold text-slate-600 truncate">{settings.template_url.split('/').pop()}</p>
+                                                    <p className="truncate opacity-60">{settings.template_url.split('/').pop()}</p>
                                                 </div>
                                                 <Button asChild variant="ghost" size="icon" className="w-8 h-8 rounded-lg hover:bg-blue-50 hover:text-blue-600">
                                                     <a href={settings.template_url} target="_blank" title="Download Template"><ExternalLink className="w-4 h-4" /></a>
@@ -339,7 +339,7 @@ export default function SystemSettings() {
                                                 <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-none font-black text-[9px] tracking-widest uppercase rounded-lg px-3 py-1">
                                                     Legal Covenant
                                                 </Badge>
-                                                <h4 className="text-lg font-black text-primary">Copyright Protocol</h4>
+                                                <h4>Copyright Protocol</h4>
                                             </div>
                                             <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-indigo-600">
                                                 <Shield className="w-6 h-6" />
@@ -353,7 +353,7 @@ export default function SystemSettings() {
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-20 h-full w-full"
                                             />
                                             <Upload className="w-8 h-8 text-slate-300 group-hover/field:text-indigo-500 group-hover/field:scale-110 transition-all" />
-                                            <span className="text-[10px] font-black text-slate-400 group-hover/field:text-indigo-600 tracking-widest uppercase">Select New Asset</span>
+                                            <span className="opacity-40 group-hover/field:text-indigo-600">Select New Asset</span>
                                         </div>
 
                                         {settings.copyright_url && (
@@ -362,7 +362,7 @@ export default function SystemSettings() {
                                                     <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
                                                         <FileText className="w-4 h-4" />
                                                     </div>
-                                                    <p className="text-xs font-bold text-slate-600 truncate">{settings.copyright_url.split('/').pop()}</p>
+                                                    <p className="truncate opacity-60">{settings.copyright_url.split('/').pop()}</p>
                                                 </div>
                                                 <Button asChild variant="ghost" size="icon" className="w-8 h-8 rounded-lg hover:bg-indigo-50 hover:text-indigo-600">
                                                     <a href={settings.copyright_url} target="_blank" title="Download Copyright Protocol"><ExternalLink className="w-4 h-4" /></a>
@@ -384,8 +384,8 @@ export default function SystemSettings() {
                                     <Sparkles className="w-10 h-10" />
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-black text-primary tracking-tight">Growth Protocol <span className="text-purple-600/40 font-mono text-sm ml-2 tracking-normal">v2.4</span></h3>
-                                    <p className="text-sm font-medium text-slate-400 max-w-md">Override global promotion modules for landing zones & user dash interfaces.</p>
+                                    <h3>Growth Protocol <span className="opacity-40 text-sm ml-2">v2.4</span></h3>
+                                    <p className="opacity-40 max-w-md">Override global promotion modules for landing zones & user dash interfaces.</p>
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row items-center gap-6 w-full md:w-auto">

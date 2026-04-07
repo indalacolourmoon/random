@@ -79,6 +79,7 @@ export async function getProfileData(userId: string, role: 'admin' | 'editor' | 
             designation: userData.designation || "",
             photo_url: userData.photo_url,
             orcid_id: userData.orcid_id,
+            research_interests: []
         };
 
         // 2. Fetch Application Data (if not admin)
@@ -103,8 +104,7 @@ export async function getProfileData(userId: string, role: 'admin' | 'editor' | 
                     reviewed_at: appRows[0].reviewed_at ? appRows[0].reviewed_at.toISOString() : null
                 };
                 
-                // 3. Fetch Interests
-                // 3. Fetch Interests
+                // Fetch interests from join table
                 if (role === 'reviewer' || role === 'editor') {
                     const interestRows = await db.select({ name: masterInterests.name })
                         .from(applicationInterests)
@@ -220,6 +220,7 @@ export async function updateResearchInterests(userId: string, interests: string[
             const applicationId = appRows[0]?.id;
 
             if (applicationId) {
+                // Also update the legacy many-to-many system for consistency
                 await tx.delete(applicationInterests).where(eq(applicationInterests.applicationId, applicationId));
                 
                 for (const name of cleanInterests) {
@@ -229,8 +230,8 @@ export async function updateResearchInterests(userId: string, interests: string[
                     if (existing[0]) {
                         interestId = existing[0].id;
                     } else {
-                        const [inserted] = await tx.insert(masterInterests).values({ name });
-                        interestId = inserted.insertId;
+                        const [inserted] = await tx.insert(masterInterests).values({ name }).$returningId();
+                        interestId = inserted.id;
                     }
 
                     await tx.insert(applicationInterests).values({
@@ -239,6 +240,8 @@ export async function updateResearchInterests(userId: string, interests: string[
                     });
                 }
             }
+
+            // Interests are stored only in the join table (masterInterests + applicationInterests)
         });
         
         revalidatePath("/(panel)", "layout");

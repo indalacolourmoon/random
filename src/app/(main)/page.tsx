@@ -14,6 +14,9 @@ import ResourceDeskWidget from '@/features/shared/widgets/ResourceDeskWidget';
 import EthicsWidget from '@/features/shared/widgets/EthicsWidget';
 import AnnouncementBar from '@/features/home/components/AnnouncementBar';
 import SettingsInitializer from '@/components/providers/SettingsInitializer';
+import { Section } from '@/components/layout/Section';
+import { SidebarLayout } from '@/components/layout/SidebarLayout';
+
 export const revalidate = 3600; // 1 hour
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -56,39 +59,37 @@ export default async function Home() {
       <HomeCarousel />
 
       {/* Institutional Core Section */}
-      <section className="section-padding container-responsive relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20 2xl:gap-32">
-
-          {/* Main Info Column */}
-          <div className="lg:col-span-2 space-y-16 sm:space-y-24">
-            <WelcomeSection
-              journalName={settings.journal_name}
-              journalShortName={settings.journal_short_name}
-              settings={settings}
-            />
-            <HomeStats />
-            <AimAndScope journalShortName={settings.journal_short_name} />
-          </div>
-
-          {/* Institutional Sidebar */}
-          <aside className="space-y-10 sm:space-y-12">
-            <div className="p-1 rounded-4xl bg-linear-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip hover:shadow-vip-hover transition-shadow duration-500">
-              <div className="bg-white/50 backdrop-blur-sm p-2 rounded-[1.8rem]">
-                <TrackManuscriptWidget />
+      <Section className="relative z-10">
+        <SidebarLayout
+          className="my-20"
+          sidebar={
+            <>
+              <div className="p-1 rounded-4xl bg-linear-to-br from-primary/10 to-transparent border border-primary/10 shadow-vip hover:shadow-vip-hover transition-shadow duration-500">
+                <div className="bg-primary/5 backdrop-blur-sm p-2 rounded-[1.8rem]">
+                  <TrackManuscriptWidget />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-8">
-              <CurrentIssueWidget />
-              <AnnouncementsWidget />
-              <AuthorQuickLinks />
-              <CallForPapersWidget />
-              <ResourceDeskWidget settings={settings} />
-              <EthicsWidget />
-            </div>
-          </aside>
-        </div>
-      </section>
+              <div className="space-y-8">
+                <CurrentIssueWidget />
+                <AnnouncementsWidget />
+                <AuthorQuickLinks />
+                <CallForPapersWidget />
+                <ResourceDeskWidget settings={settings} />
+                <EthicsWidget />
+              </div>
+            </>
+          }
+        >
+          <WelcomeSection
+            journalName={settings.journal_name}
+            journalShortName={settings.journal_short_name}
+            settings={settings}
+          />
+          <HomeStats />
+          <AimAndScope journalShortName={settings.journal_short_name} />
+        </SidebarLayout>
+      </Section>
 
       <PublisherSection settings={settings} />
     </main>

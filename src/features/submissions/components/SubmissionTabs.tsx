@@ -35,15 +35,15 @@ export default function SubmissionTabs({ currentStatus = 'all' }: { currentStatu
                     <button
                         key={tab.value}
                         onClick={() => handleTabClick(tab.value)}
-                        className={`relative px-8 2xl:px-14 py-3 2xl:py-6 rounded-2xl 2xl:rounded-4xl text-xs 2xl:text-xl font-black tracking-widest transition-all whitespace-nowrap ${isActive
-                            ? 'text-white dark:text-slate-900 cursor-pointer'
-                            : 'text-muted-foreground hover:text-foreground bg-card border border-border shadow-sm cursor-pointer'
+                        className={`relative px-8 2xl:px-14 py-4 rounded-xl text-xs font-bold tracking-widest transition-all whitespace-nowrap uppercase ${isActive
+                            ? 'text-white'
+                            : 'text-foreground/60 hover:text-primary bg-muted/50 border border-border/50 hover:bg-muted'
                             }`}
                     >
                         {isActive && (
                             <motion.div
                                 layoutId="activeTab"
-                                className="absolute inset-0 bg-primary rounded-2xl shadow-lg shadow-primary/20"
+                                className="absolute inset-0 bg-primary rounded-xl shadow-lg shadow-primary/10"
                                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                             />
                         )}

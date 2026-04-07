@@ -6,6 +6,15 @@ import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
 import { ActionResponse } from "@/db/types";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+
+const ALLOWED_SETTING_KEYS = new Set([
+    'journal_name', 'journal_short_name', 'issn_number', 'apc_inr', 'apc_usd',
+    'support_email', 'support_phone', 'office_address', 'publisher_name',
+    'journal_website', 'apc_description', 'template_url', 'copyright_url',
+    'is_promotion_active'
+]);
 
 const DEFAULT_SETTINGS: Record<string, string> = {
     journal_name: 'International Journal of Innovative Trends in Engineering Science and Technology',
@@ -53,47 +62,39 @@ export async function getSettingsData(): Promise<Record<string, string>> {
 
 export async function updateSettings(formData: FormData): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || session.user.role !== 'admin') {
+            return { success: false, error: "Unauthorized" };
+        }
+
         const entries = Array.from(formData.entries());
 
+        // Resolve file uploads outside the transaction first
+        const resolvedEntries: Array<[string, string]> = [];
+        for (const [key, value] of entries) {
+            if (key.startsWith('$')) continue;
+            if (!ALLOWED_SETTING_KEYS.has(key)) continue; // whitelist guard
+
+            if (value instanceof File && value.size > 0) {
+                const bytes = await value.arrayBuffer();
+                const fileExt = value.name.split('.').pop();
+                const fileName = `${key.replace(/_/g, '-')}.${fileExt}`;
+                const uploadDir = path.join(process.cwd(), "public/docs");
+                await fs.mkdir(uploadDir, { recursive: true });
+                await fs.writeFile(path.join(uploadDir, fileName), Buffer.from(bytes));
+                resolvedEntries.push([key, `/docs/${fileName}`]);
+            } else if (value instanceof File && value.size === 0) {
+                continue; // skip empty file — preserve existing
+            } else {
+                resolvedEntries.push([key, String(value ?? "")]);
+            }
+        }
+
         await db.transaction(async (tx) => {
-            for (const [key, value] of entries) {
-                if (key.startsWith('$')) continue; // Skip Next.js internal fields
-
-                let finalValue: any = value;
-
-                // Handle File Uploads (Template & Copyright Form)
-                if (value instanceof File && value.size > 0) {
-                    const bytes = await value.arrayBuffer();
-                    const buffer = Buffer.from(bytes);
-
-                    const fileExt = value.name.split('.').pop();
-                    const fileName = `${key.replace(/_/g, '-')}.${fileExt}`;
-
-                    const uploadDir = path.join(process.cwd(), "public/docs");
-                    await fs.mkdir(uploadDir, { recursive: true });
-
-                    const filePath = path.join(uploadDir, fileName);
-                    await fs.writeFile(filePath, buffer);
-
-                    finalValue = `/docs/${fileName}`;
-                } else if (value instanceof File && value.size === 0) {
-                    // Skip empty file uploads (preserving existing values)
-                    continue;
-                }
-
-                // Standard checkbox handling or empty values
-                if (finalValue === null || finalValue === undefined) {
-                    finalValue = "";
-                }
-
+            for (const [key, value] of resolvedEntries) {
                 await tx.insert(settings)
-                    .values({
-                        settingKey: key,
-                        settingValue: String(finalValue),
-                    })
-                    .onDuplicateKeyUpdate({
-                        set: { settingValue: String(finalValue) }
-                    });
+                    .values({ settingKey: key, settingValue: value })
+                    .onDuplicateKeyUpdate({ set: { settingValue: value } });
             }
         });
 

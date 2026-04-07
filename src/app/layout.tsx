@@ -76,6 +76,8 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import SmoothScroll from "@/providers/SmoothScroll";
 import ScrollToTop from "@/components/common/ScrollToTop";
 
+import { NuqsAdapter } from "nuqs/adapters/next";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -90,17 +92,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SmoothScroll>
-            <AuthProvider>
-              <QueryProvider>
-                <TooltipProvider>
-                  {children}
-                  <ScrollToTop />
-                  <Toaster position="top-right" offset={50} richColors closeButton />
-                </TooltipProvider>
-              </QueryProvider>
-            </AuthProvider>
-          </SmoothScroll>
+          <NuqsAdapter>
+            <SmoothScroll>
+              <AuthProvider>
+                <QueryProvider>
+                  <TooltipProvider>
+                    {children}
+                    <ScrollToTop />
+                    <Toaster position="top-right" offset={50} richColors closeButton />
+                  </TooltipProvider>
+                </QueryProvider>
+              </AuthProvider>
+            </SmoothScroll>
+          </NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>

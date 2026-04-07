@@ -106,94 +106,91 @@ export async function getLatestPublishedIssue(): Promise<ActionResponse<Issue>> 
  */
 export async function assignPaperToIssue(submissionId: number, issueId: number, startPage?: number, endPage?: number): Promise<ActionResponse> {
     try {
-        return await db.transaction(async (tx) => {
-            // 1. Fetch Composite Submission Details (Handles all JOINS)
-            const subRes = await getSubmissionById(submissionId);
-            if (!subRes.success || !subRes.data) {
-                return { success: false, error: subRes.error || "Submission not found" };
-            }
-            const submission = subRes.data;
+        // 1. Fetch Composite Submission Details OUTSIDE transaction
+        const subRes = await getSubmissionById(submissionId);
+        if (!subRes.success || !subRes.data) {
+            return { success: false, error: subRes.error || "Submission not found" };
+        }
+        const submission = subRes.data;
 
-            // 2. Fetch Issue Details
-            const issueRows = await tx.select().from(volumesIssues).where(eq(volumesIssues.id, issueId)).limit(1);
-            const issue = issueRows[0];
-            if (!issue) throw new Error("Issue not found");
+        // 2. Enforce status gate — only accepted/published papers can be assigned
+        const allowedStatuses = ['accepted', 'published'];
+        if (!allowedStatuses.includes(submission.status)) {
+            return { success: false, error: `Paper status is '${submission.status}'. Only accepted papers can be published.` };
+        }
 
-            const settings = await getSettingsData();
+        const latestPdf = submission.allFiles.find(f => f.fileType === 'pdf_version');
+        if (!latestPdf) {
+            return { success: false, error: "Final styled PDF must be uploaded before publication." };
+        }
 
-            // 3. Verification Checks
-            if (submission.status !== 'accepted' && submission.status !== 'payment_pending') {
-                 // In the new flow, it should probably be 'accepted' or 'paid'
-                 // For now let's allow accepted.
-            }
+        // 3. Fetch Issue Details
+        const issueRows = await db.select().from(volumesIssues).where(eq(volumesIssues.id, issueId)).limit(1);
+        const issue = issueRows[0];
+        if (!issue) return { success: false, error: "Issue not found" };
 
-            // The styled PDF is usually a file of type 'pdf_version' in the latest version
-            const latestPdf = submission.allFiles.find(f => f.fileType === 'pdf_version');
-            if (!latestPdf) {
-                return { success: false, error: "Final styled PDF must be uploaded before publication." };
-            }
+        const settings = await getSettingsData();
 
-            // 4. Auto-Page Numbering Logic
-            let finalStartPage = startPage;
-            let finalEndPage = endPage;
+        // 4. Auto-Page Numbering Logic (outside transaction)
+        let finalStartPage = startPage;
+        let finalEndPage = endPage;
 
-            if (finalStartPage === undefined || finalEndPage === undefined) {
-                const maxPageRows = await tx.select({
-                    lastPage: sql<number>`MAX(${publications.endPage})`
-                })
-                .from(publications)
-                .where(eq(publications.issueId, issueId));
-                
-                const lastPage = maxPageRows[0]?.lastPage || 0;
-                if (finalStartPage === undefined) finalStartPage = lastPage + 1;
-                const startNum = finalStartPage as number; 
-                if (finalEndPage === undefined) {
-                    try {
-                        const cleanPath = latestPdf.fileUrl.replace(/^\/+/, '');
-                        const pdfPath = path.join(process.cwd(), 'public', cleanPath);
-                        const pdfBytes = await fs.readFile(pdfPath);
-                        const { PDFDocument } = await import('pdf-lib');
-                        const pdfDoc = await PDFDocument.load(pdfBytes);
-                        finalEndPage = startNum + pdfDoc.getPageCount() - 1;
-                    } catch (pdfErr) {
-                        console.error("Failed to read PDF for page count:", pdfErr);
-                        finalEndPage = startNum; // Fallback
-                    }
+        if (finalStartPage === undefined || finalEndPage === undefined) {
+            const [maxPageRow] = await db.select({
+                lastPage: sql<number>`MAX(${publications.endPage})`
+            }).from(publications).where(eq(publications.issueId, issueId));
+
+            const lastPage = maxPageRow?.lastPage || 0;
+            if (finalStartPage === undefined) finalStartPage = lastPage + 1;
+            const startNum = finalStartPage as number;
+            if (finalEndPage === undefined) {
+                try {
+                    const cleanPath = latestPdf.fileUrl.replace(/^\/+/, '');
+                    const pdfPath = path.join(process.cwd(), 'public', cleanPath);
+                    const pdfBytes = await fs.readFile(pdfPath);
+                    const { PDFDocument } = await import('pdf-lib');
+                    const pdfDoc = await PDFDocument.load(pdfBytes);
+                    finalEndPage = startNum + pdfDoc.getPageCount() - 1;
+                } catch (pdfErr) {
+                    console.error("Failed to read PDF for page count:", pdfErr);
+                    finalEndPage = startNum;
                 }
             }
-            const confirmedStartPage: number = finalStartPage as number;
-            const confirmedEndPage: number = finalEndPage as number;
+        }
+        const confirmedStartPage = finalStartPage as number;
+        const confirmedEndPage = finalEndPage as number;
 
-            // 5. Generate Branded PDF
-            const brandedFileName = `${submission.paperId}-published.pdf`;
-            const brandedRelativePath = `/uploads/published/${brandedFileName}`;
+        // 5. Generate Branded PDF OUTSIDE transaction (IO operation)
+        const brandedFileName = `${submission.paperId}-published.pdf`;
+        const brandedRelativePath = `/uploads/published/${brandedFileName}`;
+        const cleanInput = latestPdf.fileUrl.replace(/^\/+/, '');
 
-            const cleanInput = latestPdf.fileUrl.replace(/^\/+/, '');
-            await brandPdf(cleanInput, brandedRelativePath, {
-                journalName: settings.journal_name || "IJITEST",
-                journalShortName: "IJITEST",
-                volume: issue.volumeNumber,
-                issue: issue.issueNumber,
-                year: issue.year,
-                monthRange: issue.monthRange || "",
-                issn: settings.issn_number || "XXXX-XXXX",
-                website: settings.journal_website || "https://ijitest.org",
-                paperId: submission.paperId,
-                startPage: confirmedStartPage,
-                endPage: confirmedEndPage
-            });
+        await brandPdf(cleanInput, brandedRelativePath, {
+            journalName: settings.journal_name || "IJITEST",
+            journalShortName: "IJITEST",
+            volume: issue.volumeNumber,
+            issue: issue.issueNumber,
+            year: issue.year,
+            monthRange: issue.monthRange || "",
+            issn: settings.issn_number || "XXXX-XXXX",
+            website: settings.journal_website || "https://ijitest.org",
+            paperId: submission.paperId,
+            startPage: confirmedStartPage,
+            endPage: confirmedEndPage
+        });
 
-            // 6. Update Database (Publications Table)
+        // 6. Database transaction — only pure DB ops
+        await db.transaction(async (tx) => {
             await tx.insert(publications).values({
-                submissionId: submissionId,
-                issueId: issueId,
+                submissionId,
+                issueId,
                 finalPdfUrl: brandedRelativePath,
                 startPage: confirmedStartPage,
                 endPage: confirmedEndPage,
                 publishedAt: new Date()
             }).onDuplicateKeyUpdate({
                 set: {
-                    issueId: issueId,
+                    issueId,
                     finalPdfUrl: brandedRelativePath,
                     startPage: confirmedStartPage,
                     endPage: confirmedEndPage,
@@ -201,38 +198,27 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
                 }
             });
 
-            // 7. Update Submission Status & Link Issue
             await tx.update(submissions)
-                .set({ 
-                    status: 'published',
-                    issueId: issueId 
-                })
+                .set({ status: 'published', issueId })
                 .where(eq(submissions.id, submissionId));
-
-            // 8. Notifications
-            try {
-                const template = emailTemplates.manuscriptPublished(
-                    submission.author_name,
-                    submission.title,
-                    submission.paperId,
-                    issue.volumeNumber,
-                    issue.issueNumber,
-                    issue.year
-                );
-                await sendEmail({
-                    to: submission.author_email,
-                    subject: template.subject,
-                    html: template.html
-                });
-            } catch (emailErr) {
-                console.error("Failed to send publication email:", emailErr);
-            }
-
-            revalidatePath('/admin/submissions');
-            revalidatePath('/admin/publications');
-            revalidatePath('/archives');
-            return { success: true };
         });
+
+        // 7. Email notification AFTER transaction (fire-and-forget)
+        const template = emailTemplates.manuscriptPublished(
+            submission.author_name,
+            submission.title,
+            submission.paperId,
+            issue.volumeNumber,
+            issue.issueNumber,
+            issue.year
+        );
+        sendEmail({ to: submission.author_email, subject: template.subject, html: template.html })
+            .catch(e => console.error("Publication email failed:", e));
+
+        revalidatePath('/admin/submissions');
+        revalidatePath('/admin/publications');
+        revalidatePath('/archives');
+        return { success: true };
     } catch (error) {
         console.error("Assign Paper Error:", error);
         return { success: false, error: "Failed to assign paper: " + ((error as any)?.message || String(error)) };

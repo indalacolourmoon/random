@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileUp, FileCheck, Loader2, Download, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
-import { uploadManuscriptPdf } from "@/actions/submissions";
+import { Separator } from "@/components/ui/separator";
+import { uploadManuscriptPdf, autoSyncManuscriptToPdf } from "@/actions/submissions";
 
 export default function AdminPdfUpload({ submissionId, currentUrl }: { submissionId: number, currentUrl?: string | null }) {
     const [showUpload, setShowUpload] = useState(!currentUrl);
     const [isUploading, setIsUploading] = useState(false);
+    const [isConverting, setIsConverting] = useState(false);
 
     async function handleUpload(formData: FormData) {
         setIsUploading(true);
@@ -28,6 +30,24 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
         }
     }
 
+    async function handleAutoConvert() {
+        setIsConverting(true);
+        try {
+            const result = await autoSyncManuscriptToPdf(submissionId);
+            if (result.success) {
+                toast.success('PDF generated and synced successfully');
+                setShowUpload(false);
+                window.location.reload();
+            } else {
+                toast.error(result.error);
+            }
+        } catch (error) {
+            toast.error('Critical error during PDF conversion');
+        } finally {
+            setIsConverting(false);
+        }
+    }
+
     if (!showUpload && currentUrl) {
         return (
             <div className="space-y-4">
@@ -42,13 +62,24 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
                             <span>Download Active Asset</span>
                         </a>
                     </Button>
+
+                    <Button
+                        onClick={handleAutoConvert}
+                        disabled={isConverting || isUploading}
+                        variant="ghost"
+                        className="w-full h-11 gap-3 text-primary hover:text-primary font-black text-[10px] tracking-widest rounded-xl hover:bg-primary/5 transition-all cursor-pointer border border-primary/10"
+                    >
+                        {isConverting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                        <span>Update using PDF Converter</span>
+                    </Button>
+
                     <Button
                         onClick={() => setShowUpload(true)}
                         variant="ghost"
                         className="w-full h-11 gap-3 text-muted-foreground hover:text-primary font-black text-[10px] tracking-widest rounded-xl hover:bg-primary/5 transition-all cursor-pointer border border-transparent hover:border-primary/10"
                     >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Update Manuscript PDF</span>
+                        <FileUp className="w-4 h-4" />
+                        <span>Manual File Override</span>
                     </Button>
                 </div>
             </div>
@@ -59,16 +90,37 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
         <form action={handleUpload} className="space-y-4">
             <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Upload PDF Manuscript</label>
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Manuscript Source</label>
                     {currentUrl && (
                         <button
                             type="button"
                             onClick={() => setShowUpload(false)}
                             className="flex items-center gap-1 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-600 transition-colors"
                         >
-                            <X className="w-3 h-3" /> Cancel
+                            <X className="w-3 h-3" /> Close
                         </button>
                     )}
+                </div>
+
+                <Button
+                    type="button"
+                    onClick={handleAutoConvert}
+                    disabled={isConverting || isUploading}
+                    variant="outline"
+                    className="w-full h-16 gap-4 border-primary/20 bg-primary/5 text-primary font-black text-[11px] tracking-widest rounded-2xl hover:bg-primary hover:text-white dark:hover:text-black transition-all shadow-xl shadow-primary/5 cursor-pointer relative overflow-hidden group"
+                >
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-3">
+                            {isConverting ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-700" />}
+                            <span>Upload using PDF Converter</span>
+                        </div>
+                        <span className="text-[8px] opacity-60 font-medium tracking-normal">Direct Docx to PDF Translation</span>
+                    </div>
+                </Button>
+
+                <div className="relative py-2">
+                    <Separator className="bg-border/50" />
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">or manual upload</span>
                 </div>
 
                 <div className={`relative group border-2 border-dashed rounded-xl p-8 transition-all duration-300 flex flex-col items-center justify-center gap-4 ${isUploading ? 'bg-primary/5 border-primary/20 cursor-wait' : 'bg-muted/30 border-primary/10 hover:bg-primary/3 hover:border-primary/30 cursor-pointer'}`}>
@@ -79,7 +131,7 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
                         accept=".pdf"
                         required
                         className="absolute inset-0 opacity-0 cursor-pointer z-10 disabled:cursor-wait"
-                        disabled={isUploading}
+                        disabled={isUploading || isConverting}
                     />
                     
                     {isUploading ? (
@@ -94,7 +146,7 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
                             </div>
                             <div className="text-center space-y-1">
                                 <p className="text-[11px] font-black text-primary uppercase tracking-widest">Select Secure PDF</p>
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider opacity-40">Manuscript formatting enforced</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider opacity-40">Manual override only</p>
                             </div>
                         </>
                     )}
@@ -103,7 +155,7 @@ export default function AdminPdfUpload({ submissionId, currentUrl }: { submissio
 
             <Button
                 type="submit"
-                disabled={isUploading}
+                disabled={isUploading || isConverting}
                 className="w-full h-12 gap-3 bg-primary text-white dark:text-black font-black text-xs tracking-widest rounded-xl transition-all shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 cursor-pointer"
             >
                 {isUploading ? (

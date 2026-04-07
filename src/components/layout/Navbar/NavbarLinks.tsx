@@ -53,9 +53,9 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                 >
                     <Link
                         href={item.href}
-                        className={`transition-all duration-300 flex items-center gap-2 relative px-2 lg:px-3 ${isActive ? 'text-primary font-bold' : 'text-black font-medium hover:text-primary'}`}
+                        className={`transition-all duration-300 flex items-center gap-2 relative px-2 lg:px-3 ${isActive ? 'text-primary' : 'text-black hover:text-primary'}`}
                     >
-                        <span className="relative  z-10 lg:text-sm  xl:text-lg 2xl:text-xl">{item.name}</span>
+                        <span className="relative z-10">{item.name}</span>
                         {item.children && (
                             <ChevronDown className={`w-3.5 h-3.5 2xl:w-5 2xl:h-5 transition-transform duration-500 text-secondary/50 group-hover:text-secondary ${isHovered ? 'rotate-180' : ''}`} />
                         )}
@@ -89,7 +89,7 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                                             <li key={child.name}>
                                                 <Link
                                                     href={child.href}
-                                                    className={`block px-8 py-3.5 2xl:px-12 2xl:py-6 text-[14px] 2xl:text-xl tracking-widest transition-all relative group/child ${isChildActive ? ' font-bold text-primary' : ' font-semibold text-black hover:text-primary'}`}
+                                                    className={`block px-8 py-3.5 2xl:px-12 2xl:py-6 tracking-widest transition-all relative group/child ${isChildActive ? 'text-primary' : 'text-black hover:text-primary'}`}
                                                 >
                                                     <span className="relative z-10 flex items-center gap-3">
                                                         <div className={`w-1.5 h-1.5 2xl:w-2.5 2xl:h-2.5 rounded-full transition-all duration-300 ${isChildActive ? 'bg-secondary scale-125' : 'bg-secondary/0 group-hover/child:bg-secondary'}`} />

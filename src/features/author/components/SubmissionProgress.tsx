@@ -44,15 +44,15 @@ export function SubmissionProgress({ status, className }: SubmissionProgressProp
                     return (
                         <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
                             <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500",
+                                "w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300",
                                 isCompleted ? "bg-primary border-primary text-primary-foreground" : 
-                                isActive ? "bg-background border-primary text-primary animate-pulse" : 
+                                isActive ? "bg-background border-primary text-primary" : 
                                 "bg-background border-muted text-muted-foreground"
                             )}>
                                 <Icon className="w-4 h-4" />
                             </div>
                             <span className={cn(
-                                "text-[10px] font-black uppercase tracking-tighter sm:tracking-widest transition-colors duration-500",
+                                "transition-colors duration-300",
                                 (isCompleted || isActive) ? "text-foreground" : "text-muted-foreground opacity-50"
                             )}>
                                 {step.label}

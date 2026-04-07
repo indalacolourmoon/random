@@ -29,10 +29,10 @@ export default async function JoinUsPage() {
         <main className="bg-background min-h-screen">
             <PageHeader
                 title="Become a Reviewer"
-                description="Contribute your expertise as a peer reviewer to the global scientific community and help shape the future of engineering."
+                description="Join our team of expert reviewers and help maintain the high standards of our journal."
                 breadcrumbs={[
                     { name: "Home", href: "/" },
-                    { name: "Become a Reviewer", href: "/join-us" }
+                    { name: "Join Us", href: "/join-us" }
                 ]}
             />
             <JoinUsClient settings={settings} />

@@ -26,7 +26,7 @@ function CurrentIssueWidget() {
     if (!currentStatus) return null;
 
     if (isLoading) return (
-        <Card className="border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden bg-white group rounded-[2.5rem]">
+        <Card className="border border-primary/10 shadow-xl shadow-primary/5 overflow-hidden bg-primary/5 group rounded-[2.5rem]">
             <CardContent className="p-12 flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary/20" />
             </CardContent>
@@ -40,7 +40,7 @@ function CurrentIssueWidget() {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5 }}
         >
-            <Card className="border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden bg-white group rounded-[2.5rem]">
+            <Card className="border border-primary/10 shadow-xl shadow-primary/5 overflow-hidden bg-primary/5 group rounded-[2.5rem]">
                 <CardHeader className="p-6 pb-2 2xl:p-10 2xl:pb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 2xl:w-16 2xl:h-16 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-secondary group-hover:text-white transition-colors duration-500">
@@ -52,11 +52,11 @@ function CurrentIssueWidget() {
                 <CardContent className="p-6 pt-4 2xl:p-10 2xl:pt-8 space-y-6 2xl:space-y-10">
                     <div className="space-y-1.5 2xl:space-y-3 pl-2 sm:pl-4 border-l-4 border-secondary/30">
                         <div className="flex items-center gap-2">
-                            <p className="text-secondary m-0">Volume {currentStatus.volume}</p>
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                            <p className="text-secondary m-0">Issue {currentStatus.issue}</p>
+                            <p className="text-secondary m-0 text-xs 2xl:text-lg">Volume {currentStatus.volume}</p>
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+                            <p className="text-secondary m-0 text-xs 2xl:text-lg">Issue {currentStatus.issue}</p>
                         </div>
-                        <p className="font-bold text-slate-600 m-0">{currentStatus.date}</p>
+                        <p className="font-bold text-foreground/70 m-0 text-xs 2xl:text-lg">{currentStatus.date}</p>
                     </div>
  
                     <div className="pt-2">

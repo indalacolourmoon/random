@@ -41,23 +41,25 @@ export default function ContactClient({ settings }: ContactClientProps) {
                 {/* Main Contact Section */}
                 <div className="lg:col-span-2 space-y-16">
                     {/* Contact Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {contactMethods.map((method, idx) => (
                             <section key={idx} className="group relative">
-                                <div className={`p-10 2xl:p-16 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] ${method.accent === 'primary' ? 'border-l-primary/10 hover:border-l-primary' : 'border-l-secondary/10 hover:border-l-secondary'}`}>
-                                    <div className={`w-14 h-14 2xl:w-20 2xl:h-20 rounded-2xl flex items-center justify-center mb-8 transition-colors ${method.accent === 'primary' ? 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-secondary/5 text-secondary group-hover:bg-secondary group-hover:text-white'}`}>
-                                        <method.icon className="w-7 h-7 2xl:w-10 2xl:h-10" />
+                                <div className={`p-6 bg-white border border-primary/5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border-l-4 flex items-center gap-5 ${method.accent === 'primary' ? 'border-l-primary/10 hover:border-l-primary' : 'border-l-secondary/10 hover:border-l-secondary'}`}>
+                                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${method.accent === 'primary' ? 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-secondary/5 text-secondary group-hover:bg-secondary group-hover:text-white'}`}>
+                                        <method.icon className="w-5 h-5" />
                                     </div>
-                                    <h3 className="text-primary/50 mb-3 m-0 font-black tracking-widest uppercase">{method.title}</h3>
-                                    <a
-                                        href={method.href}
-                                        className="text-primary hover:text-secondary transition-colors block mb-6 break-words no-underline font-black m-0 text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl uppercase tracking-wider"
-                                    >
-                                        {method.value}
-                                    </a>
-                                    <div className="flex items-center gap-2 text-primary/20 text-xs font-bold tracking-wider">
-                                        <Clock className="w-4 h-4" />
-                                        {method.subtext}
+                                    <div className="space-y-1 min-w-0">
+                                        <h3 className="text-xs font-bold text-primary/60 lowercase m-0">{method.title}</h3>
+                                        <a
+                                            href={method.href}
+                                            className="text-primary hover:text-secondary transition-colors block break-words no-underline font-bold text-lg sm:text-xl lowercase"
+                                        >
+                                            {method.value}
+                                        </a>
+                                        <div className="flex items-center gap-1.5 text-[10px] text-primary/40 font-bold lowercase">
+                                            <Clock className="w-3.5 h-3.5 opacity-40" />
+                                            {method.subtext}
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -65,11 +67,11 @@ export default function ContactClient({ settings }: ContactClientProps) {
                     </div>
 
                     {/* Contact Form Section */}
-                    <section className="space-y-10">
-                        <h2 className="text-primary m-0">
-                            Send Us a Message
+                    <section className="space-y-6">
+                        <h2 className="text-primary/90 m-0 text-xl font-bold lowercase">
+                            send us a message
                         </h2>
-                        <div className="p-8 sm:p-14 2xl:p-20 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm border-l-[6px] border-l-primary/5">
+                        <div className="p-6 bg-white border border-primary/5 rounded-2xl shadow-sm border-l-4 border-l-primary/5">
                             <ContactForm />
                         </div>
                     </section>
@@ -78,14 +80,16 @@ export default function ContactClient({ settings }: ContactClientProps) {
                 {/* Sidebar Utilities */}
                 <aside className="space-y-12">
                     {/* Office Address Card */}
-                    <section className="space-y-6">
-                        <h3 className="text-primary/60 pl-4 border-l border-primary m-0 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em]">Editorial Headquarters</h3>
-                        <div className="p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm border-l-[6px] border-l-secondary/10 hover:border-l-secondary transition-all group">
-                            <div className="w-12 h-12 bg-secondary/5 rounded-xl flex items-center justify-center mb-8 text-secondary group-hover:bg-secondary group-hover:text-white transition-colors">
-                                <MapPin className="w-6 h-6" />
+                    <section className="space-y-3">
+                        <h3 className="text-primary/60 pl-3 border-l-2 border-primary m-0 text-[10px] font-bold lowercase">editorial headquarters</h3>
+                        <div className="p-6 bg-white border border-primary/5 rounded-2xl shadow-sm border-l-4 border-l-secondary/10 hover:border-l-secondary transition-all group flex items-start gap-4">
+                            <div className="w-10 h-10 bg-secondary/5 rounded-lg flex items-center justify-center shrink-0 text-secondary group-hover:bg-secondary group-hover:text-white transition-colors">
+                                <MapPin className="w-5 h-5" />
                             </div>
-                            <h3 className="mb-2 m-0">{publisherName}</h3>
-                            <p className="text-primary/70 mb-0">{officeAddress}</p>
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-bold text-primary/90 m-0 lowercase">{publisherName}</h3>
+                                <p className="text-xs text-primary/60 m-0 leading-relaxed lowercase">{officeAddress}</p>
+                            </div>
                         </div>
                     </section>
 

@@ -58,11 +58,11 @@ export default function LoginClient() {
                     <div className="bg-primary/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-primary/10">
                         <Lock className="w-10 h-10 text-primary" />
                     </div>
-                    <h1 className="font-black text-gray-900 mb-2  tracking-wider leading-none">Portal Access</h1>
-                    <p className="text-gray-600 font-medium text-xs sm:text-sm tracking-wide m-0">International Journal of Innovative Trends in Science, Engineering and Technology</p>
+                    <h1 className="text-gray-900 mb-2 leading-none">Portal Access</h1>
+                    <p className="text-gray-600 font-medium text-xs sm:text-sm m-0">International Journal of Innovative Trends in Science, Engineering and Technology</p>
                 </section>
 
-                <div className="bg-white p-10 rounded-xl shadow-xl shadow-gray-200/50 border border-gray-100">
+                <div className="relative group p-8 sm:p-12 bg-primary/5 rounded-[2.5rem] border border-primary/10 shadow-sm overflow-hidden">
                     {error && (
                         <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-bold flex items-center gap-2">
                             {error}
@@ -70,28 +70,28 @@ export default function LoginClient() {
                     )}
                     <form action={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-xs font-black text-primary tracking-widest  mb-3 ml-2">Email Address</label>
+                            <label className="block text-xs font-bold text-primary mb-3 ml-2">Email Address</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                                 <input
                                     name="email"
                                     type="email"
                                     required
-                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-gray-900 font-bold placeholder:text-gray-400"
+                                    className="w-full pl-12 pr-4 py-3 rounded-lg bg-background border border-primary/10 focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none text-primary font-semibold text-sm"
                                     placeholder="editor@ijitest.org"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-black text-primary tracking-widest  mb-3 ml-2">Secure Password</label>
+                            <label className="block text-xs font-bold text-primary mb-3 ml-2">Secure Password</label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
                                     required
-                                    className="w-full pl-12 pr-12 py-4 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-gray-900 font-bold placeholder:text-gray-400"
+                                    className="h-10 w-full rounded-xl bg-primary/5 border border-primary/10 px-6 py-2 text-xs font-semibold transition-all shadow-sm text-primary cursor-pointer outline-none"
                                     placeholder="••••••••"
                                 />
                                 <button

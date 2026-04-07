@@ -65,11 +65,10 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
 
                             <div className="space-y-3 mb-6 shrink-0 ">
 
-                                <h2 className=" pb-2 font-black text-primary leading-wider sm:leading-none tracking-widerer">
+                                <h2 className="pb-2 text-primary">
                                     Publish Your Research
-
                                 </h2>
-                                <p className="text-xs sm:text-sm text-primary/60 font-medium leading-relaxed border-l-4 border-secondary/50 pl-6 text-left max-w-sm mx-auto sm:max-w-none">
+                                <p className="opacity-60 leading-relaxed border-l-4 border-secondary/50 pl-6 text-left max-w-sm mx-auto sm:max-w-none">
                                     In our commitment to supporting the next generation of innovators, the Primary Investigator will receive a 100% APC Waiver for our inaugural 2026 volume.
                                 </p>
                             </div>
@@ -78,7 +77,7 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm shrink-0 border border-primary/5">
                                     <Gift className="animate-shine w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
                                 </div>
-                                <p className="text-[12px]  text-left  tracking-widest text-black/70   ">
+                                <p className="opacity-70 text-left">
                                     Limited engagement window. Applicable for high-fidelity technical submissions validated this session.
                                 </p>
                             </div>
@@ -87,9 +86,9 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
                                 <Link href="/submit">
                                     <Button
                                         onClick={closePopup}
-                                        className=" w-full h-12 sm:h-14 bg-linear-to-r from-primary via-purple/80 from-32% hover:from-60% to-secondary text-white rounded-xl sm:rounded-2xl font-black text-[9px] cursor-pointer sm:text-[10px] md:text-base  tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.01] transition-all group/btn"
+                                        className="w-full h-12 sm:h-14 bg-linear-to-r from-primary via-purple/80 from-32% hover:from-60% to-secondary text-white rounded-xl sm:rounded-2xl cursor-pointer shadow-xl shadow-primary/20 hover:scale-[1.01] transition-all group/btn"
                                     >
-                                        <span className="flex items-center justify-center gap-2 ">
+                                        <span className="flex items-center justify-center gap-2">
                                             Submit Paper <Send className="w-4 h-4 group-hover:translate-x-1  hover:-translate-y-1 transition-transform" />
                                         </span>
                                     </Button>
@@ -97,7 +96,7 @@ export default function PromotionPopup({ settings }: { settings?: Record<string,
                                 <Button
                                     variant="link"
                                     onClick={closePopup}
-                                    className="text-[12px] text-black tracking-[0.2em] transition-all h-10 hover:text-primary cursor-pointer"
+                                    className="opacity-100 text-black transition-all h-10 hover:text-primary cursor-pointer"
                                 >
                                     Ask me later
                                 </Button>

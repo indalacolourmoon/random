@@ -27,7 +27,7 @@ import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import fs from 'fs/promises';
 import path from 'path';
-import { eq, desc, and, isNull } from "drizzle-orm";
+import { eq, desc, and, isNull, inArray } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
@@ -187,28 +187,29 @@ export async function decideSubmission(id: number, decision: 'accepted' | 'rejec
         const apcAmount = apcRows[0]?.settingValue || '0';
         const apcCurrency = 'INR';
 
+        const isFree = parseFloat(apcAmount) === 0;
+
         await db.transaction(async (tx) => {
             const status = decision === 'accepted' ? 'accepted' : 'rejected';
             await tx.update(submissions).set({ status }).where(eq(submissions.id, id));
 
             if (decision === 'accepted' && parseFloat(apcAmount) > 0) {
-                // Prepare payment record if not zero charge
                 await tx.insert(payments).values({
                     submissionId: id,
-                    amount: Number(apcAmount).toFixed(2), // Fixed-point formatting for decimal column
+                    amount: Number(apcAmount).toFixed(2),
                     currency: apcCurrency,
                     status: 'pending'
                 }).onDuplicateKeyUpdate({ set: { status: 'pending' } });
             }
-
-            const isFree = parseFloat(apcAmount) === 0;
-
-            const template = decision === 'accepted' 
-                ? emailTemplates.manuscriptAcceptance(submission.author_name, submission.title, submission.paperId, isFree)
-                : emailTemplates.manuscriptRejection(submission.author_name, submission.title, submission.paperId, "Does not meet editorial criteria.");
-
-            await sendEmail({ to: submission.author_email, subject: template.subject, html: template.html });
         });
+
+        // Email is fire-and-forget — SMTP failure should not rollback the decision
+        const template = decision === 'accepted' 
+            ? emailTemplates.manuscriptAcceptance(submission.author_name, submission.title, submission.paperId, isFree)
+            : emailTemplates.manuscriptRejection(submission.author_name, submission.title, submission.paperId, "Does not meet editorial criteria.");
+
+        sendEmail({ to: submission.author_email, subject: template.subject, html: template.html })
+            .catch(e => console.error("Decision email failed:", e));
 
         revalidatePath('/admin/submissions');
         revalidatePath(`/admin/submissions/${id}`);
@@ -270,7 +271,8 @@ export async function requestResubmissionWithComments(
             submission.author_name,
             submission.title,
             submission.paperId,
-            comments
+            comments,
+            submissionId
         );
         await sendEmail({ to: submission.author_email, subject: emailData.subject, html: emailData.html });
 
@@ -292,7 +294,15 @@ export async function deleteSubmission(id: number): Promise<ActionResponse> {
 
         // 1. Database cleanup
         await db.transaction(async (tx) => {
-            // Cascade should handle versions, files, and authors, but we do it manually for extra safety
+            // Delete reviews before assignments (FK constraint)
+            const assignmentRows = await tx
+                .select({ id: reviewAssignments.id })
+                .from(reviewAssignments)
+                .where(eq(reviewAssignments.submissionId, id));
+            if (assignmentRows.length > 0) {
+                const aIds = assignmentRows.map(a => a.id);
+                await tx.delete(reviews).where(inArray(reviews.assignmentId, aIds));
+            }
             await tx.delete(submissionAuthors).where(eq(submissionAuthors.submissionId, id));
             await tx.delete(payments).where(eq(payments.submissionId, id));
             await tx.delete(reviewAssignments).where(eq(reviewAssignments.submissionId, id));
@@ -385,5 +395,81 @@ export async function uploadManuscriptPdf(submissionId: number, formData: FormDa
     } catch (error) {
         console.error("Upload PDF Error:", error);
         return { success: false, error: "Failed to upload PDF: " + (error instanceof Error ? error.message : String(error)) };
+    }
+}
+
+/**
+ * Automated DOCX to PDF Conversion using iLovePDF
+ */
+import { convertDocxToPdf } from "@/lib/ilovepdf";
+
+export async function autoSyncManuscriptToPdf(submissionId: number): Promise<ActionResponse> {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Unauthorized" };
+
+        // 1. Fetch Latest Version & Main Manuscript (.docx)
+        const versionRows = await db.select()
+            .from(submissionVersions)
+            .where(eq(submissionVersions.submissionId, submissionId))
+            .orderBy(desc(submissionVersions.versionNumber))
+            .limit(1);
+        
+        if (!versionRows.length) return { success: false, error: "No version records found." };
+        const latestVersion = versionRows[0];
+
+        const fileRows = await db.select()
+            .from(submissionFiles)
+            .where(and(
+                eq(submissionFiles.versionId, latestVersion.id),
+                eq(submissionFiles.fileType, 'main_manuscript')
+            ))
+            .limit(1);
+
+        if (!fileRows.length) return { success: false, error: "No DOCX manuscript found for conversion." };
+        const docxFile = fileRows[0];
+
+        // 2. Read DOCX from disk
+        const docxPath = path.join(process.cwd(), 'public', docxFile.fileUrl.replace(/^\/+/, ''));
+        const docxBuffer = await fs.readFile(docxPath);
+
+        // 3. Convert to PDF
+        const pdfBuffer = await convertDocxToPdf(docxBuffer, docxFile.originalName || "manuscript.docx");
+
+        // 4. Save PDF to disk
+        const timestamp = Date.now();
+        const fileName = `auto_final_v${latestVersion.versionNumber}_${timestamp}.pdf`;
+        const fileUrl = `/uploads/submissions/${fileName}`;
+        const uploadDir = path.join(process.cwd(), "public/uploads/submissions");
+        
+        await fs.mkdir(uploadDir, { recursive: true });
+        await fs.writeFile(path.join(uploadDir, fileName), pdfBuffer);
+
+        // 5. Update Database
+        await db.transaction(async (tx) => {
+            // Remove existing PDF version if it exists
+            await tx.delete(submissionFiles).where(and(
+                eq(submissionFiles.versionId, latestVersion.id),
+                eq(submissionFiles.fileType, 'pdf_version')
+            ));
+
+            await tx.insert(submissionFiles).values({
+                versionId: latestVersion.id,
+                fileType: 'pdf_version',
+                fileUrl: fileUrl,
+                originalName: fileName,
+                fileSize: pdfBuffer.length
+            });
+
+            await tx.update(submissions).set({ updatedAt: new Date() }).where(eq(submissions.id, submissionId));
+        });
+
+        revalidatePath(`/admin/submissions/${submissionId}`);
+        revalidatePath(`/reviewer/submissions/${submissionId}`);
+        
+        return { success: true };
+    } catch (error) {
+        console.error("Auto Sync PDF Error:", error);
+        return { success: false, error: "Conversion failed: " + (error instanceof Error ? error.message : String(error)) };
     }
 }

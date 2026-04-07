@@ -22,6 +22,7 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
             full_name: m.profile?.fullName || "Staff",
             designation: m.profile?.designation || "Editor",
             institute: m.profile?.institute || "IJITEST",
+            nationality: m.profile?.nationality || "",
             email: m.email,
             role: m.role
         }));
@@ -76,7 +77,7 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
                 <section key={idx} className="overflow-hidden rounded-xl border border-primary/10 shadow-sm">
                     {/* Role Header */}
                     <div className="bg-[#4a154b] p-3 px-6 2xl:p-8 2xl:px-14">
-                        <h2 className="text-white m-0 uppercase tracking-widest font-black">
+                        <h2 className="text-white m-0 font-bold text-lg 2xl:text-2xl tracking-tight">
                             {category.role}
                         </h2>
                     </div>
@@ -86,15 +87,21 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
                             <article key={mIdx} className="group">
                                 {/* Name Row */}
                                 <header className="bg-[#f0f9ff] py-3 px-6 2xl:py-8 2xl:px-14 flex items-center gap-3">
-                                    <h3 className="text-[#2563eb] m-0 font-black uppercase tracking-wider">
+                                    <h3 className="text-[#2563eb] m-0 font-bold text-base 2xl:text-xl">
                                         {member.full_name}
                                     </h3>
                                 </header>
 
                                 {/* Institution & Details Row */}
                                 <div className="bg-[#f8fafc] py-4 px-6 2xl:py-10 2xl:px-14 space-y-2 2xl:space-y-6">
-                                    <div className="flex gap-3 text-slate-700 font-medium text-xs sm:text-sm lg:text-base 2xl:text-lg">
-                                        <p className="m-0">{member.institute}, {member.designation}</p>
+                                    <div className="flex gap-3 text-slate-600 font-medium text-xs sm:text-sm lg:text-base 2xl:text-lg">
+                                        <p className="m-0">
+                                            {member.designation}. {member.institute}
+                                            {member.nationality && member.institute.toLowerCase().indexOf(member.nationality.toLowerCase()) === -1 
+                                                ? `. ${member.nationality}` 
+                                                : ""
+                                            }
+                                        </p>
                                     </div>
                                     {member.email && (idx === 0 || member.role === 'admin') && (
                                         <div className="flex gap-3 text-primary/60 font-medium text-sm">
@@ -115,12 +122,12 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
             <section className="pt-12 border-t border-primary/10">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-8 py-10">
                     <div>
-                        <h3 className="text-primary mb-2 m-0 font-black uppercase tracking-widest">Editorial Support</h3>
+                        <h3 className="text-primary mb-2 m-0 font-bold text-lg 2xl:text-2xl">Editorial Support</h3>
                         <p className="text-primary/50 font-medium m-0 text-sm">For inquiries related to editor roles or board selection.</p>
                     </div>
                     <a
                         href={`mailto:${supportEmail}`}
-                        className="text-secondary hover:text-primary transition-colors border-b-2 border-secondary/20 hover:border-primary pb-1 font-black text-xl lg:text-3xl"
+                        className="text-secondary hover:text-primary transition-colors border-b-2 border-secondary/20 hover:border-primary pb-1 font-bold text-lg lg:text-2xl"
                     >
                         {supportEmail}
                     </a>

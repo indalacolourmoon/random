@@ -41,13 +41,13 @@ export default function ContactForm() {
 
     if (contactMutation.isSuccess) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center space-y-4 sm:space-y-6 animate-in fade-in zoom-in duration-500 bg-white rounded-3xl border border-primary/5 shadow-sm">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner border border-emerald-100">
-                    <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10" />
+            <div className="flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in zoom-in duration-500 bg-white rounded-2xl border border-primary/5 shadow-sm">
+                <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center shadow-inner border border-emerald-100">
+                    <CheckCircle className="w-6 h-6" />
                 </div>
-                <div className="space-y-2">
-                    <h3 className=" font-black text-primary tracking-widerer">Message <span className="text-emerald-600">Transmitted</span></h3>
-                    <p className="text-primary/60 font-medium max-w-xs mx-auto text-xs sm:text-sm leading-relaxed">Our editorial team will get back to you within 24-48 hours via email.</p>
+                <div className="space-y-1">
+                    <h3 className="font-bold text-primary lowercase">message <span className="text-emerald-600">transmitted</span></h3>
+                    <p className="text-primary/60 font-medium max-w-xs mx-auto text-[10px] leading-relaxed lowercase">our editorial team will get back to you within 24-48 hours via email.</p>
                 </div>
                 <button 
                   type="button" 
@@ -55,19 +55,19 @@ export default function ContactForm() {
                     contactMutation.reset();
                     form.reset();
                   }} 
-                  className="rounded-xl border border-primary/20 text-primary hover:bg-primary/5 font-black uppercase text-xs tracking-widest mt-4 px-6 py-3 transition-all"
+                  className="rounded-lg border border-primary/10 text-primary hover:bg-primary/5 font-bold lowercase text-[10px] mt-2 px-4 py-2 transition-all"
                 >
-                  Send Another Message
+                  send another message
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-4">
             <div>
-                <h3 className=" font-black text-primary tracking-wider">Direct Inquiry Form</h3>
-                <p className="text-primary/60 text-xs font-medium mt-1">Fill out the form below and we'll get back to you shortly.</p>
+                <h3 className="font-bold text-primary lowercase">direct inquiry form</h3>
+                <p className="text-primary/60 text-[10px] font-medium mt-0.5 lowercase">fill out the form below and we'll get back to you shortly.</p>
             </div>
 
             <Form {...form}>
@@ -130,21 +130,21 @@ export default function ContactForm() {
                     <Button
                         type="submit"
                         disabled={contactMutation.isPending}
-                        className="w-full h-12 sm:h-14 bg-primary text-white rounded-xl font-black text-sm sm:text-xs tracking-widest sm:tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                        className="w-full h-11 bg-primary text-white rounded-lg font-bold text-xs shadow-sm hover:bg-primary/95 transition-all lowercase"
                     >
                         {contactMutation.isPending ? (
-                            <div className="text-lg flex items-center justify-center gap-2">
-                                Transmitting <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                            <div className="flex items-center justify-center gap-2">
+                                transmitting <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             </div>
                         ) : (
-                            <div className="text-lg flex items-center justify-center gap-2">
-                                Submit <Send className="w-4 h-4 ml-2" />
+                            <div className="flex items-center justify-center gap-2">
+                                submit message <Send className="w-3.5 h-3.5" />
                             </div>
                         )}
                     </Button>
 
                     {contactMutation.isError && (
-                        <p className="text-secondary text-center font-bold text-xs uppercase tracking-wider">Failed to transmit. Please try again.</p>
+                        <p className="text-rose-500 text-center font-bold text-[10px] lowercase">failed to transmit. please try again.</p>
                     )}
                 </form>
             </Form>

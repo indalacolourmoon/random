@@ -265,7 +265,7 @@ export async function resubmitPaper(submissionId: number, formData: FormData): P
                 .set({ status: 'submitted', updatedAt: new Date() })
                 .where(eq(submissions.id, submissionId));
 
-            return { mName, cName, nextVersion };
+            return { mName, cName, nextVersion, verId };
         });
 
         // 2. FILE SYSTEM OPERATIONS (POST-COMMIT)
@@ -277,8 +277,16 @@ export async function resubmitPaper(submissionId: number, formData: FormData): P
             await fs.writeFile(path.join(uploadDir, result.cName), Buffer.from(await copyrightFile.arrayBuffer()));
             fileCleanup.push(path.join(uploadDir, result.cName));
         } catch (ioErr) {
-            // If IO fails, we must cleanup the DB state to avoid broken versions
-            await db.delete(submissionVersions).where(and(eq(submissionVersions.submissionId, submissionId), eq(submissionVersions.versionNumber, result.nextVersion)));
+            // IO failed — rollback: delete orphaned version + its file records, reset submission status
+            await db.transaction(async (tx) => {
+                await tx.delete(submissionFiles).where(eq(submissionFiles.versionId, result.verId));
+                await tx.delete(submissionVersions).where(
+                    and(eq(submissionVersions.submissionId, submissionId), eq(submissionVersions.versionNumber, result.nextVersion))
+                );
+                await tx.update(submissions)
+                    .set({ status: 'revision_requested', updatedAt: new Date() })
+                    .where(eq(submissions.id, submissionId));
+            });
             throw new Error("Failed to save files on server. Please try again.");
         }
 
@@ -291,20 +299,18 @@ export async function resubmitPaper(submissionId: number, formData: FormData): P
             })
             .from(submissions)
             .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
-            .innerJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+        .innerJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
             .where(and(eq(submissions.id, submissionId), eq(submissionVersions.versionNumber, result.nextVersion)))
             .limit(1);
 
             if (paperData.length > 0) {
                 const { paperId, title, authorName } = paperData[0];
-                const staff = await db.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
-                const template = emailTemplates.resubmissionReceived(authorName, title, paperId, submissionId);
+                const staff = await db.select({ email: users.email, role: users.role }).from(users).where(inArray(users.role, ['admin', 'editor']));
                 
-                await Promise.allSettled(staff.map(s => sendEmail({
-                    to: s.email,
-                    subject: template.subject,
-                    html: template.html
-                })));
+                await Promise.allSettled(staff.map(s => {
+                    const template = emailTemplates.resubmissionReceived(authorName, title, paperId, submissionId, s.role as 'admin' | 'editor');
+                    return sendEmail({ to: s.email, subject: template.subject, html: template.html });
+                }));
             }
         } catch (mailErr) {
             console.error("Resubmission Notification Error:", mailErr);

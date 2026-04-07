@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUsers, createUser, deleteUser } from '@/actions/users';
+import { getUsers, createUser, deleteUser, updateUserRole } from '@/actions/users';
 import { UserWithProfile } from '@/db/types';
 
 export function useUsers(role?: string) {
@@ -20,6 +20,20 @@ export function useCreateUser() {
     return useMutation({
         mutationFn: async (formData: FormData) => {
             return await createUser(formData);
+        },
+        onSuccess: (data) => {
+            if (data.success) {
+                queryClient.invalidateQueries({ queryKey: ['users'] });
+            }
+        },
+    });
+}
+
+export function useUpdateUserRole() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ userId, role }: { userId: string, role: any }) => {
+            return await updateUserRole(userId, role);
         },
         onSuccess: (data) => {
             if (data.success) {

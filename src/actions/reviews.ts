@@ -18,6 +18,8 @@ import {
 } from "@/db/schema";
 
 import { convertDocxToPdf } from "@/lib/ilovepdf";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 import { ActionResponse } from "@/db/types";
 
@@ -26,14 +28,17 @@ import { ActionResponse } from "@/db/types";
  * Enforces a strict limit of 6 reviewers per submission.
  */
 export async function assignReviewer(formData: FormData): Promise<ActionResponse> {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return { success: false, error: "Authentication required." };
+    
     const submissionId = parseInt(formData.get('submissionId') as string);
     const reviewerId = formData.get('reviewerId') as string;
     const deadline = formData.get('deadline') as string;
-    const assignedBy = formData.get('assignedBy') as string;
+    const assignedBy = (session.user as any).id;
     const pdfFile = formData.get('pdfFile') as File;
 
     try {
-        return await db.transaction(async (tx) => {
+        const txResult = await db.transaction(async (tx) => {
             // 1. Max 6 reviewers check (Total assignments for this submission)
             const [totalAssignments] = await tx.select({ value: count() })
                 .from(reviewAssignments)
@@ -148,13 +153,13 @@ export async function assignReviewer(formData: FormData): Promise<ActionResponse
                 }
             }
 
-            // 6. Record Assignment
-            const roundRes = await tx.select({ max: sql<number>`MAX(review_round)` })
+            // 6. Record Assignment — all reviewers in same batch share the same round
+            const [roundRes] = await tx.select({ max: sql<number>`MAX(review_round)` })
                 .from(reviewAssignments)
                 .where(eq(reviewAssignments.submissionId, submissionId));
-            const reviewRound = (roundRes[0]?.max || 0) + 1;
+            const reviewRound = roundRes?.max || 1;
 
-            await tx.insert(reviewAssignments).values({
+            const [newAssignment] = await tx.insert(reviewAssignments).values({
                 submissionId,
                 reviewerId,
                 versionId: version.id,
@@ -163,40 +168,44 @@ export async function assignReviewer(formData: FormData): Promise<ActionResponse
                 status: 'assigned',
                 deadline: new Date(deadline),
                 assignedAt: new Date(),
-            });
+            }).$returningId();
 
             // 7. Update Submission Status
             await tx.update(submissions)
                 .set({ status: 'under_review', updatedAt: new Date() })
                 .where(eq(submissions.id, submissionId));
 
-            // 8. Notifications
-            const staff = await tx.select({ email: users.email, name: userProfiles.fullName })
+            // 8. Fetch notification data (no email inside transaction)
+            const [staff] = await tx.select({ email: users.email, name: userProfiles.fullName })
                 .from(users)
                 .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
                 .where(eq(users.id, reviewerId))
                 .limit(1);
 
-            const paper = await tx.select({ paperId: submissions.paperId, title: submissionVersions.title })
+            const [paper] = await tx.select({ paperId: submissions.paperId, title: submissionVersions.title })
                 .from(submissions)
                 .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
                 .where(eq(submissions.id, submissionId))
                 .orderBy(desc(submissionVersions.versionNumber))
                 .limit(1);
 
-            if (staff[0]?.email) {
-                const template = emailTemplates.reviewAssignment(
-                    staff[0].name || "Reviewer",
-                    paper[0].title,
-                    deadline,
-                    paper[0].paperId
-                );
-                await sendEmail({ to: staff[0].email, subject: template.subject, html: template.html });
-            }
-
-            revalidatePath('/admin/reviews');
-            return { success: true };
+            return { success: true, staff, paper };
         });
+
+        // 9. Send email AFTER transaction commits (fire-and-forget)
+        if (txResult.success && txResult.staff?.email && txResult.paper) {
+            const template = emailTemplates.reviewAssignment(
+                txResult.staff.name || "Reviewer",
+                txResult.paper.title,
+                deadline,
+                txResult.paper.paperId
+            );
+            sendEmail({ to: txResult.staff.email, subject: template.subject, html: template.html })
+                .catch(e => console.error("Reviewer assignment email failed:", e));
+        }
+
+        revalidatePath('/admin/reviews');
+        return { success: true };
     } catch (error) {
         console.error("Assign Reviewer Error:", error);
         return { success: false, error: "Failed to assign reviewer: " + (error instanceof Error ? error.message : String(error)) };
@@ -212,12 +221,26 @@ export async function submitReview(assignmentId: number, formData: FormData): Pr
     const commentsToEditor = formData.get('commentsToEditor') as string;
     const score = formData.get('score') ? parseInt(formData.get('score') as string) : null;
     const confidence = formData.get('confidence') ? parseInt(formData.get('confidence') as string) : null;
+    const feedbackFile = formData.get('feedbackFile') as File | null;
 
     try {
-        return await db.transaction(async (tx) => {
+        let fileUrl: string | null = null;
+        if (feedbackFile && feedbackFile.size > 0) {
+            const bytes = await feedbackFile.arrayBuffer();
+            const buffer = Buffer.from(bytes);
+            const fileName = `feedback_${Date.now()}_${feedbackFile.name.replaceAll(' ', '_')}`;
+            const uploadDir = path.join(process.cwd(), "public", "uploads", "submissions");
+            await fs.mkdir(uploadDir, { recursive: true });
+            const filePath = path.join(uploadDir, fileName);
+            await fs.writeFile(filePath, buffer);
+            fileUrl = `/uploads/submissions/${fileName}`;
+        }
+
+        const result = await db.transaction(async (tx) => {
             // 1. Get Assignment Details
             const rows = await tx.select({
                 submissionId: reviewAssignments.submissionId,
+                versionId: reviewAssignments.versionId,
                 paperId: submissions.paperId,
                 title: submissionVersions.title,
                 authorEmail: users.email,
@@ -259,10 +282,37 @@ export async function submitReview(assignmentId: number, formData: FormData): Pr
                 .set({ status: 'completed', respondedAt: new Date() })
                 .where(eq(reviewAssignments.id, assignmentId));
 
-            // 4. Decision Logic & Notifications
+            // 4. Handle Feedback File if exists
+            if (fileUrl) {
+                await tx.insert(submissionFiles).values({
+                    versionId: info.versionId,
+                    fileType: 'feedback',
+                    fileUrl,
+                    originalName: feedbackFile?.name || 'feedback.pdf',
+                    fileSize: feedbackFile?.size || 0
+                });
+            }
+
+            // 5. Submission Status Update (Optional: specific to project workflow)
+            const statusMap: Record<string, "revision_requested" | "rejected"> = {
+                minor_revision: 'revision_requested',
+                major_revision: 'revision_requested',
+                reject: 'rejected'
+            };
+            const newStatus = statusMap[decision as string];
+            if (newStatus) {
+                await tx.update(submissions).set({ status: newStatus as any }).where(eq(submissions.id, info.submissionId));
+            }
+
+            return { success: true, info };
+        });
+
+        // 6. Asynchronous Notifications (Outside Transaction)
+        if (result.success && result.info) {
+            const { info } = result;
             if (decision === 'accept') {
-                const admins = await tx.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
-                await Promise.allSettled(admins.map(a => sendEmail({
+                const admins = await db.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
+                Promise.allSettled(admins.map(a => sendEmail({
                     to: a.email,
                     subject: `Review Decision (Accept): ${info.paperId}`,
                     html: `<p>A reviewer has recommended 'Accept' for paper ${info.paperId}.</p>`
@@ -274,22 +324,20 @@ export async function submitReview(assignmentId: number, formData: FormData): Pr
                     reject: 'rejected'
                 };
                 const newStatus = statusMap[decision as string];
-
                 if (newStatus) {
-                    await tx.update(submissions).set({ status: newStatus as any }).where(eq(submissions.id, info.submissionId));
-                    
                     const template = newStatus === 'rejected' 
                         ? emailTemplates.manuscriptRejection(info.authorName || "Author", info.title || "Untitled Manuscript", info.paperId, commentsToAuthor || "")
                         : emailTemplates.resubmissionRequest(info.authorName || "Author", info.title || "Untitled Manuscript", info.paperId, commentsToAuthor || "");
-
-                    await sendEmail({ to: info.authorEmail, subject: template.subject, html: template.html });
+                    
+                    sendEmail({ to: info.authorEmail, subject: template.subject, html: template.html }).catch(err => console.error("Email Error:", err));
                 }
             }
+        }
 
-            revalidatePath('/admin/reviews');
-            revalidatePath('/reviewer/reviews');
-            return { success: true };
-        });
+        revalidatePath('/admin/reviews');
+        revalidatePath('/reviewer/reviews');
+        return { success: true };
+
     } catch (error) {
         console.error("Submit Review Error:", error);
         return { success: false, error: error instanceof Error ? error.message : String(error) };
@@ -316,7 +364,7 @@ export async function getActiveReviews(reviewerId?: string): Promise<ActionRespo
             commentsToAuthor: reviews.commentsToAuthor,
             submittedAt: reviews.submittedAt,
             manuscriptPath: sql<string>`(SELECT f.file_url FROM submission_files f WHERE f.version_id = ${reviewAssignments.versionId} AND f.file_type = 'pdf_version' LIMIT 1)`,
-            feedbackFilePath: sql<string>`(SELECT f.file_url FROM submission_files f WHERE f.version_id = ${reviewAssignments.versionId} AND f.file_type = 'review_feedback' LIMIT 1)`
+            feedbackFilePath: sql<string>`(SELECT f.file_url FROM submission_files f WHERE f.version_id = ${reviewAssignments.versionId} AND f.file_type = 'feedback' LIMIT 1)`
         })
         .from(reviewAssignments)
         .innerJoin(submissions, eq(reviewAssignments.submissionId, submissions.id))
@@ -342,7 +390,8 @@ export async function getUnassignedAcceptedPapers(): Promise<ActionResponse<any[
        const rows = await db.select({
             id: submissions.id,
             paperId: submissions.paperId,
-            title: submissionVersions.title
+            title: submissionVersions.title,
+            pdfUrl: sql<string>`(SELECT f.file_url FROM submission_files f WHERE f.version_id = ${submissionVersions.id} AND f.file_type = 'pdf_version' LIMIT 1)`
        })
        .from(submissions)
        .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))

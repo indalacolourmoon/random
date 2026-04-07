@@ -1,0 +1,29 @@
+
+> ijitest@0.1.0 build C:\Users\Mohan Kumar Indala\OneDrive\Desktop\p2\goal ijitest\ijitest
+> next build
+
+⚠ turbopack.root should be absolute, using: C:\Users\Mohan Kumar Indala\OneDrive\Desktop\p2\goal ijitest\ijitest
+▲ Next.js 16.2.1 (Turbopack)
+- Environments: .env
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/(panel)/author/page.tsx:205:46
+Unterminated regexp literal
+  [90m203 |[0m                                                     </div>
+  [90m204 |[0m                                                 </div>
+[31m[1m>[0m [90m205 |[0m                                             </div>
+  [90m    |[0m                                              [31m[1m^^^^^[0m
+  [90m206 |[0m                                         </[33mCardContent[0m>
+  [90m207 |[0m                                     </[33mCard[0m>
+  [90m208 |[0m                                 );
+
+Parsing ecmascript source code failed
+
+
+    at <unknown> (./src/app/(panel)/author/page.tsx:205:46)
+ ELIFECYCLE  Command failed with exit code 1.

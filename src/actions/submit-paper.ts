@@ -228,7 +228,7 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
 
         // 4. Notifications
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.org';
-        const loginUrl = `${baseUrl}/auth/signin`; // Credentials sent via setup link if new
+        const loginUrl = `${baseUrl}/login`;
 
         // Author Notification
         const authorTemplate = emailTemplates.submissionReceived(
@@ -256,13 +256,18 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
             }
         }
 
-        // Team Notification
-        const staff = await db.select({ email: users.email }).from(users).where(inArray(users.role, ['admin', 'editor']));
-        await Promise.allSettled(staff.map(s => sendEmail({
-            to: s.email,
-            subject: `New Paper [${result.paperId}] Received`,
-            html: `<p>New submission from ${validated.data.author_name}. <a href="${baseUrl}/admin/submissions/${result.subId}">Review here</a></p>`
-        })));
+        // Team Notification — role-specific links
+        const staff = await db.select({ email: users.email, role: users.role }).from(users).where(inArray(users.role, ['admin', 'editor']));
+        await Promise.allSettled(staff.map(s => {
+            const dashboardLink = s.role === 'admin'
+                ? `${baseUrl}/admin/submissions/${result.subId}`
+                : `${baseUrl}/editor/submissions/${result.subId}`;
+            return sendEmail({
+                to: s.email,
+                subject: `New submission [${result.paperId}]`,
+                html: `<p>New submission from ${validated.data.author_name} (${result.paperId}).</p><p><a href="${dashboardLink}">View submission</a></p>`
+            });
+        }));
 
         revalidatePath('/admin/submissions');
         return { success: true, data: { paperId: result.paperId } };

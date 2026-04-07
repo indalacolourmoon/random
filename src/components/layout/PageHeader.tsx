@@ -72,7 +72,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                                     <Link
                                         href={crumb.href}
                                         aria-current={isLast ? "page" : undefined}
-                                        className={`text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-bold tracking-[0.2em] transition-all duration-300 ${isLast ? "text-white" : "text-white/50 hover:text-white"}`}
+                                        className={`text-[10px] xl:text-xs font-medium tracking-tight transition-all duration-300 ${isLast ? "text-white" : "text-white/50 hover:text-white"}`}
                                     >
                                         {crumb.name}
                                     </Link>
@@ -91,7 +91,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         onAnimationComplete={handleAnimationComplete}
                     >
-                        <h1 className=" font-bold text-white mb-6 leading-none  tracking-widest">
+                        <h1 className="font-bold text-white mb-6 leading-none text-lg xl:text-3xl 2xl:text-4xl tracking-wider">
                             {title}
                         </h1>
                         {description && (
@@ -99,7 +99,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 0.7 }}
                                 transition={{ delay: 0.6, duration: 1 }}
-                                className="max-w-xl 2xl:max-w-4xl text-xs sm:text-sm lg:text-base 2xl:text-xl text-white/80 font-medium border-l-[3px] border-secondary/50 pl-6 leading-relaxed"
+                                className="max-w-xl 2xl:max-w-4xl text-xs sm:text-sm lg:text-base text-white/80 font-medium border-l-[3px] border-secondary/50 pl-6 leading-relaxed"
                             >
                                 {description}
                             </motion.p>

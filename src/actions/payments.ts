@@ -2,9 +2,11 @@
 
 import { db } from "@/lib/db";
 import { payments, submissions, submissionVersions, userProfiles, users } from "@/db/schema";
-import { eq, desc, and, notInArray } from "drizzle-orm";
+import { eq, desc, and, notInArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { ActionResponse } from "@/db/types";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 export interface PaymentRow {
     id: number;
@@ -23,6 +25,7 @@ export interface PaymentRow {
 
 export async function getPayments(): Promise<ActionResponse<PaymentRow[]>> {
     try {
+        // Join only the latest version per submission to avoid duplicate rows
         const results = await db.select({
             id: payments.id,
             submissionId: payments.submissionId,
@@ -41,13 +44,15 @@ export async function getPayments(): Promise<ActionResponse<PaymentRow[]>> {
         .innerJoin(submissions, eq(payments.submissionId, submissions.id))
         .innerJoin(users, eq(submissions.correspondingAuthorId, users.id))
         .innerJoin(userProfiles, eq(users.id, userProfiles.userId))
-        .innerJoin(submissionVersions, eq(submissions.id, submissionVersions.submissionId))
+        .innerJoin(
+            submissionVersions,
+            and(
+                eq(submissionVersions.submissionId, submissions.id),
+                sql`${submissionVersions.versionNumber} = (SELECT MAX(v.version_number) FROM submission_versions v WHERE v.submission_id = ${submissions.id})`
+            )
+        )
         .orderBy(desc(payments.createdAt));
         
-        // Group by payment and pick latest version title
-        // Drizzle join might return multiple rows if we don't limit versions or use a subquery
-        // But for IJITEST, we usually just want the latest version.
-        // Simplified for now (assuming 1 version for simplicity or handling in UI)
         return { success: true, data: results as PaymentRow[] };
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -58,16 +63,22 @@ export async function getPayments(): Promise<ActionResponse<PaymentRow[]>> {
 
 export async function updatePaymentStatus(paymentId: number, status: 'pending' | 'paid' | 'verified' | 'failed' | 'waived', transactionId?: string): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         await db.transaction(async (tx) => {
             await tx.update(payments)
                 .set({ 
                     status, 
                     transactionId: transactionId || null, 
-                    paidAt: status === 'paid' ? new Date() : undefined 
+                    paidAt: status === 'paid' || status === 'verified' ? new Date() : null
                 })
                 .where(eq(payments.id, paymentId));
 
-            if (status === 'paid') {
+            // Move submission forward when payment is confirmed
+            if (status === 'verified' || status === 'waived') {
                 const [payment] = await tx.select({ submissionId: payments.submissionId })
                     .from(payments)
                     .where(eq(payments.id, paymentId))
@@ -75,7 +86,7 @@ export async function updatePaymentStatus(paymentId: number, status: 'pending' |
                 
                 if (payment) {
                     await tx.update(submissions)
-                        .set({ status: 'payment_pending' }) // Should check flow: accepted -> payment_pending -> paid/waived -> publication_pending
+                        .set({ status: 'published' })
                         .where(eq(submissions.id, payment.submissionId));
                 }
             }
@@ -145,13 +156,19 @@ export async function getAcceptedUnpaidPapers(): Promise<ActionResponse<UnpaidPa
 
 export async function waivePayment(submissionId: number): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || session.user.role !== 'admin') {
+            return { success: false, error: "Unauthorized" };
+        }
+
         await db.transaction(async (tx) => {
             await tx.update(payments)
                 .set({ status: 'waived', paidAt: new Date() })
                 .where(eq(payments.submissionId, submissionId));
             
+            // Waived payment — submission is cleared to proceed to publication
             await tx.update(submissions)
-                .set({ status: 'payment_pending' })
+                .set({ status: 'published' })
                 .where(eq(submissions.id, submissionId));
         });
 

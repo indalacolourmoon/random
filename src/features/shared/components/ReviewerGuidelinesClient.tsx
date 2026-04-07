@@ -40,21 +40,22 @@ export default function ReviewerGuidelinesClient({ settings }: ReviewerGuideline
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {directives.map((item, i) => (
-                                <article key={i} className="p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary group">
+                                <article key={i} className="p-8 bg-primary/5 border border-primary/10 rounded-3xl shadow-sm transition-all border-l-[6px] border-l-primary/10 hover:border-l-secondary">
                                     <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                         <ShieldCheck className="w-6 h-6" />
                                     </div>
                                     <h3 className=" font-black tracking-widest text-primary mb-3 uppercase m-0 text-[10px] sm:text-[11px] ">{item.title}</h3>
+                                    <h3 className="text-primary mb-3 m-0 text-[10px] sm:text-[11px] ">{item.title}</h3>
                                     <p className="text-sm font-medium text-primary/60 leading-relaxed ">{item.desc}</p>
                                 </article>
                             ))}
                         </div>
                     </section>
 
-                    <section className="bg-primary p-10 sm:p-14 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                    <section className="bg-primary/5 border border-primary/10 rounded-3xl shadow-sm p-10 text-center">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                         <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
-                            <div className="w-20 h-20 bg-white/10 rounded-4xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+                            <div className="w-20 h-20 bg-primary/5 rounded-4xl flex items-center justify-center shrink-0 border border-primary/10 shadow-inner">
                                 <ShieldAlert className="w-10 h-10 text-secondary" />
                             </div>
                             <div className="space-y-4">
@@ -102,7 +103,7 @@ export default function ReviewerGuidelinesClient({ settings }: ReviewerGuideline
 
                     <section className="space-y-6">
                         <h3 className="text-[10px] sm:text-[11px] font-black tracking-[0.3em] text-primary/40 pl-4 border-l border-primary/10 m-0 uppercase">Compliance Guide</h3>
-                        <div className="p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm border-l-[6px] border-l-primary/10 hover:border-l-secondary transition-all group">
+                        <div className="p-8 bg-primary/5 border border-primary/10 rounded-3xl shadow-sm transition-all border-l-[6px] border-l-primary/10 hover:border-l-secondary">
                             <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center mb-6 text-primary group-hover:bg-secondary group-hover:text-white transition-colors">
                                 <CheckCircle2 className="w-6 h-6" />
                             </div>

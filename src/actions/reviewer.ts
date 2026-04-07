@@ -71,8 +71,8 @@ export async function submitReviewerApplication(formData: FormData): Promise<Act
                 cvUrl,
                 photoUrl,
                 type: application_type as 'reviewer' | 'editor',
+                status: 'pending',
                 nationality,
-                status: 'pending'
             }).$returningId();
 
             const appId = insertedApp.id;

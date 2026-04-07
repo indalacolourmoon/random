@@ -20,13 +20,13 @@ import { cn } from '@/lib/utils';
 export const dynamic = 'force-dynamic';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-    submitted: { label: 'Under Editorial Review', color: 'text-blue-600', bg: 'bg-blue-500/10' },
-    editor_assigned: { label: 'Editor Assigned', color: 'text-indigo-600', bg: 'bg-indigo-500/10' },
-    under_review: { label: 'Peer Review In Progress', color: 'text-amber-600', bg: 'bg-amber-500/10' },
-    revision_requested: { label: 'Revision Required', color: 'text-orange-600', bg: 'bg-orange-500/10' },
+    submitted: { label: 'Reviewing', color: 'text-blue-600', bg: 'bg-blue-500/10' },
+    editor_assigned: { label: 'Assigned', color: 'text-indigo-600', bg: 'bg-indigo-500/10' },
+    under_review: { label: 'Peer review', color: 'text-amber-600', bg: 'bg-amber-500/10' },
+    revision_requested: { label: 'Revision', color: 'text-orange-600', bg: 'bg-orange-500/10' },
     accepted: { label: 'Accepted', color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
-    rejected: { label: 'Not Accepted', color: 'text-rose-600', bg: 'bg-rose-500/10' },
-    payment_pending: { label: 'Payment Required', color: 'text-purple-600', bg: 'bg-purple-500/10' },
+    rejected: { label: 'Rejected', color: 'text-rose-600', bg: 'bg-rose-500/10' },
+    payment_pending: { label: 'Payment', color: 'text-purple-600', bg: 'bg-purple-500/10' },
     published: { label: 'Published', color: 'text-emerald-700', bg: 'bg-emerald-500/15' },
 };
 
@@ -45,50 +45,46 @@ export default async function AuthorDashboard() {
         const submissions = response.data?.submissions || [];
 
         const stats = [
-            { label: 'Total Submitted', value: submissions.length, icon: <FileStack className="w-5 h-5 text-primary" /> },
-            { label: 'Under Review', value: submissions.filter((s: any) => ['submitted', 'editor_assigned', 'under_review'].includes(s.status)).length, icon: <Clock className="w-5 h-5 text-amber-500" /> },
+            { label: 'Submitted', value: submissions.length, icon: <FileStack className="w-5 h-5 text-primary" /> },
+            { label: 'Reviewing', value: submissions.filter((s: any) => ['submitted', 'editor_assigned', 'under_review'].includes(s.status)).length, icon: <Clock className="w-5 h-5 text-amber-500" /> },
             { label: 'Accepted', value: submissions.filter((s: any) => ['accepted', 'payment_pending', 'published'].includes(s.status)).length, icon: <CheckCircle className="w-5 h-5 text-emerald-500" /> },
             { label: 'Published', value: submissions.filter((s: any) => s.status === 'published').length, icon: <BookOpen className="w-5 h-5 text-blue-500" /> },
         ];
 
         return (
-            <section className="space-y-12 pb-20 max-w-7xl mx-auto px-4">
+            <section className="space-y-6 pb-20 max-w-7xl mx-auto px-4">
                 {/* Header Section */}
-                <header className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 pt-8 outline-none">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 group">
-                             <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:rotate-12 transition-transform duration-500">
-                                <LayoutDashboard className="w-5 h-5" />
-                             </div>
-                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Center of Operations</span>
+                <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-4">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                             <span className="text-xs font-medium text-primary/60">Overview</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tight leading-none">
-                           Welcome back, <span className="bg-linear-to-r from-primary to-primary/40 bg-clip-text text-transparent">{session.user.name?.split(' ')[0] || 'Scholar'}</span>.
+                        <h1>
+                           Welcome back, <span className="text-primary">{session.user.name?.split(' ')[0] || 'Scholar'}</span>
                         </h1>
-                        <p className="text-sm font-medium text-muted-foreground max-w-2xl leading-relaxed border-l-2 border-primary/20 pl-6">
-                            IJITEST Author Portal provides end-to-end visibility into your research lifecycle — from initial submission through peer review and final branding.
+                        <p className="max-w-2xl">
+                            Manage your submissions and track your papers.
                         </p>
                     </div>
-                    <Button asChild className="h-14 px-8 bg-primary hover:bg-primary/90 text-white dark:text-black font-black uppercase text-xs tracking-widest rounded-2xl shadow-2xl shadow-primary/20 group">
-                        <Link href="/submit" className="flex items-center gap-3">
-                            <PlusIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" /> Submit New Research
+                    <Button asChild className="h-10 px-6 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg transition-all text-xs">
+                        <Link href="/submit" className="flex items-center gap-2">
+                            <PlusIcon className="w-4 h-4" /> Submit Paper
                         </Link>
                     </Button>
                 </header>
 
                 {/* Performance Snapshot */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((stat, idx) => (
-                        <Card key={stat.label} className="group relative border-border/40 bg-background/40 backdrop-blur-xl overflow-hidden hover:border-primary/30 transition-all duration-500 rounded-3xl">
-                            <CardContent className="p-8">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-700" />
-                                <div className="space-y-4 relative z-10">
-                                    <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center transition-all duration-500 group-hover:bg-primary group-hover:text-white">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {stats.map((stat) => (
+                        <Card key={stat.label} className="border-border/40 bg-background hover:border-primary/30 transition-all rounded-xl">
+                            <CardContent className="p-6">
+                                <div className="space-y-3">
+                                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                                         {stat.icon}
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-muted-foreground tracking-widest uppercase mb-1">{stat.label}</p>
-                                        <p className="text-4xl font-black text-foreground tabular-nums tracking-tighter">{stat.value}</p>
+                                        <p className="opacity-60 mb-1">{stat.label}</p>
+                                        <p className="text-lg tabular-nums">{stat.value}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -97,31 +93,25 @@ export default async function AuthorDashboard() {
                 </div>
 
                 {/* Submissions Management */}
-                <div className="space-y-8">
+                <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-[11px] font-black text-foreground uppercase tracking-[0.3em] flex items-center gap-3">
-                           Active Manuscripts <div className="h-px w-20 bg-primary/20" />
+                        <h2 className="flex items-center gap-2">
+                           My Submissions
                         </h2>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase opacity-50">
-                           Auto-sync: Active <Clock className="w-3 h-3" />
-                        </div>
                     </div>
 
                     {submissions.length === 0 ? (
-                        <Card className="border-dashed border-2 border-border/50 bg-muted/5 py-32 text-center rounded-[3rem] overflow-hidden group">
-                            <CardContent className="flex flex-col items-center gap-6">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 group-hover:scale-200 transition-transform duration-1000" />
-                                    <FileText className="w-16 h-16 text-primary/20 relative z-10" />
-                                </div>
-                                <div className="space-y-2 relative z-10">
-                                    <h3 className="font-black uppercase tracking-widest text-sm">Quiet for now...</h3>
-                                    <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                                        Your scholarly journey at IJITEST starts with your first submission. We're ready when you are.
+                        <Card className="border-dashed border-2 border-border/50 bg-muted/5 py-20 text-center rounded-xl">
+                            <CardContent className="flex flex-col items-center gap-4">
+                                <FileText className="w-12 h-12 text-primary/20" />
+                                <div className="space-y-1">
+                                    <h3>No submissions found</h3>
+                                    <p>
+                                        You haven't submitted any papers yet.
                                     </p>
                                 </div>
-                                <Button asChild size="lg" className="mt-4 bg-foreground text-background hover:bg-foreground/90 font-black uppercase text-[10px] tracking-widest rounded-xl px-10">
-                                    <Link href="/submit">Initialize Submission</Link>
+                                <Button asChild size="sm" className="mt-2 bg-primary text-white font-semibold rounded-lg px-8">
+                                    <Link href="/submit">Submit Paper</Link>
                                 </Button>
                             </CardContent>
                         </Card>
@@ -136,88 +126,79 @@ export default async function AuthorDashboard() {
                                     <Card 
                                         key={sub.id} 
                                         className={cn(
-                                            "group relative border-border/40 bg-background/50 hover:bg-background transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary/5",
+                                            "border-border/40 bg-background hover:border-primary/20 transition-all rounded-xl overflow-hidden",
                                             isUrgent ? "border-orange-500/20" : ""
                                         )}
                                     >
                                         <CardContent className="p-0">
                                             <div className="flex flex-col lg:flex-row min-h-56">
                                                 {/* Left Panel: Status & Info */}
-                                                <div className="lg:w-1/3 p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-border/20 bg-muted/5 group-hover:bg-transparent transition-colors">
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <Badge variant="outline" className="px-3 py-1 text-[10px] font-black font-mono tracking-widest rounded-lg bg-background shadow-sm border-primary/20">
+                                                <div className="lg:w-1/3 p-6 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-border/20 bg-muted/5 transition-colors">
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant="outline" className="px-2 py-0.5 text-[10px] font-semibold rounded bg-background border-primary/20">
                                                                 {sub.paperId}
                                                             </Badge>
-                                                            <Badge className={cn("px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg border-none shadow-sm", cfg.bg, cfg.color)}>
+                                                            <Badge className={cn("px-2 py-0.5 text-[10px] font-semibold rounded border-none shadow-sm", cfg.bg, cfg.color)}>
                                                                 {cfg.label}
                                                             </Badge>
                                                         </div>
-                                                        <h3 className="text-xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors duration-500 min-h-12">
+                                                        <h3 className="leading-snug">
                                                             {sub.title || "Untitled Manuscript"}
                                                         </h3>
                                                     </div>
                                                     <div className="flex items-center gap-4 pt-4">
-                                                        <div className="flex -space-x-2 overflow-hidden">
-                                                            {/* Placeholder for co-authors or editor */}
-                                                            <div className="flex h-6 w-6 rounded-full ring-2 ring-background bg-primary/10 items-center justify-center text-[8px] font-black">AU</div>
-                                                            {sub.volumeNumber && <div className="flex h-6 w-6 rounded-full ring-2 ring-background bg-emerald-500/10 items-center justify-center text-[8px] font-black text-emerald-600">PUB</div>}
-                                                        </div>
-                                                        <span className="text-[10px] font-bold text-muted-foreground/60 tracking-wider">
-                                                           {new Date(sub.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        <span className="text-[10px] font-medium text-muted-foreground/60">
+                                                           {new Date(sub.submittedAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 {/* Right Panel: Lifecycle & Actions */}
-                                                <div className="lg:w-2/3 p-8 flex flex-col justify-between gap-8 bg-background/50">
-                                                    <div className="space-y-6">
+                                                <div className="lg:w-2/3 p-6 flex flex-col justify-between gap-6 bg-background">
+                                                    <div className="space-y-4">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Manuscript Lifecycle Roadmap</span>
+                                                            <span className="text-[10px] font-bold text-muted-foreground">Progress</span>
                                                             {daysLeft !== null && (
                                                                 <span className={cn(
-                                                                    "text-[10px] font-black uppercase flex items-center gap-2", 
+                                                                    "text-[10px] font-semibold flex items-center gap-1.5", 
                                                                     isUrgent ? "text-rose-500 animate-pulse" : "text-orange-500"
                                                                 )}>
                                                                     <Timer className="w-3.5 h-3.5" /> 
-                                                                    {daysLeft > 0 ? `${daysLeft}d Remaining` : "Window Closed"}
+                                                                    {daysLeft > 0 ? `${daysLeft} days remaining` : "Window closed"}
                                                                 </span>
                                                             )}
                                                         </div>
                                                         <SubmissionProgress status={sub.status} />
                                                     </div>
-
-                                                    <div className="flex flex-wrap items-center justify-end gap-3">
-                                                       {/* Priority Action (Conditional) */}
+                                                    <div className="flex flex-wrap items-center justify-end gap-2">
                                                        {sub.status === 'published' && sub.finalPdfUrl ? (
-                                                           <Button asChild size="lg" className="h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-lg shadow-emerald-500/20">
+                                                           <Button asChild size="sm" className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-sm">
                                                                <Link href={sub.finalPdfUrl} target="_blank" className="flex items-center gap-2">
-                                                                   <BookOpen className="w-4 h-4" /> Download Final PDF
+                                                                   <BookOpen className="w-4 h-4" /> PDF
                                                                </Link>
                                                            </Button>
                                                        ) : (sub.status === 'accepted' || sub.status === 'payment_pending') && sub.paymentStatus !== 'paid' ? (
-                                                            <Button asChild size="lg" className="h-12 px-6 bg-primary hover:bg-primary/90 text-white dark:text-black font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-lg shadow-primary/20">
+                                                            <Button asChild size="sm" className="h-9 px-4 bg-primary hover:bg-primary/90 text-white font-semibold text-xs rounded-lg shadow-sm">
                                                                 <Link href={`/author/payments`} className="flex items-center gap-2">
-                                                                    <CreditCard className="w-4 h-4" /> Finalize Publication
+                                                                    <CreditCard className="w-4 h-4" /> Pay Fee
                                                                 </Link>
                                                             </Button>
                                                        ) : ['revision_requested', 'rejected'].includes(sub.status) && daysLeft !== null && daysLeft > 0 ? (
-                                                            <Button asChild size="lg" className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-lg shadow-orange-500/20">
+                                                            <Button asChild size="sm" className="h-9 px-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs rounded-lg shadow-sm">
                                                                 <Link href={`/author/submissions/${sub.id}/resubmit`} className="flex items-center gap-2">
-                                                                    <Upload className="w-4 h-4" /> Upload Revision
+                                                                    <Upload className="w-4 h-4" /> Resubmit
                                                                 </Link>
                                                             </Button>
                                                        ) : null}
-
-                                                       {/* Secondary Actions */}
-                                                       <Button asChild variant="outline" className="h-12 px-6 border-border/50 hover:border-primary/40 text-[10px] font-black uppercase tracking-widest rounded-2xl">
+                                                       <Button asChild variant="outline" size="sm" className="h-9 px-4 border-border/50 text-xs font-semibold rounded-lg">
                                                             <Link href={`/author/submissions/${sub.id}`} className="flex items-center gap-2">
-                                                                Full Dossier <ArrowRight className="w-4 h-4" />
+                                                                Details <ArrowRight className="w-3.5 h-3.5" />
                                                             </Link>
                                                        </Button>
-                                                       <Button asChild variant="ghost" className="h-12 w-12 p-0 rounded-2xl text-muted-foreground hover:text-primary">
+                                                       <Button asChild variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:text-primary">
                                                             <Link href={`/track?id=${sub.paperId}`}>
-                                                                <ExternalLink className="w-5 h-5" />
+                                                                <ExternalLink className="w-4 h-4" />
                                                             </Link>
                                                        </Button>
                                                     </div>
@@ -231,57 +212,53 @@ export default async function AuthorDashboard() {
                     )}
                 </div>
 
-                {/* Research Impact & Intelligent Assistance */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* Research Impact Widget */}
-                    <Card className="md:col-span-1 bg-background border-border/40 rounded-[3rem] overflow-hidden group shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 relative">
-                        <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <CardContent className="p-8 relative z-10 flex flex-col justify-between h-full space-y-6">
+                {/* Research Impact & Information */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="md:col-span-1 bg-background border-border/40 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                        <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
                             <div className="space-y-2">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600">
-                                        <TrendingUp className="w-5 h-5" />
-                                    </div>
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Research Impact</h3>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <TrendingUp className="w-4 h-4 text-primary" />
+                                    <h3 className="">Statistics</h3>
                                 </div>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Global reach of your published manuscripts across IJITEST platforms and indexed databases.
+                                    Track the reach of your manuscripts.
                                 </p>
                             </div>
                             
-                            <div className="space-y-4 pt-4 border-t border-border/40">
+                            <div className="space-y-3 pt-4 border-t border-border/40">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-muted-foreground">Total Views</span>
-                                    <span className="text-sm font-black text-foreground tabular-nums">1,204</span>
+                                    <span className="text-xs font-medium text-muted-foreground">Views</span>
+                                    <span className="text-sm font-bold text-foreground tabular-nums">1,204</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-muted-foreground">PDF Downloads</span>
-                                    <span className="text-sm font-black text-foreground tabular-nums">482</span>
+                                    <span className="text-xs font-medium text-muted-foreground">Downloads</span>
+                                    <span className="text-sm font-bold text-foreground tabular-nums">482</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-primary">Global Citations</span>
-                                    <span className="text-sm font-black text-primary tabular-nums">12</span>
+                                    <span className="text-xs font-medium text-primary">Citations</span>
+                                    <span className="text-sm font-bold text-primary tabular-nums">12</span>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="md:col-span-2 bg-linear-to-br from-primary/5 to-transparent border-primary/10 rounded-[3rem] overflow-hidden group">
-                        <CardContent className="p-10 flex flex-col sm:flex-row gap-8">
-                            <div className="w-16 h-16 rounded-4xl bg-background shadow-xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                                <Sparkles className="w-8 h-8 text-primary" />
+                    <Card className="md:col-span-2 bg-primary/5 border-primary/10 rounded-xl overflow-hidden">
+                        <CardContent className="p-6 flex flex-col sm:flex-row gap-6">
+                            <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center shrink-0">
+                                <Sparkles className="w-6 h-6 text-primary" />
                             </div>
-                            <div className="space-y-4 flex-1">
-                                <h3 className="text-lg font-bold text-foreground">Publication Strategy & Roadmap</h3>
+                            <div className="space-y-3 flex-1">
+                                <h3 className="">Information</h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Our automated branding system applies journal headers, footers, and DOI references upon final acceptance. Ensure your final manuscript adheres to the IJITEST template.
+                                    Our system automatically formats your accepted manuscripts with journal headers and DOI references.
                                 </p>
-                                <div className="p-4 rounded-2xl bg-background/50 border border-primary/10 flex items-start gap-4 mt-2">
-                                    <Timer className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                <div className="p-4 rounded-lg bg-background/50 border border-primary/10 flex items-start gap-3 mt-1">
+                                    <Timer className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                                     <div className="space-y-1">
-                                        <p className="text-xs font-bold text-foreground uppercase tracking-widest">Retention Policy</p>
-                                        <p className="text-[11px] text-muted-foreground leading-snug">
-                                            Rejected or revision-required manuscripts are held for <strong className="text-primary font-bold">15 days</strong>. Accounts without active scholarly progress after this window are automatically sanitized.
+                                        <p className="opacity-80">Note</p>
+                                        <p className="opacity-60">
+                                            Rejected or revision-required manuscripts are held for 15 days.
                                         </p>
                                     </div>
                                 </div>
@@ -294,11 +271,11 @@ export default async function AuthorDashboard() {
     } catch (error) {
         console.error("Author Dashboard Error:", error);
         return (
-            <div className="max-w-7xl mx-auto px-4 py-32">
-                <div className="p-24 text-center border border-dashed border-border/50 rounded-[3rem] bg-muted/5">
-                    <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-6 opacity-40" />
-                    <h2 className="text-sm font-black uppercase tracking-[0.3em] mb-2">Systems Interrupted</h2>
-                    <p className="text-xs text-muted-foreground">Error orchestrating dashboard components. Please refresh to re-initialize.</p>
+            <div className="max-w-7xl mx-auto px-4 py-20">
+                <div className="p-12 text-center border border-dashed border-border/50 rounded-xl bg-muted/5">
+                    <AlertCircle className="w-10 h-10 text-rose-500 mx-auto mb-4 opacity-40" />
+                    <h2 className="text-sm font-bold mb-1">Error</h2>
+                    <p className="text-xs text-muted-foreground">Unable to load dashboard. Please try refreshing the page.</p>
                 </div>
             </div>
         );

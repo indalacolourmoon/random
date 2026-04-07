@@ -159,8 +159,8 @@ export async function submitContactMessage(formData: FormData): Promise<ActionRe
             status: 'pending'
         });
 
-        // 1. Auto-reply to visitor
-        await sendEmail({
+        // 1. Auto-reply to visitor (fire-and-forget)
+        sendEmail({
             to: email,
             subject: `Receipt Confirmation: ${subject || 'Contact Inquiry'}`,
             html: `
@@ -172,12 +172,12 @@ export async function submitContactMessage(formData: FormData): Promise<ActionRe
                     <p>Best regards,<br>IJITEST Support Team</p>
                 </div>
             `
-        });
+        }).catch(e => console.error("Auto-reply email failed:", e));
 
-        // 2. Notify Admin
-        const adminEmail = process.env.SMTP_USER;
+        // 2. Notify Admin (fire-and-forget)
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
         if (adminEmail) {
-            await sendEmail({
+            sendEmail({
                 to: adminEmail,
                 subject: `NEW INQUIRY: ${subject || 'Contact Form'}`,
                 html: `
@@ -188,7 +188,7 @@ export async function submitContactMessage(formData: FormData): Promise<ActionRe
                         <blockquote style="border-left: 4px solid #6d0202; padding-left: 15px;">${message}</blockquote>
                     </div>
                 `
-            });
+            }).catch(e => console.error("Admin notification email failed:", e));
         }
 
         return { success: true };

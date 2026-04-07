@@ -53,10 +53,10 @@ function AuthorQuickLinks() {
                                 <link.icon className="w-5 h-5 2xl:w-8 2xl:h-8" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-black tracking-wide m-0 group-hover:text-primary transition-colors">
+                                <p className="m-0 group-hover:text-primary transition-colors">
                                     {link.label}
                                 </p>
-                                <p className="text-[10px] 2xl:text-sm text-gray-500 font-medium line-clamp-1 m-0">
+                                <p className="opacity-60 line-clamp-1 m-0">
                                     {link.description}
                                 </p>
                             </div>

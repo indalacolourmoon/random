@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# user-generated uploads (manuscripts, photos, PDFs — never commit these)
+/public/uploads/
+/public/docs/

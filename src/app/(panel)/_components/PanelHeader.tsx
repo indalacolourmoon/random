@@ -23,19 +23,19 @@ export function PanelHeader({
     const activeItem = filteredItems.find(i => pathname === i.fullHref);
 
     return (
-        <header className="bg-background/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-border dark:border-white/5 flex items-center justify-between px-6 lg:px-10 xl:px-12 2xl:px-20 h-20 xl:h-24 2xl:h-32 sticky top-0 z-30 transition-all duration-500">
-            <div className="flex items-center gap-6 2xl:gap-10">
-                <SidebarTrigger className="lg:hidden h-10 w-10 cursor-pointer" />
+        <header className="bg-background/95 backdrop-blur-sm border-b border-border/50 flex items-center justify-between px-4 sm:px-6 h-16 sticky top-0 z-30 transition-all">
+            <div className="flex items-center gap-4">
+                <SidebarTrigger className="lg:hidden h-10 w-10 cursor-pointer text-primary" />
                 <div className="flex flex-col">
-                    <h1 className="font-semibold capitalize tracking-widest heading-v5 hidden sm:block text-sm xl:text-base 2xl:text-xl">
-                        {activeItem?.name || 'Dashboard Protocol'}
+                    <h1>
+                        {activeItem?.name || 'Overview'}
                     </h1>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4 2xl:gap-8">
+            <div className="flex items-center gap-4">
                 <NotificationCenter />
-                <Separator orientation="vertical" className="mx-2 xl:mx-4 2xl:mx-6 h-8 xl:h-10 2xl:h-14 hidden sm:block bg-primary/10 dark:bg-white/10" />
+                <Separator orientation="vertical" className="mx-2 h-6 hidden sm:block bg-primary/10" />
                 <UserNav
                     user={user}
                     handleLogout={handleLogout}

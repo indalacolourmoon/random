@@ -14,7 +14,7 @@ function PublisherSection({ settings }: PublisherSectionProps) {
     const supportEmail = settings.support_email || "editor@ijitest.org";
 
     return (
-        <section className="section-padding bg-background relative overflow-hidden border-t border-primary/5">
+        <section className="section-padding bg-background relative overflow-hidden border-t border-primary/5  my-5">
             <motion.div
                 animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -30,8 +30,8 @@ function PublisherSection({ settings }: PublisherSectionProps) {
                     className="max-w-3xl"
                 >
                     <h2>About the Publisher</h2>
-                    <p className="text-primary/80 font-medium border-l-4 border-secondary/30 pl-8 mb-12">
-                        {settings.journal_short_name || 'IJITEST'} is mentored by <span className="text-primary font-black">{publisherName}</span>, aiming to provide a high-quality bedrock for research sharing and academic excellence.
+                    <p className="opacity-80 border-l-4 border-secondary/30 pl-8 mb-12">
+                        {settings.journal_short_name || 'IJITEST'} is mentored by <span className="opacity-100">{publisherName}</span>, aiming to provide a high-quality bedrock for research sharing and academic excellence.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center gap-8">
                         <div className="p-1 rounded-4xl bg-linear-to-br from-primary/10 to-transparent border border-primary/5 shadow-vip group">
@@ -40,12 +40,12 @@ function PublisherSection({ settings }: PublisherSectionProps) {
                                     <Mail className="w-7 h-7" />
                                 </div>
                                 <div className="text-left">
-                                    <p className="mb-1 text-primary/30 m-0">Support Desk</p>
-                                    <p className="font-black text-primary tracking-wide m-0">{supportEmail}</p>
+                                    <p className="mb-1 opacity-30 m-0">Support Desk</p>
+                                    <p className="opacity-80 m-0">{supportEmail}</p>
                                 </div>
                             </div>
                         </div>
-                        <Link href="/guidelines" className="group flex items-center gap-3 text-primary font-black text-sm tracking-[0.2em] transition-all">
+                        <Link href="/guidelines" className="group flex items-center gap-3 opacity-80 hover:opacity-100 transition-all">
                             <span className="h-[2px] w-8 bg-secondary transition-all group-hover:w-16 group-hover:bg-primary" />
                             View Formatting Guidelines
                         </Link>

@@ -9,6 +9,9 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+    tls: {
+        rejectUnauthorized: false
+    }
 });
 
 interface SendEmailProps {
@@ -258,43 +261,50 @@ export const emailTemplates = {
     }),
 
     // Resubmission request email template (no login link, includes optional editor/reviewer comments)
-    resubmissionRequest: (authorName: string, paperTitle: string, paperId: string, comments?: string) => {
+    resubmissionRequest: (authorName: string, paperTitle: string, paperId: string, comments?: string, subId?: number) => {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        const resubmitLink = subId
+            ? `${baseUrl}/author/submissions/${subId}/resubmit`
+            : `${baseUrl}/author/submissions`;
         return {
-            subject: `Resubmission Requested: ${paperId}`,
+            subject: `Resubmission requested: ${paperId}`,
             html: `
             <div style="font-family: serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
                 <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
                 <p>Dear <strong>${authorName}</strong>,</p>
                 <p>Your manuscript "${paperTitle}" (Paper ID: ${paperId}) has been marked for resubmission.</p>
-                ${comments ? `<p><strong>Comments from editor/reviewer:</strong></p><blockquote style="border-left: 4px solid #6d0202; padding-left: 10px; margin: 10px 0;">${comments}</blockquote>` : ''}
-                <p>Please submit a revised version using the author portal:</p>
+                ${comments ? `<p><strong>Comments:</strong></p><blockquote style="border-left: 4px solid #6d0202; padding-left: 10px; margin: 10px 0;">${comments}</blockquote>` : ''}
+                <p>Please submit a revised version via your author portal:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${baseUrl}/author/submissions" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Go to Author Portal</a>
+                    <a href="${resubmitLink}" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Submit revision</a>
                 </div>
-                <p>Warm regards,<br>Editorial Office, IJITEST</p>
+                <p>Note: You have 15 days to resubmit. After that, your account will be removed and you may need to submit as a new author.</p>
+                <p>Regards,<br>Editorial Office, IJITEST</p>
             </div>
             `
         };
     },
-    resubmissionReceived: (authorName: string, paperTitle: string, paperId: string, subId: number) => {
+    resubmissionReceived: (authorName: string, paperTitle: string, paperId: string, subId: number, role: 'admin' | 'editor' = 'admin') => {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.com';
+        const dashboardLink = role === 'admin'
+            ? `${baseUrl}/admin/submissions/${subId}`
+            : `${baseUrl}/editor/submissions/${subId}`;
         return {
-            subject: `Revised Paper Received: ${paperId}`,
+            subject: `Revised paper received: ${paperId}`,
             html: `
             <div style="font-family: serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px;">
                 <h1 style="color: #6d0202; border-bottom: 2px solid #6d0202; padding-bottom: 10px;">IJITEST</h1>
-                <p>Hello Editor,</p>
-                <p>A revised version of the manuscript "<strong>${paperTitle}</strong>" (ID: ${paperId}) has been uploaded by <strong>${authorName}</strong>.</p>
+                <p>Hello,</p>
+                <p>A revised version of "<strong>${paperTitle}</strong>" (ID: ${paperId}) has been uploaded by <strong>${authorName}</strong>.</p>
                 <div style="background: #fdf2f2; padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <p style="margin: 0; font-weight: bold;">Paper ID: ${paperId}</p>
-                    <p style="margin: 5px 0 0 0;">Latest Revision: ${new Date().toLocaleDateString()}</p>
+                    <p style="margin: 5px 0 0 0;">Revised: ${new Date().toLocaleDateString()}</p>
                 </div>
-                <p>Please review the updated files and proceed with the editorial decision or re-assigned review.</p>
+                <p>Please review the updated files and take an editorial decision.</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${baseUrl}/admin/submissions/${subId}" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">View in Admin Panel</a>
+                    <a href="${dashboardLink}" style="background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">View submission</a>
                 </div>
-                <p>Warm regards,<br>System Notifications, IJITEST</p>
+                <p>Regards,<br>IJITEST System</p>
             </div>
             `
         };

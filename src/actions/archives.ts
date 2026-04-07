@@ -57,7 +57,7 @@ export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPa
     try {
         const latestIssue = await db.select()
             .from(volumesIssues)
-            .where(eq(volumesIssues.status, 'open'))
+            .where(eq(volumesIssues.status, 'published'))
             .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
             .limit(1);
 
@@ -98,8 +98,10 @@ export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPa
 
 /**
  * FETCH PAPERS FOR THE ARCHIVE (Historical Issues)
+ * @param limit Number of papers to return (default 50)
+ * @param offset Offset for pagination (default 0)
  */
-export async function getArchivePapers(): Promise<ActionResponse<PublishedPaperUI[]>> {
+export async function getArchivePapers(limit = 50, offset = 0): Promise<ActionResponse<PublishedPaperUI[]>> {
     try {
         const rows = await db.select({
             publication: publications,
@@ -116,7 +118,9 @@ export async function getArchivePapers(): Promise<ActionResponse<PublishedPaperU
         ))
         .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
         .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
-        .orderBy(desc(publications.publishedAt));
+        .orderBy(desc(publications.publishedAt))
+        .limit(limit)
+        .offset(offset);
 
         const data = rows.map((row) => mapPublicationToUI({
             ...row.publication,

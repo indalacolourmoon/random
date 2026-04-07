@@ -1,5 +1,7 @@
 'use client';
 
+import { Section } from '@/components/layout/Section';
+import { SidebarLayout } from '@/components/layout/SidebarLayout';
 
 interface EthicsClientProps {
     settings: Record<string, string>;
@@ -286,54 +288,60 @@ export default function EthicsClient({ settings }: EthicsClientProps) {
     ];
 
     return (
-        <section className="container-responsive section-padding">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 sm:gap-16">
-                {/* Fixed Navigation Sidebar for Professional feel */}
-                <aside className="hidden lg:block lg:col-span-1 sticky top-32 h-fit space-y-4">
-                    <h3 className="text-primary mb-6 m-0 font-black tracking-widest uppercase">Quick Navigation</h3>
-                    <nav className="space-y-4 border-l border-primary/10 pl-4">
+        <>
+            <Section>
+                <SidebarLayout
+                    cols={4}
+                    sidebarClassName="hidden lg:block sticky top-32 h-fit"
+                    sidebar={
+                        <>
+                            <h3 className="text-primary mb-6 m-0 font-black tracking-widest uppercase opacity-60">Quick Navigation</h3>
+                            <nav className="space-y-4 border-l border-primary/10 pl-4">
+                                {sections.map((section, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={`#section-${idx}`}
+                                        className="text-primary/60 hover:text-secondary block py-1 m-0 text-sm font-medium transition-colors"
+                                    >
+                                        {section.title}
+                                    </a>
+                                ))}
+                            </nav>
+                        </>
+                    }
+                >
+                    <div className="space-y-10">
                         {sections.map((section, idx) => (
-                            <a
-                                key={idx}
-                                href={`#section-${idx}`}
-                                className="text-primary/60 hover:text-secondary block py-1 m-0 text-sm font-medium transition-colors"
-                            >
-                                {section.title}
-                            </a>
+                            <section key={idx} id={`section-${idx}`} className="scroll-mt-32">
+                                <h2 className="text-primary mb-2 m-0 font-black uppercase tracking-wider">
+                                    {section.title}
+                                </h2>
+                                <div className="text-justify text-primary/80 space-y-6 font-medium border-l-[3px] border-secondary/20 pl-8 2xl:pl-12">
+                                    {section.content}
+                                </div>
+                            </section>
                         ))}
-                    </nav>
-                </aside>
+                    </div>
+                </SidebarLayout>
+            </Section>
 
-                {/* Main Content Area */}
-                <div className="lg:col-span-3 space-y-10">
-                    {sections.map((section, idx) => (
-                        <section key={idx} id={`section-${idx}`} className="scroll-mt-32">
-                            <h2 className="text-primary mb-2 m-0 font-black uppercase tracking-wider">
-                                {section.title}
-                            </h2>
-                            <div className="text-justify text-primary/80 space-y-6 font-medium border-l-[3px] border-secondary/20 pl-8 2xl:pl-12">
-                                {section.content}
-                            </div>
-                        </section>
-                    ))}
-
-                    {/* Report Section */}
-                    <section className="bg-primary p-10 sm:p-14 2xl:p-24 rounded-[2.5rem] 2xl:rounded-[5rem] text-white relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                        <div className="relative z-10 space-y-6 text-center">
-                            <h2 className="text-white font-black m-0">Ethics Committee</h2>
-                            <p className="text-white/60 max-w-xl mx-auto font-medium">Report any ethics concerns or plagiarism sightings directly to our board for immediate evaluation and action.</p>
-                            <a
-                                href={`mailto:${supportEmail}`}
-                                className="text-secondary hover:text-white transition-colors border-b-2 border-secondary/30 hover:border-white pb-2 inline-block font-black text-xl lg:text-3xl"
-                            >
-                                {supportEmail}
-                            </a>
-                        </div>
-                    </section>
+            {/* Report Section - Separated for Emphasis */}
+            <Section background="gradient" padding={false} className="pb-24">
+                <div className="bg-primary p-10 sm:p-14 2xl:p-24 rounded-[2.5rem] 2xl:rounded-[5rem] text-white relative overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                    <div className="relative z-10 space-y-6 text-center">
+                        <h2 className="text-white font-black m-0">Ethics Committee</h2>
+                        <p className="text-white/60 max-w-xl mx-auto font-medium">Report any ethics concerns or plagiarism sightings directly to our board for immediate evaluation and action.</p>
+                        <a
+                            href={`mailto:${supportEmail}`}
+                            className="text-secondary hover:text-white transition-colors border-b-2 border-secondary/30 hover:border-white pb-2 inline-block font-black text-xl lg:text-3xl"
+                        >
+                            {supportEmail}
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </Section>
+        </>
     );
 }
 

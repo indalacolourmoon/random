@@ -84,7 +84,7 @@ export async function getApplications(filters?: { role?: string, status?: string
 export async function approveApplication(id: number): Promise<ActionResponse> {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-        throw new Error("Unauthorized: Admin session required.");
+        return { success: false, error: "Unauthorized: Admin session required." };
     }
     const adminId = session.user.id;
 
@@ -110,13 +110,13 @@ export async function approveApplication(id: number): Promise<ActionResponse> {
                 role: role,
             });
 
-            // 2. Create Profile
             await tx.insert(userProfiles).values({
                 userId: userId,
                 fullName: app.fullName,
                 designation: app.designation,
                 institute: app.institute,
-                nationality: 'India',
+                nationality: app.nationality || 'India',
+                photoUrl: app.photoUrl || null,
             });
 
             // 3. Create Invitation

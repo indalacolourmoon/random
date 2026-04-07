@@ -5,6 +5,9 @@ import {
     users, 
     userProfiles, 
     userInvitations,
+    reviewAssignments,
+    submissionEditors,
+    reviews,
 } from "@/db/schema";
 import { 
     UserWithProfile, 
@@ -97,12 +100,15 @@ export async function createUser(formData: FormData): Promise<ActionResponse> {
                 fullName,
             });
 
-            await tx.insert(userInvitations).values({
-                email,
-                role: role as "editor" | "reviewer",
-                token: invitationToken,
-                expiresAt: expires,
-            });
+            // Only editor/reviewer roles can receive invitations
+            if (role === 'editor' || role === 'reviewer') {
+                await tx.insert(userInvitations).values({
+                    email,
+                    role: role,
+                    token: invitationToken,
+                    expiresAt: expires,
+                });
+            }
         });
 
         // Send invitation email
@@ -193,7 +199,7 @@ export async function setupPassword(formData: FormData): Promise<ActionResponse>
             }
 
             await tx.update(users)
-                .set({ passwordHash })
+                .set({ passwordHash, isEmailVerified: true, emailVerifiedAt: new Date() })
                 .where(eq(users.email, invitation[0].email));
 
             await tx.delete(userInvitations)
@@ -234,9 +240,12 @@ export async function requestPasswordReset(formData: FormData): Promise<ActionRe
         const expires = new Date();
         expires.setHours(expires.getHours() + 1);
 
+        // Delete any existing reset tokens for this email first
+        await db.delete(userInvitations).where(eq(userInvitations.email, email));
+
         await db.insert(userInvitations).values({
             email,
-            role: user.role as "editor" | "reviewer",
+            role: (user.role === 'editor' || user.role === 'reviewer') ? user.role : 'reviewer',
             token: resetToken,
             expiresAt: expires,
         });
@@ -273,6 +282,30 @@ export async function requestPasswordReset(formData: FormData): Promise<ActionRe
     }
 }
 
+export async function updateUserRole(userId: string, role: "admin" | "editor" | "reviewer" | "author"): Promise<ActionResponse> {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || session.user.role !== 'admin') {
+            return { success: false, error: "Unauthorized: Admin access required." };
+        }
+
+        // Prevent self-demotion or role change to protect administrative access
+        if (session.user.id === userId) {
+            return { success: false, error: "You cannot change your own role while active." };
+        }
+
+        await db.update(users)
+            .set({ role })
+            .where(eq(users.id, userId));
+
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (error) {
+        console.error("Update User Role Error:", error);
+        return { success: false, error: "Failed to update role" };
+    }
+}
+
 export async function deleteUser(id: string): Promise<ActionResponse> {
     try {
         const session = await getServerSession(authOptions);
@@ -280,13 +313,13 @@ export async function deleteUser(id: string): Promise<ActionResponse> {
         if (!session) {
             return { success: false, error: "Unauthorized" };
         }
- 
+
         if (session.user.id === id) {
-            return { success: false, error: "You cannot delete your own administrative account while logged in." };
+            return { success: false, error: "You cannot delete your own account while logged in." };
         }
- 
-        if (session.user.role !== 'admin') {
-            return { success: false, error: "Only administrators can revoke staff access." };
+
+        if (!['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Only admins and editors can remove staff." };
         }
 
         return await db.transaction(async (tx) => {
@@ -294,12 +327,29 @@ export async function deleteUser(id: string): Promise<ActionResponse> {
                 .from(userProfiles)
                 .where(eq(userProfiles.userId, id))
                 .limit(1);
-            
+
+            // 1. Remove reviewer assignments (reviews cascade from assignments)
+            //    Get assignment IDs first so we can delete reviews that reference them
+            const assignmentIds = await tx
+                .select({ id: reviewAssignments.id })
+                .from(reviewAssignments)
+                .where(eq(reviewAssignments.reviewerId, id));
+
+            if (assignmentIds.length > 0) {
+                const ids = assignmentIds.map(a => a.id);
+                await tx.delete(reviews).where(inArray(reviews.assignmentId, ids));
+                await tx.delete(reviewAssignments).where(eq(reviewAssignments.reviewerId, id));
+            }
+
+            // Also clean up any assignments where this user was the assigner
+            await tx.delete(reviewAssignments).where(eq(reviewAssignments.assignedBy, id));
+
+            // 2. Remove editor assignments to submissions
+            await tx.delete(submissionEditors).where(eq(submissionEditors.editorId, id));
+
+            // 3. Delete user profile + user (cascade handles userProfiles, notifications, activityLogs)
             await tx.delete(users).where(eq(users.id, id));
-            
-            // Defensive deletion of profile photo. Note: Although cascade delete 
-            // should remove the profile row, we explicitly unlink the file 
-            // to ensure storage is cleaned up regardless of foreign key behavior.
+
             if (profile[0]?.photoUrl) {
                 await safeDeleteFile(profile[0].photoUrl);
             }

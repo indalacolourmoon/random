@@ -38,7 +38,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                 </div>
 
                 <div className="space-y-10">
-                    <p className="text-primary/80 font-medium max-w-3xl">
+                    <p className="opacity-80 max-w-3xl">
                         {shortName} covers all major fields of Engineering Disciplines and Modern Technology. Our scope includes, but is not limited to:
                     </p>
 
@@ -68,7 +68,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                             >
                                 <div className="flex items-center gap-4 text-left">
                                     <div className="w-2 h-2 rounded-full bg-secondary group-hover:scale-150 transition-transform group-hover:bg-primary" aria-hidden="true" />
-                                    <span className="text-sm font-semibold tracking-[0.2em] text-primary/90 group-hover:text-primary transition-colors cursor-pointer group-hover:text-red-600 hover:font-bold">{item}</span>
+                                    <span className="text-primary/90 group-hover:text-primary transition-colors cursor-pointer group-hover:text-red-600">{item}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-primary/20 group-hover:text-secondary group-hover:translate-x-1 transition-all" aria-hidden="true" />
                             </motion.li>
@@ -77,17 +77,17 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
 
                     <div className="grid grid-cols-1 gap-4">
                         <article className="p-6 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-[2rem] shadow-vip hover:shadow-vip-hover hover:border-secondary/20 hover:border-2 cursor-pointer transition-all duration-300 group">
-                            <h3 className="text-primary mb-3 flex items-center gap-2 tracking-widest uppercase">
+                            <h3 className="text-primary mb-3 flex items-center gap-2">
                                 <span className="w-2 h-2 bg-secondary rounded-full" aria-hidden="true" />
                                 Mission Priority
                             </h3>
-                            <p className="text-primary/70 font-medium">
+                            <p className="opacity-70">
                                 "Interdisciplinary research merging engineering with managerial sciences is highly prioritized."
                             </p>
                         </article>
 
                         <article className="p-6 bg-gradient-to-br from-secondary/5 to-transparent border border-secondary/10 rounded-[2rem] shadow-vip hover:shadow-vip-hover hover:border-secondary/20 hover:border-2 cursor-pointer transition-all duration-300 group">
-                            <p className="text-sm sm:text-base text-primary/70 font-medium leading-relaxed">
+                            <p className="opacity-70 leading-relaxed">
                                 We particularly welcome interdisciplinary work combining engineering with management, sustainability, and data-driven innovation, especially with direct industrial or societal impact.
                             </p>
                         </article>
@@ -106,10 +106,10 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                     </div>
                     <div className="space-y-6">
                         <h2 id="publication-heading" className="text-white">Publication Process</h2>
-                        <p className="text-white/80 font-medium m-0">
+                        <p className="text-white opacity-80 m-0">
                             Accepted papers will be published online, upon receiving the final version from the authors in the recent upcoming issue. Our streamlined workflow minimizes time-to-publication while maintaining elite peer-review standards.
                         </p>
-                        <div className="flex items-center gap-3 text-secondary font-black text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs tracking-[0.2em] uppercase">
+                        <div className="flex items-center gap-3 text-secondary opacity-60">
                             <span className="w-8 h-[2px] bg-secondary" aria-hidden="true" />
                             Excellence in Motion
                         </div>

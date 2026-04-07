@@ -37,7 +37,7 @@ export function PanelSidebar({
     const isCollapsed = state === "collapsed";
 
     return (
-        <Sidebar collapsible="icon" className="border-r border-border dark:border-white/5 transition-all duration-300">
+        <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/30 backdrop-blur-xl transition-all duration-300">
             {/* Custom Toggle Button in the middle-right */}
             {!isMobile && (
                 <Tooltip>
@@ -45,31 +45,31 @@ export function PanelSidebar({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className={cn("absolute -right-4 top-1/2 -translate-y-1/2 z-50  rounded-full border border-border bg-background shadow-md hover:bg-accent transition-all hidden lg:flex items-center justify-center cursor-pointer", isCollapsed ? "bg-secondary" : "bg-primary")}
+                            className={cn("absolute -right-4 top-1/2 -translate-y-1/2 z-50 rounded-full border border-border bg-background shadow-lg hover:bg-accent transition-all hidden lg:flex items-center justify-center cursor-pointer", isCollapsed ? "bg-primary text-white" : "bg-primary text-white")}
                             onClick={toggleSidebar}
                         >
                             {isCollapsed ? (
-                                <ChevronRight className="size-8" />
+                                <ChevronRight className="size-6" />
                             ) : (
-                                <ChevronLeft className="size-8" />
+                                <ChevronLeft className="size-6" />
                             )}
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="font-bold tracking-widest bg-primary text-white border-none">
-                        {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    <TooltipContent side="right" className="font-bold bg-primary text-white border-none">
+                        {isCollapsed ? "Expand" : "Collapse"}
                     </TooltipContent>
                 </Tooltip>
             )}
 
-            <SidebarHeader className="h-20 2xl:h-24 flex flex-row items-center justify-between px-4 2xl:px-6 border-b border-border overflow-hidden">
-                <Link href="/admin" className="flex items-center gap-3 2xl:gap-4 group cursor-pointer shrink-0">
-                    <div className="bg-primary size-10 2xl:size-14 rounded-xl 2xl:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-transform shrink-0">
-                        <Layers className="size-6 2xl:size-10 text-white stroke-[2.5]" />
+            <SidebarHeader className="h-16 flex flex-row items-center justify-between px-6 border-b border-border/20 overflow-hidden">
+                <Link href="/" className="flex items-center gap-3 group cursor-pointer shrink-0">
+                    <div className="bg-primary size-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-transform shrink-0">
+                        <Layers className="size-5 text-white stroke-[2]" />
                     </div>
                     {!isCollapsed && (
-                        <div className="space-y-0.5 2xl:space-y-1 whitespace-nowrap opacity-100 transition-opacity duration-300">
-                            <h2 className="font-bold text-foreground leading-none tracking-widest capitalize text-sm xl:text-base 2xl:text-lg">IJITEST</h2>
-                            <span className="text-[10px] 2xl:text-sm font-bold text-muted-foreground tracking-widest capitalize opacity-80">Admin Panel</span>
+                        <div className="space-y-0 whitespace-nowrap opacity-100 transition-opacity duration-300">
+                            <h2>IJITEST</h2>
+                            <span className="text-xs opacity-70">Portal</span>
                         </div>
                     )}
                 </Link>
@@ -87,8 +87,8 @@ export function PanelSidebar({
                 )}
             </SidebarHeader>
 
-            <SidebarContent className="px-2 2xl:px-3 py-4 2xl:py-6">
-                <SidebarMenu className="space-y-1.5 2xl:space-y-4">
+            <SidebarContent className="px-3 py-6">
+                <SidebarMenu className="space-y-2">
                     {filteredItems.map((item) => {
                         const isActive = pathname === item.fullHref;
                         return (
@@ -99,31 +99,24 @@ export function PanelSidebar({
                                     size="lg"
                                     tooltip={item.name}
                                     className={cn(
-                                        "h-12 2xl:h-16 w-full px-3 2xl:px-6 rounded-xl 2xl:rounded-2xl transition-all",
-                                        isActive ? "bg-primary/10 text-primary hover:bg-primary/15" : "text-foreground hover:bg-muted",
-                                        isCollapsed && "px-0 justify-center h-16 2xl:h-18"
+                                        "h-12 2xl:h-16 w-full px-4 rounded-xl transition-all",
+                                        isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                                        isCollapsed && "px-0 justify-center h-16"
                                     )}
                                 >
-                                    <Link href={item.fullHref} className="flex items-center gap-4 2xl:gap-4 w-full justify-center lg:justify-start">
+                                    <Link href={item.fullHref} className="flex items-center gap-4 w-full">
                                         <div className={cn(
-                                            "size-10 2xl:size-14 rounded-xl 2xl:rounded-2xl flex items-center justify-center transition-all shrink-0 shadow-sm",
-                                            isCollapsed && "2xl:size-12",
-                                            isActive ? "bg-primary text-white shadow-lg shadow-primary/20 scale-105" : "bg-muted text-foreground group-hover:bg-background"
+                                            "size-9 2xl:size-12 rounded-lg flex items-center justify-center transition-all shrink-0",
+                                            isActive ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-muted/50 text-muted-foreground group-hover:bg-muted"
                                         )}>
                                             {item.icon && (
-                                                <div className={cn(
-                                                    "[&>svg]:size-5 2xl:[&>svg]:size-8",
-                                                    isActive ? "[&>svg]:text-white" : "text-primary"
-                                                )}>
+                                                <div className="[&>svg]:size-5 2xl:[&>svg]:size-7">
                                                     {item.icon}
                                                 </div>
                                             )}
                                         </div>
                                         {!isCollapsed && (
-                                            <span className={cn(
-                                                "font-bold text-xs xl:text-sm 2xl:text-base tracking-widest capitalize whitespace-nowrap transition-colors",
-                                                isActive ? "text-primary" : "text-foreground"
-                                            )}>
+                                            <span className="font-medium text-sm">
                                                 {item.labelOverrides?.[user?.role || ''] || item.name}
                                             </span>
                                         )}
@@ -135,24 +128,24 @@ export function PanelSidebar({
                 </SidebarMenu>
             </SidebarContent>
 
-            <SidebarFooter className="p-4 2xl:p-6 border-t border-border mt-auto">
+            <SidebarFooter className="p-6 border-t border-border/20 mt-auto">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
                             className={cn(
-                                "w-full justify-start gap-4 h-12 xl:h-14 2xl:h-16 px-3 2xl:px-6 text-destructive hover:bg-destructive/10 hover:text-white hover:bg-destructive rounded-xl 2xl:rounded-2xl transition-all font-bold capitalize text-xs 2xl:text-base tracking-widest overflow-hidden cursor-pointer",
+                                "w-full justify-start gap-4 h-12 px-4 text-rose-600 hover:bg-rose-500/10 rounded-lg transition-all font-medium text-sm cursor-pointer",
                                 isCollapsed && "justify-center px-0"
                             )}
                             onClick={handleLogout}
                         >
-                            <LogOut className="size-6 2xl:size-9 shrink-0" />
-                            {!isCollapsed && <span>Sign Out</span>}
+                            <LogOut className="size-5 shrink-0" />
+                            {!isCollapsed && <span>Logout</span>}
                         </Button>
                     </TooltipTrigger>
                     {isCollapsed && (
-                        <TooltipContent side="right" className="font-bold tracking-widest bg-destructive text-white border-none">
-                            Sign Out
+                        <TooltipContent side="right" className="font-bold bg-rose-600 text-white border-none">
+                            Logout
                         </TooltipContent>
                     )}
                 </Tooltip>

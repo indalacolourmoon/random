@@ -36,10 +36,10 @@ function HomeStats() {
 
                         <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
                             <div className="group-hover:-translate-y-1 transition-transform duration-500">
-                                <p className="text-sm mb-3 group-hover:text-secondary transition-colors duration-500">
+                                <p className="mb-3 opacity-60 group-hover:text-secondary transition-colors duration-500">
                                     {stat.label}
                                 </p>
-                                <h3 className="font-black text-primary text-md sm:text-lg lg:text-lg xl:text-lg 2xl:text-lg tracking-wider uppercase">
+                                <h3 className="text-primary">
                                     {stat.value}
                                 </h3>
                             </div>

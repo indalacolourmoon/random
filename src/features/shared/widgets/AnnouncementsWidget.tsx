@@ -45,7 +45,7 @@ function AnnouncementsWidget() {
                         </div>
                     ) : (
                         <div className="p-3 2xl:p-6 bg-slate-50 rounded-xl 2xl:rounded-2xl border border-slate-100 group hover:border-primary/20 transition-colors">
-                            <Badge variant="outline" className="text-[12px] h-auto py-1 font-black text-primary border-primary/20 bg-primary/5 mb-4 flex items-center gap-1.5 w-fit">
+                            <Badge variant="outline" className="h-auto py-1 text-primary border-primary/20 bg-primary/5 mb-4 flex items-center gap-1.5 w-fit">
                                 <span className="relative flex h-1.5 w-1.5">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
@@ -53,10 +53,10 @@ function AnnouncementsWidget() {
                                 Current Issue
                             </Badge>
                             <div className="space-y-2">
-                                <p className="font-bold text-slate-700 m-0">
+                                <p className="text-slate-700 m-0">
                                     Volume {currentStatus.volume}, Issue {currentStatus.issue} ({currentStatus.date}) is now published.
                                 </p>
-                                <a href="/archives" className="text-sm font-bold text-secondary flex items-center gap-1 hover:text-primary transition-colors">
+                                <a href="/archives" className="text-secondary flex items-center gap-1 hover:text-primary transition-colors">
                                     Open Articles
                                 </a>
                             </div>

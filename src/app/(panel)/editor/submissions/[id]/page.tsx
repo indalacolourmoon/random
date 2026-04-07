@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { PdfViewer } from "@/components/reviewer/PdfViewer";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -152,6 +153,21 @@ export default async function SubmissionDetails({ params }: { params: Promise<{ 
                                     </p>
                                 </div>
                             </div>
+
+                            {submission.pdf_url && (
+                                <div className="space-y-4 pt-4 border-t border-border/30">
+                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground tracking-widest opacity-60 capitalize">
+                                        <Shield className="w-4 h-4" /> Secure manuscript preview
+                                    </div>
+                                    <div className="rounded-2xl border border-border/50 overflow-hidden shadow-vip-hover h-[100vh] bg-muted/10 relative group">
+                                        <PdfViewer
+                                            pdfUrl={submission.pdf_url}
+                                            title={submission.title}
+                                        />
+                                        <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/5" />
+                                    </div>
+                                </div>
+                            )}
 
                             {submission.status !== 'submitted' && (
                                 <div className="space-y-6 pt-4 border-t border-border/30">

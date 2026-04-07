@@ -58,7 +58,7 @@ export default function SubmissionStats({ stats }: SubmissionStatsProps) {
     ], [stats]);
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {items.map((item, idx) => (
                 <motion.div
                     key={item.label}
@@ -66,26 +66,24 @@ export default function SubmissionStats({ stats }: SubmissionStatsProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
                 >
-                    <Card className={`border-none shadow-vip bg-card overflow-hidden group hover:scale-[1.02] transition-all duration-300`}>
-                        <CardContent className="p-6 relative">
-                            <div className={`absolute top-0 right-0 w-24 h-24 ${item.bg} rounded-full -mr-12 -mt-12 blur-2xl opacity-50 group-hover:opacity-80 transition-opacity`} />
-                            
-                            <div className="flex items-center justify-between relative z-10">
+                    <Card className="border-border/50 shadow-sm bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden group">
+                        <CardContent className="p-8 2xl:p-12">
+                            <div className="flex items-center justify-between mb-6">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase">
+                                    <p className="text-[10px] 2xl:text-sm font-bold text-muted-foreground uppercase tracking-widest">
                                         {item.label}
                                     </p>
-                                    <h3 className="text-2xl 2xl:text-4xl font-black text-foreground tracking-tight">
+                                    <h3 className="text-3xl 2xl:text-5xl font-extrabold text-foreground tracking-tight">
                                         {item.value}
                                     </h3>
                                 </div>
-                                <div className={`w-12 h-12 2xl:w-16 2xl:h-16 rounded-2xl ${item.bg} flex items-center justify-center border ${item.borderColor} shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
-                                    <item.icon className={`w-6 h-6 2xl:w-8 2xl:h-8 ${item.color}`} />
+                                <div className={`w-14 h-14 2xl:w-20 2xl:h-20 rounded-xl ${item.bg} flex items-center justify-center border ${item.borderColor} shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
+                                    <item.icon className={`w-6 h-6 2xl:w-10 2xl:h-10 ${item.color}`} />
                                 </div>
                             </div>
                             
-                            <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest relative z-10">
-                                <TrendingUp className="w-3 h-3 text-emerald-500" />
+                            <div className="mt-4 flex items-center gap-2 text-[10px] 2xl:text-sm font-bold text-muted-foreground uppercase tracking-tight">
+                                <TrendingUp className="w-4 h-4 text-emerald-500" />
                                 <span>Real-time Sync Active</span>
                             </div>
                         </CardContent>

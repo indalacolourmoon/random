@@ -14,9 +14,9 @@ export async function getNotificationCounts(): Promise<ActionResponse<{ messages
 
         const { role, id: userId } = session.user;
         let messageCount = 0;
-        let submissionCount = 0;
+        let totalSubmissionCount = 0;
 
-        // 1. Messages are relevant for Admins and Editors
+        // 1. Messages: Admins and Editors only
         if (role === 'admin' || role === 'editor') {
             const [msgResult] = await db.select({ count: count() })
                 .from(contactMessages)
@@ -24,27 +24,26 @@ export async function getNotificationCounts(): Promise<ActionResponse<{ messages
             messageCount = msgResult.count;
         }
 
-        // 2. New Submissions / Pending Reviews
+        // 2. Submissions (Desk Screening): Admins and Editors only
         if (role === 'admin' || role === 'editor') {
-            // Desk screening for admins/editors
             const [subResult] = await db.select({ count: count() })
                 .from(submissions)
                 .where(eq(submissions.status, 'submitted'));
-            submissionCount = subResult.count;
-            // Note: Add new pending statuses (e.g., 'in_review') to the array below 
-            // if the review workflow is expanded in the future.
-            const [revResult] = await db.select({ count: count() })
-                .from(reviewAssignments)
-                .where(and(
-                    eq(reviewAssignments.reviewerId, userId),
-                    inArray(reviewAssignments.status, ['assigned', 'accepted'])
-                ));
-            submissionCount = revResult.count;
+            totalSubmissionCount += subResult.count;
         }
+
+        // 3. Review Assignments: Reviewer (and Admins/Editors if they are reviewers)
+        const [revResult] = await db.select({ count: count() })
+            .from(reviewAssignments)
+            .where(and(
+                eq(reviewAssignments.reviewerId, userId),
+                inArray(reviewAssignments.status, ['assigned', 'accepted'])
+            ));
+        totalSubmissionCount += revResult.count;
 
         const data = {
             messages: messageCount,
-            submissions: submissionCount
+            submissions: totalSubmissionCount
         };
         return { success: true, data };
     } catch (error) {

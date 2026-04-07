@@ -11,80 +11,66 @@ interface MessageListProps {
     messages: ContactMessageRow[]
     selectedId?: number
     onSelect: (message: ContactMessageRow) => void
-    selectedIds: number[]
-    onToggleSelect: (id: number) => void
     loading?: boolean
 }
 
 const MessageItem = memo(({ 
     message, 
     isSelected, 
-    isChecked, 
-    onSelect, 
-    onToggleSelect 
+    onSelect
 }: { 
     message: ContactMessageRow, 
     isSelected: boolean, 
-    isChecked: boolean, 
-    onSelect: (msg: ContactMessageRow) => void, 
-    onToggleSelect: (id: number) => void 
+    onSelect: (msg: ContactMessageRow) => void
 }) => {
     const isPending = message.status === 'pending'
     
     return (
         <div
             className={cn(
-                "group relative flex items-start gap-4 p-5 transition-all duration-300 cursor-pointer border-l-2",
+                "group relative flex items-start gap-3 p-2.5 transition-all duration-200 cursor-pointer border-l-2",
                 isSelected 
-                    ? "bg-primary/5 border-primary shadow-[inset_0_0_20px_rgba(var(--primary),0.02)]" 
+                    ? "bg-primary/5 border-primary" 
                     : isPending 
-                        ? "border-amber-500/50 hover:bg-muted/30" 
+                        ? "border-amber-500/30 hover:bg-muted/30" 
                         : "border-transparent hover:bg-muted/20"
             )}
             onClick={() => onSelect(message)}
         >
-            <div className="pt-1" onClick={(e) => e.stopPropagation()}>
-                <Checkbox 
-                    checked={isChecked}
-                    onCheckedChange={() => onToggleSelect(message.id)}
-                    className="border-white/10 data-[state=checked]:bg-primary transition-transform group-hover:scale-110"
-                />
-            </div>
-
-            <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="flex items-center justify-between gap-2">
                     <h3 className={cn(
-                        "font-serif text-base tracking-tight truncate transition-colors",
-                        isPending ? "font-black text-foreground" : "font-bold text-muted-foreground"
+                        "text-sm tracking-tight truncate lowercase",
+                        isPending ? "font-bold text-foreground" : "font-medium text-muted-foreground"
                     )}>
                         {message.name}
                     </h3>
-                    <span className="text-[9px] font-mono font-black text-muted-foreground/40 uppercase tracking-tighter shrink-0">
+                    <span className="text-[9px] text-muted-foreground/40 lowercase shrink-0">
                         {dayjs(message.createdAt || new Date()).fromNow()}
                     </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 overflow-hidden">
                     <p className={cn(
-                        "text-[10px] uppercase tracking-widest truncate font-black",
+                        "text-[10px] tracking-tight truncate font-medium lowercase",
                         isPending ? "text-primary/70" : "text-muted-foreground/30"
                     )}>
-                        {message.subject || "No Subject"}
+                        {message.subject || "no subject"}
                     </p>
                     <div className={cn(
-                        "w-1 h-1 rounded-full",
+                        "w-1 h-1 rounded-full shrink-0",
                         message.status === 'pending' ? 'bg-amber-500' : 
                         message.status === 'resolved' ? 'bg-emerald-500' : 'bg-slate-500'
                     )} />
                 </div>
 
-                <p className="text-[11px] 2xl:text-sm font-medium text-muted-foreground/60 line-clamp-1 leading-relaxed transition-colors group-hover:text-foreground/80">
+                <p className="text-[11px] text-muted-foreground/60 line-clamp-1 leading-normal lowercase">
                     {message.message}
                 </p>
             </div>
             
             {isPending && !isSelected && (
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/40" />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-primary" />
             )}
         </div>
     )
@@ -96,21 +82,18 @@ export function MessageList({
     messages,
     selectedId,
     onSelect,
-    selectedIds,
-    onToggleSelect,
     loading
 }: MessageListProps) {
     if (loading) {
         return (
-            <div className="flex flex-col gap-1 p-4">
-                {[...Array(8)].map((_, i) => (
-                    <div key={i} className="p-4 space-y-3">
+            <div className="flex flex-col p-2">
+                {[...Array(12)].map((_, i) => (
+                    <div key={i} className="p-2.5 space-y-1.5">
                         <div className="flex justify-between">
-                            <Skeleton className="h-4 w-32" />
-                            <Skeleton className="h-3 w-16" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-2 w-12" />
                         </div>
-                        <Skeleton className="h-3 w-48" />
-                        <Skeleton className="h-2 w-full" />
+                        <Skeleton className="h-2 w-32" />
                     </div>
                 ))}
             </div>
@@ -120,10 +103,9 @@ export function MessageList({
     if (messages.length === 0) {
         return (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center opacity-40">
-                <div className="w-16 h-16 rounded-full bg-muted border border-dashed mb-6" />
-                <h3 className="font-serif text-lg font-bold mb-2 uppercase tracking-tight">No intelligence found</h3>
-                <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-[200px]">
-                    Zero records matched your current query parameters.
+                <h3 className="text-sm font-bold mb-1 lowercase">no messages</h3>
+                <p className="text-[10px] lowercase max-w-[150px]">
+                    no records found matching your selection.
                 </p>
             </div>
         )
@@ -131,15 +113,13 @@ export function MessageList({
 
     return (
         <ScrollArea className="h-full">
-            <div className="flex flex-col divide-y divide-white/3">
+            <div className="flex flex-col divide-y divide-white/2">
                 {messages.map((message) => (
                     <MessageItem 
                         key={message.id}
                         message={message}
                         isSelected={selectedId === message.id}
-                        isChecked={selectedIds.includes(message.id)}
                         onSelect={onSelect}
-                        onToggleSelect={onToggleSelect}
                     />
                 ))}
             </div>

@@ -94,66 +94,66 @@ export default function PublicationAssignment({ submissionId, currentIssueId }: 
             <div className="space-y-4">
                 <div className="space-y-2">
                     <div className="flex items-center justify-between px-1">
-                        <label className="text-[9px] font-black text-muted-foreground tracking-widest leading-none">Volume and Issue</label>
+                        <label className="opacity-40 leading-none">Volume and Issue</label>
                         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
                             <DialogTrigger asChild>
-                                <button className="text-[9px] font-black text-emerald-600 hover:text-emerald-700 tracking-widest flex items-center gap-1 transition-colors cursor-pointer">
+                                <button className="text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors cursor-pointer">
                                     <Plus className="w-2.5 h-2.5" /> Add new
                                 </button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-md rounded-xl p-8 bg-card border-primary/5 shadow-2xl overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500/10" />
                                 <DialogHeader className="space-y-2">
-                                    <DialogTitle className="text-2xl font-black text-foreground tracking-wider">Quick Terminal</DialogTitle>
-                                    <DialogDescription className="text-xs font-semibold text-muted-foreground tracking-wider leading-relaxed">
+                                    <DialogTitle className="text-2xl text-foreground">Quick Terminal</DialogTitle>
+                                    <DialogDescription className="opacity-60 leading-relaxed">
                                         Instantly define a new publication node for immediate manuscript archival.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <form action={handleQuickCreate} className="space-y-5 mt-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black text-primary/60 tracking-widest uppercase">Volume</Label>
+                                            <Label className="opacity-40">Volume</Label>
                                             <Input
                                                 name="volume"
                                                 type="number"
                                                 required
-                                                className="h-12 bg-primary/5 border-none font-bold text-sm rounded-xl px-4"
+                                                className="h-12 bg-primary/5 border-none rounded-xl px-4"
                                                 placeholder="e.g. 1"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black text-primary/60 tracking-widest uppercase">Issue</Label>
+                                            <Label className="opacity-40">Issue</Label>
                                             <Input
                                                 name="issue"
                                                 type="number"
                                                 required
-                                                className="h-12 bg-primary/5 border-none font-bold text-sm rounded-xl px-4"
+                                                className="h-12 bg-primary/5 border-none rounded-xl px-4"
                                                 placeholder="e.g. 1"
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black text-primary/60 tracking-widest uppercase">Year</Label>
+                                        <Label className="opacity-40">Year</Label>
                                         <Input
                                             name="year"
                                             type="number"
                                             required
                                             defaultValue={new Date().getFullYear()}
-                                            className="h-12 bg-primary/5 border-none font-black text-sm rounded-xl px-4"
+                                            className="h-12 bg-primary/5 border-none rounded-xl px-4"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black text-primary/60 tracking-widest uppercase">Month Range</Label>
+                                        <Label className="opacity-40">Month Range</Label>
                                         <Input
                                             name="monthRange"
                                             type="text"
                                             required
                                             placeholder="e.g. Jan - Mar"
-                                            className="h-12 bg-primary/5 border-none font-bold text-sm rounded-xl px-4"
+                                            className="h-12 bg-primary/5 border-none rounded-xl px-4"
                                         />
                                     </div>
                                     <DialogFooter className="pt-2">
-                                        <Button disabled={isSubmitting} type="submit" className="w-full h-12 bg-emerald-600 text-white font-black text-[10px] tracking-widest rounded-xl shadow-lg shadow-emerald-600/10 cursor-pointer">
+                                        <Button disabled={isSubmitting} type="submit" className="w-full h-12 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-600/10 cursor-pointer">
                                             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
                                         </Button>
                                     </DialogFooter>
@@ -166,7 +166,7 @@ export default function PublicationAssignment({ submissionId, currentIssueId }: 
                             title="issueId"
                             value={selectedIssueId}
                             onChange={(e) => setSelectedIssueId(e.target.value)}
-                            className="w-full h-11 bg-background border border-emerald-500/20 text-[11px] font-black tracking-widest rounded-xl px-4 appearance-none outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-emerald-900 cursor-pointer"
+                            className="w-full h-11 bg-background border border-emerald-500/20 rounded-xl px-4 appearance-none outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-emerald-900 cursor-pointer"
                         >
                             <option value="">Select Target Issue...</option>
                             {volumes.map((vi: any) => (
@@ -183,23 +183,23 @@ export default function PublicationAssignment({ submissionId, currentIssueId }: 
 
                 <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-muted-foreground tracking-widest leading-none uppercase">Start Page</label>
+                        <label className="opacity-40 leading-none">Start Page</label>
                         <Input
                             type="number"
                             placeholder="e.g. 4"
                             value={startPage}
                             onChange={(e) => setStartPage(e.target.value)}
-                            className="h-10 bg-background border-emerald-500/10 font-bold text-xs rounded-lg"
+                            className="h-10 bg-background border-emerald-500/10 rounded-lg"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-muted-foreground tracking-widest leading-none uppercase">End Page</label>
+                        <label className="opacity-40 leading-none">End Page</label>
                         <Input
                             type="number"
                             placeholder="e.g. 8"
                             value={endPage}
                             onChange={(e) => setEndPage(e.target.value)}
-                            className="h-10 bg-background border-emerald-500/10 font-bold text-xs rounded-lg"
+                            className="h-10 bg-background border-emerald-500/10 rounded-lg"
                         />
                     </div>
                 </div>
@@ -208,7 +208,7 @@ export default function PublicationAssignment({ submissionId, currentIssueId }: 
             <Button
                 onClick={handleAssign}
                 disabled={assignMutation.isPending || !selectedIssueId}
-                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] tracking-widest rounded-xl shadow-xl shadow-emerald-600/20 cursor-pointer transition-all active:scale-[0.98]"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xl shadow-emerald-600/20 cursor-pointer transition-all active:scale-[0.98]"
             >
                 {assignMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />

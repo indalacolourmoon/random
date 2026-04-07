@@ -4,25 +4,25 @@ import { CheckCircle2, Globe, Users, Award, ShieldCheck } from 'lucide-react';
 const BENEFITS = [
     {
         icon: Globe,
-        title: "Global Recognition",
-        desc: "Featured in our archives as a pillar of scientific integrity and scholarly quality."
+        title: "Credit",
+        desc: "Get credit for your quality review work."
     },
     {
         icon: Users,
-        title: "Academic Networking",
-        desc: "Direct synergy with world-class editors and researchers at the frontier of technology."
+        title: "Connect",
+        desc: "Connect with editors and researchers."
     },
     {
         icon: Award,
-        title: "Certification",
-        desc: "Official certifications and recognition for your contributions to peer-review excellence."
+        title: "Award",
+        desc: "Receive official certificates for your review work."
     }
 ];
 
 const REQUIREMENTS = [
-    "Ph.D. Doctorate in Engineering or related Technical Field",
+    "PhD in Engineering or a related technical field",
     "Active research background with recent publications",
-    "Verified publication history (minimum 5 peer-reviewed papers)",
+    "Minimum 5 peer-reviewed papers published",
     "Affiliation with a recognized academic or research institution"
 ];
 
@@ -37,63 +37,55 @@ export default function JoinUsClient({ settings }: JoinUsClientProps) {
         <section className="container-responsive py-12 sm:py-24" aria-labelledby="join-us-heading">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
                 {/* Left Column: Benefits & Requirements */}
-                <div className="lg:col-span-12 xl:col-span-5 space-y-16">
-                    <header className="space-y-6">
-                        <h2 id="join-us-heading" className="text-primary font-black uppercase tracking-widest">
-                            Contribute to Scholarly Excellence
+                <div className="lg:col-span-12 xl:col-span-5 space-y-12">
+                    <header className="space-y-4">
+                        <h2 id="join-us-heading" className="text-primary opacity-60">
+                            Reviewer role
                         </h2>
-                        <p className="text-primary/70 leading-relaxed font-medium text-base sm:text-lg border-l-4 border-secondary/20 pl-6 ">
-                             "Joining the {journalShortName} Peer Reviewer database is a commitment to precision and integrity, helping shape the trajectory of global engineering research."
+                        <p className="text-foreground leading-relaxed border-l-4 border-primary/20 pl-6">
+                            Join our team to help maintain quality.
                         </p>
                     </header>
-
-                    <div className="grid grid-cols-1 gap-6" role="list" aria-label="Benefits of joining">
+                    <div className="grid grid-cols-1 gap-4" role="list" aria-label="Benefits of joining">
                         {BENEFITS.map((benefit, i) => (
-                            <article key={i} role="listitem" className="p-6 sm:p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary group">
+                            <article key={i} role="listitem" className="p-6 bg-card border border-primary/5 rounded-xl shadow-sm hover:bg-primary/2 transition-all group">
                                 <div className="flex gap-6 items-center">
-                                    <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center shrink-0 text-primary group-hover:bg-primary group-hover:text-white transition-colors" aria-hidden="true">
+                                    <div className="w-12 h-12 bg-primary/5 rounded-lg flex items-center justify-center shrink-0 text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-inner" aria-hidden="true">
                                         <benefit.icon className="w-6 h-6" />
                                     </div>
-                                    <div>
-                                        <h3 className="text-primary tracking-wider mb-1 font-black uppercase">{benefit.title}</h3>
-                                        <p className="text-xs text-black font-medium leading-relaxed">{benefit.desc}</p>
+                                    <div className="space-y-1">
+                                        <h3 className="text-primary">{benefit.title}</h3>
+                                        <p className="opacity-60 leading-relaxed">{benefit.desc}</p>
                                     </div>
                                 </div>
                             </article>
                         ))}
                     </div>
-
-                    <section className=" p-8 sm:p-14 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl" aria-labelledby="eligibility-heading">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                        <div className="relative z-10 space-y-8">
-                            <h3 id="eligibility-heading" className="tracking-wider text-primary font-black uppercase">Eligibility Standards</h3>
-                            <ul className="space-y-4">
+                    <section className="p-8 rounded-xl bg-primary/5 border border-primary/10 shadow-sm" aria-labelledby="eligibility-heading">
+                        <div className="relative z-10 space-y-6">
+                             <h3 id="eligibility-heading" className="text-primary opacity-60">Requirements</h3>
+                            <ul className="space-y-3">
                                 {REQUIREMENTS.map((item, i) => (
-                                    <li key={i} className="flex items-start gap-4 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black uppercase tracking-widest ">
-                                        <div className="w-6 h-6 bg-white/10 rounded-lg flex items-center justify-center shrink-0" aria-hidden="true">
-                                            <CheckCircle2 className="w-4 h-4 text-secondary" />
-                                        </div>
-                                        <span className="text-black">{item}</span>
+                                    <li key={i} className="flex items-start gap-3">
+                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                        <span className="opacity-80">{item}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     </section>
-
-                    <aside className="p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm flex items-center gap-6">
-                        <div className="w-12 h-12 bg-secondary/5 rounded-xl flex items-center justify-center text-secondary shrink-0" aria-hidden="true">
-                            <ShieldCheck className="w-6 h-6" />
-                        </div>
-                        <p className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-medium text-primary/60 leading-relaxed uppercase tracking-widest">
-                            {journalShortName} adheres to COPE guidelines. All applications are reviewed by the Editor-in-Chief for technical and ethical alignment.
+                     <aside className="p-4 bg-background border border-primary/10 rounded-xl flex items-center gap-4">
+                        <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
+                        <p className="opacity-60 leading-relaxed">
+                            {journalShortName} follows ethical guidelines. Applications are reviewed for alignment.
                         </p>
                     </aside>
                 </div>
 
                 {/* Right Column: Application Form */}
                 <div className="lg:col-span-12 xl:col-span-7">
-                    <div className="p-1 sm:p-2 bg-linear-to-br from-primary/10 to-transparent rounded-[3rem] shadow-2xl">
-                        <div className="bg-white p-2 sm:p-5 lg:p-12 rounded-[2.9rem]">
+                    <div className="p-1 sm:p-4 bg-primary/5 rounded-xl border border-primary/10">
+                        <div className="bg-background p-6 sm:p-8 rounded-lg shadow-sm">
                             <ReviewerApplicationForm />
                         </div>
                     </div>
