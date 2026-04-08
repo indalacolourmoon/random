@@ -168,6 +168,9 @@ export type PublishedPaperUI = {
     publication_year: number | null;
     month_range: string | null;
     co_authors: string | null;
+    affiliation: string | null;
+    author_email: string | null;
+    updated_at: string | Date | null;
 };
 
 // 🧪 Common Return Types

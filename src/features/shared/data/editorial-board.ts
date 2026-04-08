@@ -80,12 +80,7 @@ export const staticEditorialBoardMembers: BoardMember[] = [
         institute: "GPCET, Kurnool, India",
         role: "editor"
     },
-    {
-        full_name: "Dr Trinadha Rao Challa",
-        designation: "Dept of Management",
-        institute: "MES Group of Institutions, India",
-        role: "editor"
-    },
+   
     {
         full_name: "Dr. Srinivasa Rao Thammada",
         designation: "Dept of Computer science Engineering",
@@ -114,12 +109,6 @@ export const staticEditorialBoardMembers: BoardMember[] = [
         full_name: "Dr. K. Murali Krishna",
         designation: "Department of Electronics and Communication Engineering",
         institute: "VIIT, India",
-        role: "editor"
-    },
-    {
-        full_name: "Dr B. Sreenivasa Rao",
-        designation: "Dept of Management",
-        institute: "MES Group of Institutions, India",
         role: "editor"
     }
 ];

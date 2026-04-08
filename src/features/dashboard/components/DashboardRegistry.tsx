@@ -96,13 +96,12 @@ export function DashboardRegistry({
                     <Card key={stat.label} className="border-border/50 shadow-sm bg-card hover:shadow-md transition-all rounded-xl overflow-hidden group">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between mb-4">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-sm ${
-                                    stat.variant === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
-                                    stat.variant === 'blue' ? 'bg-blue-50 text-blue-600' :
-                                    stat.variant === 'indigo' ? 'bg-indigo-50 text-indigo-600' :
-                                    stat.variant === 'primary' ? 'bg-primary/5 text-primary' :
-                                    'bg-amber-50 text-amber-600'
-                                }`}>
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-sm ${stat.variant === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
+                                        stat.variant === 'blue' ? 'bg-blue-50 text-blue-600' :
+                                            stat.variant === 'indigo' ? 'bg-indigo-50 text-indigo-600' :
+                                                stat.variant === 'primary' ? 'bg-primary/5 text-primary' :
+                                                    'bg-amber-50 text-amber-600'
+                                    }`}>
                                     <div className="[&>svg]:w-5 [&>svg]:h-5">
                                         {(() => {
                                             const Icon = ICON_MAP[stat.icon] || Box;
@@ -167,10 +166,9 @@ export function DashboardRegistry({
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <Badge className={`border-none text-[10px] font-bold py-1 px-3 rounded-md ${
-                                                    sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' : 
-                                                    sub.status === 'retracted' ? 'bg-rose-500/10 text-rose-600' :
-                                                    'bg-primary/10 text-primary'}`}>
+                                                <Badge className={`border-none text-[10px] font-bold py-1 px-3 rounded-md ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' :
+                                                        sub.status === 'retracted' ? 'bg-rose-500/10 text-rose-600' :
+                                                            'bg-primary/10 text-primary'}`}>
                                                     {sub.status.replace('_', ' ')}
                                                 </Badge>
                                             </Link>
@@ -349,11 +347,10 @@ export function DashboardRegistry({
                                                         <p className="opacity-60">{staff.email}</p>
                                                     </div>
                                                 </div>
-                                                <Badge variant="outline" className={`h-7 border-none px-3 rounded-md ${
-                                                    staff.role === 'admin' ? 'bg-rose-500/10 text-rose-600' : 
-                                                    staff.role === 'editor' ? 'bg-blue-500/10 text-blue-600' : 
-                                                    'bg-emerald-500/10 text-emerald-600'
-                                                }`}>
+                                                <Badge variant="outline" className={`h-7 border-none px-3 rounded-md ${staff.role === 'admin' ? 'bg-rose-500/10 text-rose-600' :
+                                                        staff.role === 'editor' ? 'bg-blue-500/10 text-blue-600' :
+                                                            'bg-emerald-500/10 text-emerald-600'
+                                                    }`}>
                                                     {staff.role}
                                                 </Badge>
                                             </div>

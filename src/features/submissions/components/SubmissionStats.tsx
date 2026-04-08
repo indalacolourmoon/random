@@ -67,24 +67,24 @@ export default function SubmissionStats({ stats }: SubmissionStatsProps) {
                     transition={{ delay: idx * 0.1 }}
                 >
                     <Card className="border-border/50 shadow-sm bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-8 2xl:p-12">
-                            <div className="flex items-center justify-between mb-6">
+                        <CardContent className="p-4 2xl:p-6">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] 2xl:text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                                    <p className="text-[10px] 2xl:text-xs font-medium text-muted-foreground tracking-wide">
                                         {item.label}
                                     </p>
-                                    <h3 className="text-3xl 2xl:text-5xl font-extrabold text-foreground tracking-tight">
+                                    <h3 className="text-lg 2xl:text-xl font-bold text-foreground tracking-tight">
                                         {item.value}
                                     </h3>
                                 </div>
-                                <div className={`w-14 h-14 2xl:w-20 2xl:h-20 rounded-xl ${item.bg} flex items-center justify-center border ${item.borderColor} shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
-                                    <item.icon className={`w-6 h-6 2xl:w-10 2xl:h-10 ${item.color}`} />
+                                <div className={`w-10 h-10 2xl:w-12 2xl:h-12 rounded-lg ${item.bg} flex items-center justify-center border ${item.borderColor} shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
+                                    <item.icon className={`w-5 h-5 2xl:w-6 2xl:h-6 ${item.color}`} />
                                 </div>
                             </div>
                             
-                            <div className="mt-4 flex items-center gap-2 text-[10px] 2xl:text-sm font-bold text-muted-foreground uppercase tracking-tight">
-                                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                <span>Real-time Sync Active</span>
+                            <div className="mt-2 flex items-center gap-2 text-[8px] 2xl:text-[10px] font-medium text-muted-foreground tracking-tight">
+                                <TrendingUp className="w-3 h-3 text-emerald-500" />
+                                <span>Sync active</span>
                             </div>
                         </CardContent>
                     </Card>

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-const MAIN_TITLE = "International Journal of Innovative Trends in Engineering Science and Technology";
+const TOP_TITLE = "International Journal of";
+const BOTTOM_TITLE = 'Innovative Trends in Engineering Science and Technology'
 
 export default function HomeCarousel() {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -64,8 +65,9 @@ export default function HomeCarousel() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3, duration: 0.8 }}
                             >
-                                <h1 className=" leading-[1.1] mb-6 drop-shadow-2xl text-white">
-                                    {MAIN_TITLE}
+                                <h1 className=" leading-[1.1] mb-6 drop-shadow-2xl xl:text-4xl  text-white">
+                                    {TOP_TITLE}<br />{BOTTOM_TITLE}
+
                                 </h1>
                             </motion.div>
 

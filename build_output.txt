@@ -9,19 +9,81 @@
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 14.3s
+✓ Compiled successfully in 17.6s
   Running TypeScript ...
-Failed to type check.
+  Finished TypeScript in 32.7s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/37) ...
+  Generating static pages using 15 workers (9/37) 
+  Generating static pages using 15 workers (18/37) 
+  Generating static pages using 15 workers (27/37) 
+✓ Generating static pages using 15 workers (37/37) in 4.9s
+  Finalizing page optimization ...
 
-./src/app/(panel)/admin/page.tsx:106:88
-Type error: Cannot find name 'Download'. Did you mean 'onload'?
+Route (app)                            Revalidate  Expire
+┌ ○ /                                          1h      1y
+├ ○ /_not-found
+├ ○ /about                                     1h      1y
+├ ƒ /admin
+├ ƒ /admin/applications
+├ ○ /admin/messages
+├ ○ /admin/payments
+├ ƒ /admin/profile
+├ ○ /admin/publications
+├ ○ /admin/reviews
+├ ○ /admin/settings
+├ ƒ /admin/submissions
+├ ƒ /admin/submissions/[id]
+├ ○ /admin/users
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/cron/cleanup
+├ ƒ /api/cron/cleanup-authors
+├ ○ /archives                                  1h      1y
+├ ● /archives/[id]
+│ ├ /archives/15
+│ └ /archives/13
+├ ○ /auth/forgot-password
+├ ○ /auth/setup-password
+├ ƒ /author
+├ ƒ /author/profile
+├ ƒ /author/submissions
+├ ƒ /author/submissions/[id]
+├ ƒ /author/submissions/[id]/resubmit
+├ ○ /contact                                   1h      1y
+├ ○ /current-issue                             1h      1y
+├ ƒ /current-issue/[id]
+├ ƒ /editor
+├ ƒ /editor/applications
+├ ○ /editor/messages
+├ ƒ /editor/profile
+├ ○ /editor/publications
+├ ○ /editor/reviews
+├ ƒ /editor/submissions
+├ ƒ /editor/submissions/[id]
+├ ○ /editorial-board                           1h      1y
+├ ○ /ethics                                    1h      1y
+├ ○ /guidelines
+├ ○ /indexing                                  1h      1y
+├ ○ /join-us                                   1h      1y
+├ ƒ /login
+├ ƒ /payment/[id]
+├ ○ /peer-review                               1h      1y
+├ ○ /privacy                                   1h      1y
+├ ƒ /reviewer
+├ ○ /reviewer-guidelines                       1h      1y
+├ ƒ /reviewer/profile
+├ ○ /reviewer/reviews
+├ ƒ /reviewer/submissions/[id]
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+├ ○ /submit                                    1h      1y
+├ ○ /terms                                     1h      1y
+└ ○ /track                                     1h      1y
 
-  [90m104 |[0m ...
-  [90m105 |[0m ... [32m`[0m${dbLatency[32m}ms`[0m, status: [33mNumber[0m(dbLatency) < [35m10[0m ? [32m'Optimal'[0m : [32m'Nominal'[0m, icon: [33mActiv...[0m
-[31m[1m>[0m [90m106 |[0m ...[32m`[0m${storageMB[32m}MB`[0m, status: [32m'Healthy'[0m, icon: [33mDownload[0m },
-  [90m    |[0m                                               [31m[1m^[0m
-  [90m107 |[0m ...memUsed.toFixed([35m1[0m)[32m}%`[0m, status: memUsed < [35m80[0m ? [32m'Optimal'[0m : [32m'High'[0m, icon: [33mUsers[0m },
-  [90m108 |[0m ...ue: [32m`[0m${healthScore[32m}%`[0m, status: [33mNumber[0m(healthScore) > [35m90[0m ? [32m'Excellent'[0m : [32m'Good'[0m, icon: [33m...[0m
-  [90m109 |[0m ...
-Next.js build worker exited with code: 1 and signal: null
- ELIFECYCLE  Command failed with exit code 1.
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
