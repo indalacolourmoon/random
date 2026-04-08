@@ -58,7 +58,7 @@ export default function SubmissionStats({ stats }: SubmissionStatsProps) {
     ], [stats]);
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {items.map((item, idx) => (
                 <motion.div
                     key={item.label}
@@ -66,25 +66,20 @@ export default function SubmissionStats({ stats }: SubmissionStatsProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
                 >
-                    <Card className="border-border/50 shadow-sm bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden group">
-                        <CardContent className="p-4 2xl:p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] 2xl:text-xs font-medium text-muted-foreground tracking-wide">
+                    <Card className="border-border/50 shadow-sm bg-card hover:shadow-md transition-all duration-300 rounded-xl overflow-hidden group">
+                        <CardContent className="p-3 2xl:p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="space-y-0.5">
+                                    <p className="text-[10px] 2xl:text-xs font-medium text-muted-foreground">
                                         {item.label}
                                     </p>
-                                    <h3 className="text-lg 2xl:text-xl font-bold text-foreground tracking-tight">
+                                    <h3 className="text-base 2xl:text-lg font-bold text-foreground">
                                         {item.value}
                                     </h3>
                                 </div>
-                                <div className={`w-10 h-10 2xl:w-12 2xl:h-12 rounded-lg ${item.bg} flex items-center justify-center border ${item.borderColor} shadow-sm group-hover:rotate-6 transition-transform duration-500`}>
-                                    <item.icon className={`w-5 h-5 2xl:w-6 2xl:h-6 ${item.color}`} />
+                                <div className={`w-10 h-10 rounded-lg ${item.bg} flex items-center justify-center border ${item.borderColor}`}>
+                                    <item.icon className={`w-5 h-5 ${item.color}`} />
                                 </div>
-                            </div>
-                            
-                            <div className="mt-2 flex items-center gap-2 text-[8px] 2xl:text-[10px] font-medium text-muted-foreground tracking-tight">
-                                <TrendingUp className="w-3 h-3 text-emerald-500" />
-                                <span>Sync active</span>
                             </div>
                         </CardContent>
                     </Card>

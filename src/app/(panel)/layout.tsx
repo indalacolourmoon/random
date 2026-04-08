@@ -73,7 +73,7 @@ export default function PanelLayout({
                         setShowPreferences={setIsPreferencesOpen}
                     />
 
-                    <section className="p-4 lg:p-8 2xl:p-12 max-w-screen-2xl 2xl:max-w-[1600px] mx-auto w-full transition-all duration-500">
+                    <section className="p-3 lg:p-6 2xl:p-8 max-w-screen-2xl 2xl:max-w-[1600px] mx-auto w-full transition-all duration-500">
                         {children}
                     </section>
                 </SidebarInset>

@@ -67,7 +67,7 @@ const ReviewItemCard = React.memo(({
                 <div className="p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
                     <div className="flex-1 space-y-4 min-w-0">
                         <div className="flex flex-wrap items-center gap-3">
-                            <Badge className={`h-7 px-4 text-[10px] font-bold tracking-widest border-none rounded-lg uppercase ${item.status === 'completed' ? 'bg-emerald-600 text-white' : 'bg-primary text-white'}`}>
+                            <Badge className={`h-7 px-4 text-[10px] font-bold border-none rounded-lg ${item.status === 'completed' ? 'bg-emerald-600 text-white' : 'bg-primary text-white'}`}>
                                 {item.status.replace('_', ' ')}
                             </Badge>
                             <span className="font-mono font-bold text-[10px] bg-muted px-2 py-1 rounded border border-border/50 text-muted-foreground mr-1">
@@ -75,12 +75,12 @@ const ReviewItemCard = React.memo(({
                             </span>
                         </div>
 
-                        <h3 className="font-serif font-black text-foreground hover:text-primary transition-colors text-xl xl:text-2xl 2xl:text-3xl leading-tight">
+                        <h3 className="font-semibold text-foreground hover:text-primary transition-colors text-lg xl:text-xl 2xl:text-2xl leading-tight">
                             {item.title}
                         </h3>
                         
                         <div className="flex flex-wrap gap-8 items-center pt-2">
-                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                                 <User className="w-4 h-4 text-primary" />
                                 <span>{item.reviewerName}</span>
                             </div>
@@ -100,9 +100,9 @@ const ReviewItemCard = React.memo(({
                     <div className="shrink-0 flex flex-col gap-4 xl:w-72 border-t xl:border-t-0 pt-8 xl:pt-0 border-border/50">
                         <div className="flex flex-col gap-2 w-full">
                             {item.manuscriptPath && (
-                                <Button asChild className="w-full h-12 gap-3 font-bold text-xs uppercase tracking-widest rounded-xl bg-primary text-white hover:scale-[1.02] transition-all cursor-pointer">
+                                <Button asChild className="w-full h-10 gap-3 font-bold text-xs rounded-xl bg-primary text-white hover:scale-[1.02] transition-all cursor-pointer">
                                     <a href={item.manuscriptPath} className="flex items-center justify-center w-full" download>
-                                        <Download className="w-4 h-4" /> Download MS
+                                        <Download className="w-4 h-4" /> Download
                                     </a>
                                 </Button>
                             )}
@@ -125,15 +125,15 @@ const ReviewItemCard = React.memo(({
                         {item.status !== 'completed' && isReviewer && (
                             <Dialog onOpenChange={(open) => !open && setFeedbackFile(null)}>
                                 <DialogTrigger asChild>
-                                    <Button className="w-full h-14 gap-3 font-semibold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 rounded-xl bg-primary text-white dark:text-slate-900 hover:scale-[1.05] transition-all cursor-pointer">
-                                        <FileUp className="w-4 h-4" /> Submit Intel
+                                    <Button className="w-full h-12 gap-3 font-semibold text-[10px] shadow-lg rounded-xl bg-primary text-white dark:text-slate-900 transition-all cursor-pointer">
+                                        <FileUp className="w-4 h-4" /> Submit Review
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-3xl rounded-xl p-6 bg-card border-border shadow-2xl">
                                     <DialogHeader className="space-y-1">
-                                        <DialogTitle className="text-lg font-bold text-primary tracking-tight">Evaluation console</DialogTitle>
-                                        <DialogDescription className="text-[11px] text-muted-foreground leading-relaxed">
-                                            scientific assessment for paper: <span className="text-foreground underline decoration-primary/20">{item.paperId}</span>
+                                        <DialogTitle className="text-lg font-bold text-primary tracking-tight">Review Details</DialogTitle>
+                                        <DialogDescription className="text-xs text-muted-foreground">
+                                            scientific assessment for paper: <span className="text-foreground">{item.paperId}</span>
                                         </DialogDescription>
                                     </DialogHeader>
                                     
@@ -238,7 +238,7 @@ const ReviewItemCard = React.memo(({
 
                                         <DialogFooter className="pt-2 border-t border-border/50">
                                             <Button type="submit" disabled={isSubmitting} className="w-full h-12 bg-primary text-white dark:text-slate-950 font-bold text-xs rounded-lg transition-all cursor-pointer">
-                                                {isSubmitting ? 'committing findings...' : 'commit findings'}
+                                                {isSubmitting ? 'Submitting...' : 'Submit'}
                                             </Button>
                                         </DialogFooter>
                                     </form>
@@ -346,7 +346,7 @@ export function ReviewsRegistry({ role }: { role: 'admin' | 'editor' | 'reviewer
     }, [refetchReviews]);
 
     const handleFeedbackSubmit = useCallback(async (item: any, formData: FormData) => {
-        const toastId = toast.loading('Committing findings...');
+        const toastId = toast.loading('Submitting...');
         try {
             const result = await uploadMutation.mutateAsync({ assignmentId: item.id, formData });
             if (result.success) {
@@ -380,7 +380,7 @@ export function ReviewsRegistry({ role }: { role: 'admin' | 'editor' | 'reviewer
         return (
             <div className="p-32 text-center space-y-6">
                 <div className="w-14 h-14 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-                <p className="font-semibold text-muted-foreground tracking-[0.2em] text-xs uppercase animate-pulse">Accessing review pipeline...</p>
+                <p className="font-semibold text-muted-foreground text-xs animate-pulse">Loading reviews...</p>
             </div>
         );
     }
@@ -390,27 +390,27 @@ export function ReviewsRegistry({ role }: { role: 'admin' | 'editor' | 'reviewer
             {/* Header Section */}
             <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 border-b border-border/50 pb-10">
                 <div className="space-y-4">
-                    <h1 className="text-4xl 2xl:text-6xl font-serif font-black text-primary tracking-tight">
-                        {role === 'reviewer' ? 'Evaluations Registry' : 'Review Oversight'}
+                    <h1 className="text-2xl 2xl:text-3xl font-bold text-primary tracking-tight">
+                        {role === 'reviewer' ? 'Reviews' : 'Manage Reviews'}
                     </h1>
-                    <p className="text-sm 2xl:text-xl font-medium text-muted-foreground border-l-4 border-primary/20 pl-6 py-1 max-w-2xl leading-relaxed">
+                    <p className="text-sm font-medium text-muted-foreground max-w-2xl leading-relaxed">
                         {role === 'reviewer'
-                            ? 'Technical evaluation portal for manuscript archival validation and peer-review workflows.'
-                            : 'Global administration of editorial integrity, staff delegation, and peer-review lifecycle.'}
+                            ? 'Technical evaluation portal for manuscript review workflows.'
+                            : 'Global administration of editorial integrity and peer-review lifecycle.'}
                     </p>
                 </div>
                 {isInternalStaff && (
                     <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
                         <DialogTrigger asChild>
-                            <Button className="h-12 px-6 gap-3 bg-primary text-white font-semibold text-[10px] tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer dark:text-black uppercase">
-                                <Plus className="w-4 h-4" />Assign reviewer
+                            <Button className="h-10 px-6 gap-3 bg-primary text-white font-semibold text-[10px] rounded-xl shadow-lg transition-all cursor-pointer dark:text-black">
+                                <Plus className="w-4 h-4" />Assign Reviewer
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-xl rounded-xl p-5 bg-card border-none shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-xl font-semibold text-foreground tracking-tight uppercase">Assignment Console</DialogTitle>
-                                <DialogDescription className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                                    Strategic delegation of manuscripts to technical staff.
+                                <DialogTitle className="text-xl font-semibold text-foreground">Assign Reviewer</DialogTitle>
+                                <DialogDescription className="text-xs text-muted-foreground">
+                                    Assign manuscripts to technical staff.
                                 </DialogDescription>
                             </DialogHeader>
                             <form action={async (formData) => {

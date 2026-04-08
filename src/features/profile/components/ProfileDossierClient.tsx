@@ -18,7 +18,7 @@ import {
     X,
     Lock
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -55,19 +55,18 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
     // Refs for scrolling
     const sectionRefs = {
-        'Full Name': useRef<HTMLDivElement>(null),
-        'Designation': useRef<HTMLDivElement>(null),
-        'ORCID ID': useRef<HTMLDivElement>(null),
-        'Profile Photo': useRef<HTMLDivElement>(null),
-        'Academic Institute': useRef<HTMLDivElement>(null),
-        'Nationality/Country': useRef<HTMLDivElement>(null),
-        'Research Interests': useRef<HTMLDivElement>(null),
-        'Submission History': useRef<HTMLDivElement>(null),
-        'Activity History': useRef<HTMLDivElement>(null)
+        'name': useRef<HTMLDivElement>(null),
+        'designation': useRef<HTMLDivElement>(null),
+        'orcid_id': useRef<HTMLDivElement>(null),
+        'photo': useRef<HTMLDivElement>(null),
+        'affiliation': useRef<HTMLDivElement>(null),
+        'interests': useRef<HTMLDivElement>(null),
+        'history': useRef<HTMLDivElement>(null)
     }
 
     const scrollToSection = (field: string) => {
-        const ref = (sectionRefs as any)[field]
+        const refName = field.toLowerCase().replace(/\s+/g, '_')
+        const ref = (sectionRefs as any)[refName]
         if (ref?.current) {
             ref.current.scrollIntoView({ behavior: "smooth", block: "center" })
         }
@@ -78,9 +77,9 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
             const res = await updateProfileField(userId, field, value)
             if (!res.success) throw new Error(res.error || "Failed to update profile")
             setData(prev => ({ ...prev, [field === 'name' ? 'name' : field]: value }))
-            toast.success(`Identity updated: ${field}`)
+            toast.success(`Profile updated: ${field}`)
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : String(error) || "Failed to update profile")
+            toast.error(error instanceof Error ? error.message : "Failed to update profile")
             throw error
         }
     }
@@ -97,9 +96,9 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
             const response = await updateProfilePhoto(userId, formData)
             if (!response.success || !response.data) throw new Error(response.error || "Photo upload failed")
             setData(prev => ({ ...prev, photo_url: response.data || null }))
-            toast.success("Identity photo updated")
+            toast.success("Profile photo updated")
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : String(error) || "Photo upload failed")
+            toast.error(error instanceof Error ? error.message : "Photo upload failed")
         } finally {
             setIsUploading(false)
         }
@@ -124,328 +123,254 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
             if (!res.success || !res.data) throw new Error(res.error || "Failed to update interests")
             setData(prev => ({ ...prev, research_interests: res.data || [] }))
             setIsEditingInterests(false)
-            toast.success("Research profile updated")
+            toast.success("Interests updated")
         } catch (error) {
             toast.error("Failed to update interests")
         }
     }
 
     return (
-        <div className="max-w-7xl mx-auto space-y-12 pb-24">
-            {/* Header/Completeness */}
-            <div className="bg-white/3 backdrop-blur-3xl border border-white/5 p-8 2xl:p-12 rounded-[2.5rem] 2xl:rounded-[4rem] shadow-2xl">
-                <DossierProgress 
-                    percentage={data.completeness.percentage}
-                    missing={data.completeness.missing}
-                    onChipClick={scrollToSection}
-                />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] 2xl:grid-cols-[500px_1fr] gap-8 2xl:gap-14 items-start">
-                
-                {/* Left Column: Identity Sidebar */}
-                <aside className="lg:sticky lg:top-8 space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
-                    <Card className="bg-white/2 border-white/5 shadow-2xl rounded-[2.5rem] 2xl:rounded-[3.5rem] overflow-hidden">
-                        <CardContent className="p-10 2xl:p-14 text-center space-y-8">
-                            {/* Photo */}
-                            <div className="flex justify-center" ref={sectionRefs['Profile Photo']}>
-                                <div className="relative group/avatar">
-                                    <div className="w-40 h-40 2xl:w-60 2xl:h-60 rounded-full border-4 border-primary/20 p-2 shadow-2xl ring-1 ring-white/10">
-                                        <div className="w-full h-full rounded-full bg-muted overflow-hidden flex items-center justify-center relative">
-                                            {data.photo_url ? (
-                                                <Image 
-                                                    src={data.photo_url} 
-                                                    alt={data.name} 
-                                                    fill
-                                                    className="object-cover transition-transform duration-700 group-hover/avatar:scale-110" 
-                                                />
-                                            ) : (
-                                                <div className="font-serif text-5xl font-black text-primary/40 uppercase">
-                                                    {data.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                                </div>
-                                            )}
-                                            
-                                            {/* Upload Overlay */}
-                                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover/avatar:opacity-100 transition-all cursor-pointer">
-                                                {isUploading ? (
-                                                    <span className="animate-spin text-white">/</span>
-                                                ) : (
-                                                    <>
-                                                        <Camera className="text-white w-6 h-6" />
-                                                        <span className="text-white text-[9px] font-black uppercase tracking-widest">Update Identity</span>
-                                                    </>
-                                                )}
-                                                <input 
-                                                    title="user photo upload"
-                                                    type="file" 
-                                                    className="absolute inset-0 opacity-0 cursor-pointer" 
-                                                    onChange={handlePhotoUpload}
-                                                    accept="image/*"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {data.photo_url && (
-                                        <div className="absolute -bottom-2 right-4 bg-emerald-600 p-2.5 rounded-2xl shadow-xl shadow-emerald-500/30 border-2 border-background">
-                                            <CheckCircle2 className="w-5 h-5 text-white" />
-                                        </div>
-                                    )}
-                                </div>
+        <div className="max-w-6xl mx-auto space-y-6 pb-12">
+            {/* Simple Header */}
+            <header className="flex flex-col md:flex-row items-center gap-6 p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="relative group/avatar" ref={sectionRefs['photo']}>
+                    <div className="w-32 h-32 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden relative border-2 border-slate-200 dark:border-slate-800">
+                        {data.photo_url ? (
+                            <Image 
+                                src={data.photo_url} 
+                                alt={data.name} 
+                                fill
+                                className="object-cover" 
+                            />
+                        ) : (
+                            <div className="text-3xl font-bold text-slate-400">
+                                {data.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                            <Camera className="text-white w-6 h-6" />
+                            <input 
+                                title="Upload Photo"
+                                type="file" 
+                                className="absolute inset-0 opacity-0 cursor-pointer" 
+                                onChange={handlePhotoUpload}
+                                accept="image/*"
+                            />
+                        </div>
+                    </div>
+                    {isUploading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-black/50 rounded-lg">
+                            <span className="animate-spin text-primary">...</span>
+                        </div>
+                    )}
+                </div>
 
-                            <div className="space-y-6">
-                                <div ref={sectionRefs['Full Name']}>
-                                    <InlineEditField 
-                                        label="Full Name" 
-                                        value={data.name} 
-                                        onSave={(v) => handleSaveField('name', v)}
-                                        placeholder="Full academic name" 
-                                    />
-                                </div>
-                                <div ref={sectionRefs['Designation']}>
-                                    <InlineEditField 
-                                        label="Designation" 
-                                        value={data.designation} 
-                                        onSave={(v) => handleSaveField('designation', v)}
-                                        placeholder="e.g. Professor, Scientist" 
-                                    />
-                                </div>
-                                
-                                <div className="space-y-1.5 py-4 px-4 bg-muted/20 rounded-3xl border border-white/5 text-left group">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2 px-1">
-                                        <Lock className="w-2.5 h-2.5" /> Email Address
-                                    </label>
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-serif text-lg font-bold truncate opacity-80 pl-1">{data.email}</span>
-                                        <div className="p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="text-[8px] font-black uppercase bg-muted px-2 py-1 rounded text-muted-foreground">Encrypted</span>
-                                        </div>
-                                    </div>
-                                </div>
+                <div className="flex-1 text-center md:text-left space-y-2">
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">{data.name}</h1>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium">{data.designation || 'Academic Professional'}</p>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-1">
+                        <Badge variant="secondary" className="font-medium px-2 py-0.5">{role}</Badge>
+                        {data.orcid_id && (
+                            <Link 
+                                href={`https://orcid.org/${data.orcid_id}`} 
+                                target="_blank"
+                                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-primary transition-colors"
+                            >
+                                <ExternalLink className="w-3 h-3" />
+                                {data.orcid_id}
+                            </Link>
+                        )}
+                    </div>
+                </div>
 
-                                <div ref={sectionRefs['ORCID ID']}>
-                                    <InlineEditField 
-                                        label="ORCID iD" 
-                                        value={data.orcid_id || ""} 
-                                        onSave={(v) => handleSaveField('orcid_id', v)}
-                                        placeholder="0000-0000-0000-0000"
-                                        icon={<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.541 0 .981.44.981.981 0 .542-.44.981-.981.981-.541 0-.98-.439-.98-.981 0-.541.439-.981.98-.981zm1.49 13.918H7.369V8.044h1.49v10.252zm-1.49-11.417c.541 0 .981.44.981.981 0 .541-.44.981-.981.981-.541 0-.98-.44-.98-.981 0-.541.439-.981.98-.981zM11.531 18.296h-1.49V8.044h1.49v1.205c.294-.482.793-1.353 2.164-1.353 2.21 0 3.333 1.554 3.333 3.654 0 2.824-1.503 4.887-3.693 4.887-1.49 0-2.029-.981-2.164-1.353v3.213zm3.178-3.08c1.336 0 2.128-1.018 2.128-2.671 0-1.637-.735-2.61-2.029-2.61-1.31 0-2.14 1.018-2.14 2.656 0 1.637.787 2.625 2.041 2.625z"/></svg>}
-                                    />
-                                    {data.orcid_id && (
-                                        <a 
-                                            href={`https://orcid.org/${data.orcid_id}`} 
-                                            target="_blank" 
-                                            className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 bg-[#a6ce39]/10 text-[#a6ce39] rounded-full text-[10px] font-black uppercase hover:bg-[#a6ce39]/20 transition-all border border-[#a6ce39]/20"
-                                        >
-                                            View ORCID Registry <ExternalLink className="w-3 h-3" />
-                                        </a>
-                                    )}
-                                </div>
+                <div className="w-full md:w-64 border-l border-slate-100 dark:border-slate-800 pl-0 md:pl-6">
+                    <DossierProgress 
+                        percentage={data.completeness.percentage}
+                        missing={data.completeness.missing}
+                        onChipClick={scrollToSection}
+                    />
+                </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Profile Details Column */}
+                <div className="lg:col-span-1 space-y-6">
+                    <Card className="rounded-xl border-slate-200 dark:border-slate-800 shadow-sm">
+                        <CardHeader className="p-5 pb-2">
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                Details
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 space-y-4">
+                            <div ref={sectionRefs['name']}>
+                                <InlineEditField 
+                                    label="Full Name" 
+                                    value={data.name} 
+                                    onSave={(v) => handleSaveField('name', v)}
+                                    placeholder="Full Name" 
+                                />
+                            </div>
+                            <div ref={sectionRefs['designation']}>
+                                <InlineEditField 
+                                    label="Designation" 
+                                    value={data.designation} 
+                                    onSave={(v) => handleSaveField('designation', v)}
+                                    placeholder="e.g. Professor" 
+                                />
+                            </div>
+                            <div className="space-y-1 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800">
+                                <label className="text-xs text-slate-400 flex items-center gap-1.5">
+                                    <Lock className="w-3 h-3" /> Email Address
+                                </label>
+                                <p className="text-sm font-semibold truncate text-slate-700 dark:text-slate-300">{data.email}</p>
+                            </div>
+                            <div ref={sectionRefs['orcid_id']}>
+                                <InlineEditField 
+                                    label="ORCID iD" 
+                                    value={data.orcid_id || ""} 
+                                    onSave={(v) => handleSaveField('orcid_id', v)}
+                                    placeholder="0000-0000-0000-0000"
+                                />
                             </div>
                         </CardContent>
                     </Card>
-                </aside>
 
-                {/* Right Column: Sections */}
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    
-                    {/* Affiliation Section */}
                     {role !== 'admin' && (
-                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]">
-                            <CardContent className="p-10 2xl:p-14">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="space-y-1">
-                                        <h3 className="font-serif text-2xl 2xl:text-3xl font-black text-foreground">Academic Affiliation</h3>
-                                        <p className="text-[10px] font-mono text-muted-foreground uppercase opacity-40">Verified via application audit</p>
-                                    </div>
-                                    <Badge variant="outline" className="h-8 px-4 border-white/10 text-[9px] font-black opacity-40 uppercase">Read-Only Repository</Badge>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 2xl:gap-14">
-                                    <div className="space-y-2 p-6 bg-muted/10 rounded-3xl border border-white/5" ref={sectionRefs['Academic Institute']}>
-                                        <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Institution</span>
-                                        <div className="flex items-center gap-4 text-foreground">
-                                            <Building2 className="w-5 h-5 opacity-40" />
-                                            <p className="font-serif text-lg 2xl:text-2xl font-bold">{data.application?.institute || 'Internal Admin'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2 p-6 bg-muted/10 rounded-3xl border border-white/5" ref={sectionRefs['Nationality/Country']}>
-                                        <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Nationality / Locale</span>
-                                        <div className="flex items-center gap-4 text-foreground">
-                                            <Globe className="w-5 h-5 opacity-40" />
-                                            <p className="font-serif text-lg 2xl:text-2xl font-bold">{data.application?.country || 'N/A'}</p>
-                                        </div>
+                        <Card className="rounded-xl border-slate-200 dark:border-slate-800 shadow-sm">
+                            <CardHeader className="p-5 pb-2">
+                                <CardTitle className="text-lg font-bold">Affiliation</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-5 space-y-4" ref={sectionRefs['affiliation']}>
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">Institution</span>
+                                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                        <Building2 className="w-4 h-4 opacity-50" />
+                                        <p className="text-sm font-semibold">{data.application?.institute || 'Internal Account'}</p>
                                     </div>
                                 </div>
-                                <p className="mt-6 text-[9px] text-muted-foreground font-medium uppercase tracking-tight opacity-30 italic">
-                                    * These credentials were verified during vetting. To update institute details, please initiate the re-evaluation protocol with the editorial board.
-                                </p>
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">Nationality</span>
+                                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                        <Globe className="w-4 h-4 opacity-50" />
+                                        <p className="text-sm font-semibold">{data.application?.country || 'N/A'}</p>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     )}
+                </div>
 
-                    {/* Research Domains Section */}
+                {/* Content Column */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Expertise Section */}
                     {(role === 'reviewer' || role === 'editor') && (
-                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]" ref={sectionRefs['Research Interests']}>
-                            <CardContent className="p-10 2xl:p-14">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="space-y-1">
-                                        <h3 className="font-serif text-2xl 2xl:text-3xl font-black text-foreground">Specialist Expertise</h3>
-                                        <p className="text-[10px] font-mono text-muted-foreground uppercase opacity-40">Dynamic Domain Repository</p>
-                                    </div>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        onClick={() => {
-                                            setTempInterests([...data.research_interests]);
-                                            setIsEditingInterests(!isEditingInterests);
-                                        }}
-                                        className="h-10 px-5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 hover:bg-white/5"
-                                    >
-                                        {isEditingInterests ? "Cancel Changes" : "Refactor Domains"}
-                                    </Button>
-                                </div>
-
+                        <Card className="rounded-xl border-slate-200 dark:border-slate-800 shadow-sm" ref={sectionRefs['interests']}>
+                            <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg font-bold">Research Interests</CardTitle>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => {
+                                        setTempInterests([...data.research_interests]);
+                                        setIsEditingInterests(!isEditingInterests);
+                                    }}
+                                    className="text-xs font-medium"
+                                >
+                                    {isEditingInterests ? "Cancel" : "Edit"}
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-5">
                                 <AnimatePresence mode="wait">
                                     {isEditingInterests ? (
                                         <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            className="space-y-8"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="space-y-4"
                                         >
-                                            <div className="space-y-4">
-                                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Standard Categories</span>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {CATEGORIES.map(cat => (
-                                                        <button
-                                                            key={cat}
-                                                            onClick={() => toggleInterest(cat)}
-                                                            className={cn(
-                                                                "h-10 px-5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                                tempInterests.includes(cat) 
-                                                                    ? "bg-primary text-white shadow-lg shadow-primary/30" 
-                                                                    : "bg-muted/30 text-muted-foreground border border-white/5 hover:border-primary/40"
-                                                            )}
-                                                        >
-                                                            {cat}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {CATEGORIES.map(cat => (
+                                                    <button
+                                                        key={cat}
+                                                        onClick={() => toggleInterest(cat)}
+                                                        className={cn(
+                                                            "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                                                            tempInterests.includes(cat) 
+                                                                ? "bg-primary text-white" 
+                                                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                                                        )}
+                                                    >
+                                                        {cat}
+                                                    </button>
+                                                ))}
                                             </div>
 
-                                            <div className="space-y-4">
-                                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Custom Identifiers</span>
-                                                <div className="flex gap-4">
-                                                    <Input 
-                                                        placeholder="Add Niche Domain (e.g. Neuromorphic Computing)" 
-                                                        value={newInterest}
-                                                        onChange={(e) => setNewInterest(e.target.value)}
-                                                        onKeyDown={(e) => e.key === 'Enter' && addCustomInterest()}
-                                                        className="h-14 bg-muted/20 border-white/5 rounded-2xl font-bold"
-                                                    />
-                                                    <Button onClick={addCustomInterest} className="h-14 w-14 rounded-2xl bg-white text-black hover:bg-white/90">
-                                                        <Plus className="w-6 h-6" />
-                                                    </Button>
-                                                </div>
-                                                <div className="flex flex-wrap gap-2 mt-4">
-                                                    {tempInterests.filter(i => !CATEGORIES.includes(i)).map(interest => (
-                                                        <Badge key={interest} className="h-10 px-4 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest gap-2">
-                                                            {interest}
-                                                            <X className="w-3 h-3 cursor-pointer" onClick={() => toggleInterest(interest)} />
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex justify-end gap-4 pt-4">
-                                                <Button 
-                                                    className="h-14 px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest"
-                                                    onClick={handleSaveInterests}
-                                                >
-                                                    Commit Profile Changes
+                                            <div className="flex gap-2">
+                                                <Input 
+                                                    placeholder="Add other interest..." 
+                                                    value={newInterest}
+                                                    onChange={(e) => setNewInterest(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && addCustomInterest()}
+                                                    className="h-10 text-sm"
+                                                />
+                                                <Button onClick={addCustomInterest} size="sm">
+                                                    <Plus className="w-4 h-4" />
                                                 </Button>
+                                            </div>
+                                            
+                                            <div className="flex flex-wrap gap-2">
+                                                {tempInterests.filter(i => !CATEGORIES.includes(i)).map(interest => (
+                                                    <Badge key={interest} variant="outline" className="gap-1 px-2 py-1">
+                                                        {interest}
+                                                        <X className="w-3 h-3 cursor-pointer" onClick={() => toggleInterest(interest)} />
+                                                    </Badge>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex justify-end pt-2">
+                                                <Button size="sm" onClick={handleSaveInterests}>Save Changes</Button>
                                             </div>
                                         </motion.div>
                                     ) : (
-                                        <motion.div 
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="flex flex-wrap gap-3"
-                                        >
+                                        <div className="flex flex-wrap gap-2">
                                             {data.research_interests.length > 0 ? data.research_interests.map(interest => (
-                                                <span key={interest} className="h-12 px-6 flex items-center bg-primary/5 text-primary border border-primary/20 rounded-[1.2rem] text-[11px] 2xl:text-sm font-black uppercase tracking-widest shadow-sm">
+                                                <span key={interest} className="px-3 py-1 bg-primary/5 text-primary border border-primary/10 rounded-lg text-sm font-medium">
                                                     {interest}
                                                 </span>
                                             )) : (
-                                                <p className="text-muted-foreground italic font-mono text-xs opacity-40">Identity domain profile currently unpopulated.</p>
+                                                <p className="text-slate-400 text-sm italic">No research interests listed.</p>
                                             )}
-                                        </motion.div>
+                                        </div>
                                     )}
                                 </AnimatePresence>
                             </CardContent>
                         </Card>
                     )}
 
-                    {/* Application Status Section */}
+                    {/* Vetting Status */}
                     {role !== 'admin' && data.application && (
-                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]">
-                            <CardContent className="p-10 2xl:p-14">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="space-y-1">
-                                        <h3 className="font-serif text-2xl 2xl:text-3xl font-black text-foreground">Vetting Narrative</h3>
-                                        <p className="text-[10px] font-mono text-muted-foreground uppercase opacity-40">Current Institutional Status</p>
-                                    </div>
-                                    <Badge className={cn(
-                                        "h-10 px-8 rounded-2xl text-[10px] font-black tracking-widest uppercase border-none",
-                                        data.application.status === 'approved' ? 'bg-emerald-600 shadow-emerald-500/30' :
-                                        data.application.status === 'rejected' ? 'bg-rose-700 shadow-rose-500/30' :
-                                        'bg-amber-600 shadow-amber-500/30'
+                        <Card className="rounded-xl border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden border-l-4 border-l-primary">
+                            <CardContent className="p-6">
+                                <div className="flex items-start gap-4">
+                                    <div className={cn(
+                                        "p-2 rounded-lg",
+                                        data.application.status === 'approved' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' :
+                                        data.application.status === 'rejected' ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600' :
+                                        'bg-amber-50 dark:bg-amber-950/20 text-amber-600'
                                     )}>
-                                        {data.application.status}
-                                    </Badge>
-                                </div>
-
-                                <div className={cn(
-                                    "p-10 rounded-4xl border relative overflow-hidden",
-                                    data.application.status === 'approved' ? 'bg-emerald-600/5 border-emerald-500/20' :
-                                    data.application.status === 'rejected' ? 'bg-rose-600/5 border-rose-500/20' :
-                                    'bg-amber-600/5 border-amber-500/20'
-                                )}>
-                                    <div className="relative z-10 space-y-4">
-                                        <div className="flex items-center gap-4">
-                                            {data.application.status === 'approved' ? <CheckCircle2 className="w-8 h-8 text-emerald-500" /> : 
-                                             data.application.status === 'rejected' ? <XCircle className="w-8 h-8 text-rose-500" /> : 
-                                             <Clock className="w-8 h-8 text-amber-500 animate-pulse" />}
-                                            <h4 className="font-serif text-xl font-bold">
-                                                {data.application.status === 'approved' ? "Board Membership Confirmed" :
-                                                 data.application.status === 'rejected' ? "Vetting Outcome | Board Action" :
-                                                 "Dossier Under Review"}
-                                            </h4>
-                                        </div>
-                                        
-                                        {data.application.status === 'rejected' && data.application.rejection_reason && (
-                                            <div className="mt-6 p-6 bg-black/40 rounded-2xl border border-rose-500/30 backdrop-blur-md">
-                                                <p className="font-serif text-base 2xl:text-lg leading-relaxed text-rose-100/70 italic">
-                                                    "{data.application.rejection_reason}"
-                                                </p>
-                                                <div className="mt-4 pt-4 border-t border-rose-500/10 text-[10px] uppercase font-black text-rose-500 opacity-60">
-                                                    Finalized Outcome Broadcast
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <p className="text-xs 2xl:text-sm text-foreground/60 leading-relaxed max-w-2xl">
-                                            {data.application.status === 'approved' ? `Your professional profile has been active since ${new Date(data.application.reviewed_at!).toLocaleDateString()}. You have access to all peer-review modules.` :
-                                             data.application.status === 'rejected' ? "After formal evaluation of provided documentation and research footprint, the board has concluded to reject this application. Refer to rationale above." :
-                                             "Vetting protocols are currently analyzing your academic footprint. Standard processing time is 48-72 hours."}
-                                        </p>
+                                        {data.application.status === 'approved' ? <CheckCircle2 className="w-6 h-6" /> : 
+                                         data.application.status === 'rejected' ? <XCircle className="w-6 h-6" /> : 
+                                         <Clock className="w-6 h-6" />}
                                     </div>
-                                    
-                                    {/* Abstract Aesthetic Background SVG */}
-                                    <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none translate-x-1/4 -translate-y-1/4 scale-150">
-                                        {data.application.status === 'approved' ? <CheckCircle2 className="w-64 h-64" /> : 
-                                         data.application.status === 'rejected' ? <XCircle className="w-64 h-64" /> : 
-                                         <Clock className="w-64 h-64" />}
+                                    <div className="space-y-1">
+                                        <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                                            Status: {data.application.status}
+                                        </h4>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
+                                            {data.application.status === 'approved' ? `Your professional profile is active. You have access to all editorial modules.` :
+                                             data.application.status === 'rejected' ? "After evaluation, the board has concluded to reject this application." :
+                                             "Vetting protocols are currently analyzing your academic footprint."}
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -454,51 +379,38 @@ export function ProfileDossierClient({ data: initialData, role, userId }: Profil
 
                     {/* History Section */}
                     {role !== 'admin' && role !== 'editor' && (
-                        <Card className="bg-white/2 border-white/5 rounded-[2.5rem] 2xl:rounded-[3.5rem]" ref={role === 'author' ? sectionRefs['Submission History'] : sectionRefs['Activity History']}>
-                            <CardContent className="p-10 2xl:p-14">
-                                <div className="flex items-center justify-between mb-10">
-                                    <div className="space-y-1">
-                                        <h3 className="font-serif text-2xl 2xl:text-3xl font-black text-foreground">
-                                            {role === 'author' ? "Submission History" : "Peer-Review Repository"}
-                                        </h3>
-                                        <p className="text-[10px] font-mono text-muted-foreground uppercase opacity-40">Professional Activity Timeline</p>
-                                    </div>
-                                    <Button variant="outline" className="h-10 px-8 rounded-2xl border-white/10 text-[9px] font-black uppercase tracking-widest gap-2 bg-white/5" asChild>
-                                        <Link href={role === 'author' ? "/author/submissions" : "/reviewer/reviews"}>
-                                            View Full Registry <ChevronDown className="w-3 h-3 -rotate-90" />
-                                        </Link>
-                                    </Button>
-                                </div>
-
-                                <div className="space-y-4">
+                        <Card className="rounded-xl border-slate-200 dark:border-slate-800 shadow-sm" ref={sectionRefs['history']}>
+                            <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg font-bold">
+                                    {role === 'author' ? "Submissions" : "Reviews"}
+                                </CardTitle>
+                                <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
+                                    <Link href={role === 'author' ? "/author/submissions" : "/reviewer/reviews"}>
+                                        View All
+                                    </Link>
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-5">
+                                <div className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {data.history.length > 0 ? data.history.map((item, idx) => (
-                                        <div key={idx} className="group flex items-center justify-between p-6 bg-white/1 hover:bg-white/3 border border-white/5 hover:border-white/10 rounded-3xl transition-all">
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-14 h-14 rounded-2xl bg-muted/40 flex items-center justify-center border border-white/5 shadow-xl group-hover:scale-105 transition-transform">
-                                                    <FileText className="w-6 h-6 opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <h5 className="font-serif text-lg font-bold line-clamp-1">{item.title}</h5>
-                                                    <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground opacity-60">
-                                                        <span>Logged: {(item.created_at || item.updated_at) ? new Date((item.created_at || item.updated_at)!).toLocaleDateString() : 'Unknown Date'}</span>
-                                                        <span className="w-1 h-1 rounded-full bg-white/10" />
-                                                        <span>PID-000{idx + 128}</span>
-                                                    </div>
+                                        <div key={idx} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                                            <div className="flex items-center gap-3">
+                                                <FileText className="w-4 h-4 text-slate-300" />
+                                                <div className="space-y-0.5">
+                                                    <h5 className="text-sm font-semibold line-clamp-1 text-slate-700 dark:text-slate-300">{item.title}</h5>
+                                                    <p className="text-[10px] text-slate-400">
+                                                        {(item.created_at || item.updated_at) ? new Date((item.created_at || item.updated_at)!).toLocaleDateString() : 'Unknown Date'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <Badge variant="outline" className="h-8 px-5 rounded-xl text-[9px] font-black uppercase border-white/10 opacity-60 group-hover:opacity-100 transition-opacity">
+                                            <Badge variant="outline" className="text-[10px] font-medium h-5 px-2">
                                                 {item.status || item.decision || 'Completed'}
                                             </Badge>
                                         </div>
                                     )) : (
-                                        <div className="py-24 flex flex-col items-center justify-center text-center space-y-6 opacity-30 grayscale">
-                                            <div className="bg-muted p-8 rounded-[2.5rem] border border-white/10">
-                                                <Search className="w-16 h-16" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h4 className="font-serif text-2xl font-bold tracking-tight">Archive Registry Empty</h4>
-                                                <p className="font-mono text-[10px] uppercase tracking-widest">No activity footprints detected in sector</p>
-                                            </div>
+                                        <div className="py-8 text-center">
+                                            <Search className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                            <p className="text-sm text-slate-400">No activity recorded yet.</p>
                                         </div>
                                     )}
                                 </div>

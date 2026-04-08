@@ -78,8 +78,8 @@ export function DashboardRegistry({
                             {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}
                         </span>
                     </div>
-                    <h1 className="text-primary">
-                        {role === 'admin' ? 'Admin Dashboard' : 'Editor Dashboard'}
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                        {role === 'admin' ? 'Admin' : 'Editor'} Dashboard
                     </h1>
                     <p className="opacity-60 mt-1">
                         Logged in as <span className="text-foreground">{user?.fullName || user?.name}</span>
@@ -123,9 +123,9 @@ export function DashboardRegistry({
 
             <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList className="bg-muted/50 p-1 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 rounded-xl border border-primary/5">
-                    <TabsTrigger value="overview" className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">{queueTabLabel}</TabsTrigger>
-                    <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Papers</TabsTrigger>
-                    <TabsTrigger value="infrastructure" className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Status</TabsTrigger>
+                    <TabsTrigger value="overview" className="flex-1 sm:flex-none px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Recent</TabsTrigger>
+                    <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Papers</TabsTrigger>
+                    <TabsTrigger value="infrastructure" className="flex-1 sm:flex-none px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Status</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4">
@@ -361,8 +361,8 @@ export function DashboardRegistry({
                         </Card>
 
                         <Card className="border-primary/5 shadow-sm bg-card/50 transition-colors rounded-xl">
-                            <CardHeader className="p-6 pb-2 border-b border-primary/5">
-                                <CardTitle className="text-foreground">System Status</CardTitle>
+                            <CardHeader className="p-4 pb-2 border-b border-primary/5">
+                                <CardTitle className="text-lg font-bold">Status</CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-3">
                                 {healthMetrics.map((metric) => (
