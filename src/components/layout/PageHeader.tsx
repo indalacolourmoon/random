@@ -51,12 +51,7 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
 
 
     return (
-        <section ref={sectionRef} className="relative py-10 sm:py-14 bg-gradient-to-br from-primary via-primary/95 to-accent border-b border-white/5 overflow-hidden">
-            {/* Background Decorative Elements */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] [background-size:32px_32px]" />
-            <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-secondary/20 rounded-full blur-[100px] animate-pulse" />
-            <div className="absolute -bottom-24 -left-24 w-[400px] h-[400px] bg-accent/20 rounded-full blur-[100px]" />
-
+        <section ref={sectionRef} className="relative py-12 bg-[#000066] border-b border-white/5 overflow-hidden">
             <div className="container-responsive relative z-10">
                     <ol className="flex items-center gap-2 list-none p-0">
                         {breadcrumbs.map((crumb, idx) => {
@@ -91,15 +86,15 @@ export default function PageHeader({ title, description, breadcrumbs, scrollOnCo
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         onAnimationComplete={handleAnimationComplete}
                     >
-                        <h1 className="font-bold text-white mb-6 leading-none text-lg xl:text-3xl 2xl:text-4xl tracking-wider">
+                        <h1 className="font-serif font-semibold text-white mb-4 text-xl xl:text-2xl 2xl:text-3xl">
                             {title}
                         </h1>
                         {description && (
                             <motion.p
                                 initial={{ opacity: 0 }}
-                                animate={{ opacity: 0.7 }}
+                                animate={{ opacity: 0.9 }}
                                 transition={{ delay: 0.6, duration: 1 }}
-                                className="max-w-xl 2xl:max-w-4xl text-xs sm:text-sm lg:text-base text-white/80 font-medium border-l-[3px] border-secondary/50 pl-6 leading-relaxed"
+                                className="max-w-2xl text-xs sm:text-sm text-white/80 leading-relaxed border-l-2 border-primary-foreground/30 pl-4"
                             >
                                 {description}
                             </motion.p>

@@ -11,7 +11,7 @@
   --color-background: oklch(0.995 0.002 255);
   --color-foreground: oklch(0.12 0.01 253); /* Near black for better readability */
 
-  --font-sans: "Inter", "Poppins", system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
   --font-serif: "Crimson Pro", "Lora", serif;
 
   --shadow-vip: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
@@ -145,7 +145,10 @@
 
 
   .section-padding {
-    @apply py-12 sm:py-20 lg:py-28 xl:py-36 2xl:py-48;
+    @apply py-12 px-4 md:px-6 xl:px-8 2xl:px-10;
+  }
+  .container-responsive{
+    @apply px-4 md:px-6 xl:px-8 2xl:px-10;
   }
 }
 

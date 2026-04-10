@@ -9,7 +9,7 @@ import {
     volumesIssues, 
     userProfiles
 } from "@/db/schema";
-import { eq, desc, and, sql, ne } from "drizzle-orm";
+import { eq, desc, and, sql, ne, inArray } from "drizzle-orm";
 import { type PublishedPaperUI, type ActionResponse } from "@/db/types";
 
 /**
@@ -21,35 +21,41 @@ export async function getPublishedPapers(): Promise<ActionResponse<PublishedPape
         const rows = await db.select({
             publication: publications,
             submission: submissions,
-            version: submissionVersions,
             issue: volumesIssues,
-            authorProfile: userProfiles,
-            author: submissionAuthors
         })
         .from(publications)
         .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
         .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
-        .leftJoin(submissionAuthors, and(
-            eq(submissions.id, submissionAuthors.submissionId),
-            eq(submissionAuthors.isCorresponding, true) // Only lead author for lists
-        ))
         .orderBy(desc(publications.publishedAt));
 
-        const data = rows.map((row) => mapPublicationToUI({
-            ...row.publication,
-            submission: {
-                ...row.submission,
-                versions: [row.version],
-                correspondingAuthor: { profile: row.authorProfile },
-                authors: row.author ? [row.author] : []
-            },
-            issue: row.issue
-        }));
+        if (!rows.length) return { success: true, data: [] };
+
+        const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
+
+        // Fetch Authors and Versions separately to avoid complex joins and combinatorics
+        const authorsList = await db.select().from(submissionAuthors)
+            .where(inArray(submissionAuthors.submissionId, submissionIds))
+            .orderBy(submissionAuthors.orderIndex);
+
+        const versionsList = await db.select().from(submissionVersions)
+            .where(inArray(submissionVersions.submissionId, submissionIds))
+            .orderBy(desc(submissionVersions.versionNumber));
+
+        const data = rows.map(row => {
+            const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
+            const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
+            
+            return mapPublicationToUI({
+                ...row.publication,
+                submission: {
+                    ...row.submission,
+                    versions: paperVersions,
+                    authors: paperAuthors
+                },
+                issue: row.issue
+            });
+        });
+
         return { success: true, data };
     } catch (error) {
         console.error("Get Published Papers Error:", error);
@@ -66,40 +72,45 @@ export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPa
             .limit(1);
 
         if (!issues.length) return { success: true, data: [] };
-        const latestIssueId = issues[0].id;
+        const latestIssue = issues[0];
 
         const rows = await db.select({
             publication: publications,
             submission: submissions,
-            version: submissionVersions,
             issue: volumesIssues,
-            authorProfile: userProfiles,
-            author: submissionAuthors
         })
         .from(publications)
-        .where(eq(publications.issueId, latestIssueId))
+        .where(eq(publications.issueId, latestIssue.id))
         .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
-        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
-        .leftJoin(submissionAuthors, and(
-            eq(submissions.id, submissionAuthors.submissionId),
-            eq(submissionAuthors.isCorresponding, true)
-        ));
+        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id));
 
-        const data = rows.map((row) => mapPublicationToUI({
-            ...row.publication,
-            submission: {
-                ...row.submission,
-                versions: [row.version],
-                correspondingAuthor: { profile: row.authorProfile },
-                authors: row.author ? [row.author] : []
-            },
-            issue: row.issue
-        }));
+        if (!rows.length) return { success: true, data: [] };
+
+        const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
+
+        const authorsList = await db.select().from(submissionAuthors)
+            .where(inArray(submissionAuthors.submissionId, submissionIds))
+            .orderBy(submissionAuthors.orderIndex);
+
+        const versionsList = await db.select().from(submissionVersions)
+            .where(inArray(submissionVersions.submissionId, submissionIds))
+            .orderBy(desc(submissionVersions.versionNumber));
+
+        const data = rows.map(row => {
+            const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
+            const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
+            
+            return mapPublicationToUI({
+                ...row.publication,
+                submission: {
+                    ...row.submission,
+                    versions: paperVersions,
+                    authors: paperAuthors
+                },
+                issue: row.issue
+            });
+        });
+
         return { success: true, data };
     } catch (error) {
         console.error("Get Latest Issue Papers Error:", error);
@@ -109,50 +120,54 @@ export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPa
 
 export async function getArchivePapers(limit = 50, offset = 0): Promise<ActionResponse<PublishedPaperUI[]>> {
     try {
-        // Find latest issue to exclude it
-        const latestIssue = await db.select({ id: volumesIssues.id })
+        const issues = await db.select()
             .from(volumesIssues)
             .where(eq(volumesIssues.status, 'published'))
             .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
             .limit(1);
 
-        const latestId = latestIssue.length ? latestIssue[0].id : -1;
+        const latestId = issues.length ? issues[0].id : -1;
 
         const rows = await db.select({
             publication: publications,
             submission: submissions,
-            version: submissionVersions,
             issue: volumesIssues,
-            authorProfile: userProfiles,
-            author: submissionAuthors
         })
         .from(publications)
-        .where(ne(publications.issueId, latestId)) // Exclude current issue
+        .where(ne(publications.issueId, latestId))
         .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
         .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
-        .leftJoin(submissionAuthors, and(
-            eq(submissions.id, submissionAuthors.submissionId),
-            eq(submissionAuthors.isCorresponding, true)
-        ))
         .orderBy(desc(publications.publishedAt))
         .limit(limit)
         .offset(offset);
 
-        const data = rows.map((row) => mapPublicationToUI({
-            ...row.publication,
-            submission: {
-                ...row.submission,
-                versions: [row.version],
-                correspondingAuthor: { profile: row.authorProfile },
-                authors: row.author ? [row.author] : []
-            },
-            issue: row.issue
-        }));
+        if (!rows.length) return { success: true, data: [] };
+
+        const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
+
+        const authorsList = await db.select().from(submissionAuthors)
+            .where(inArray(submissionAuthors.submissionId, submissionIds))
+            .orderBy(submissionAuthors.orderIndex);
+
+        const versionsList = await db.select().from(submissionVersions)
+            .where(inArray(submissionVersions.submissionId, submissionIds))
+            .orderBy(desc(submissionVersions.versionNumber));
+
+        const data = rows.map(row => {
+            const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
+            const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
+            
+            return mapPublicationToUI({
+                ...row.publication,
+                submission: {
+                    ...row.submission,
+                    versions: paperVersions,
+                    authors: paperAuthors
+                },
+                issue: row.issue
+            });
+        });
+
         return { success: true, data };
     } catch (error) {
         console.error("Get Archive Papers Error:", error);
@@ -247,11 +262,15 @@ function mapPublicationToUI(pub: PublicationInput): PublishedPaperUI {
     const authorsList = Array.isArray(pub.submission?.authors) ? pub.submission.authors : [];
     
     // Sort authors by orderIndex
-    const sortedAuthors = authorsList.sort((a: any, b: any) => (a.orderIndex || 0) - (b.orderIndex || 0));
+    const sortedAuthors = [...authorsList].sort((a: any, b: any) => (a.orderIndex || 0) - (b.orderIndex || 0));
     
-    // Primary author info
+    // Primary author is the one with isCorresponding or the first one
     const correspondingAuthor = sortedAuthors.find((a: any) => a.isCorresponding) || sortedAuthors[0];
-    const otherAuthors = sortedAuthors.filter((a: any) => a !== correspondingAuthor);
+    
+    // Co-authors are all except the corresponding one, but user wants them ALL together?
+    // "i want coauthor to display alogn side main author wiht comas ','"
+    // So I will create a full string of names.
+    const allAuthorsString = sortedAuthors.map((a: any) => a.name).join(', ');
     
     return {
         id: pub.submissionId || 0,
@@ -259,9 +278,9 @@ function mapPublicationToUI(pub: PublicationInput): PublishedPaperUI {
         title: latestVersion?.title || "Untitled Paper",
         abstract: latestVersion?.abstract || "",
         keywords: latestVersion?.keywords || "",
-        author_name: correspondingAuthor?.name || pub.submission?.correspondingAuthor?.profile?.fullName || "Anonymous Author",
+        author_name: allAuthorsString || "Anonymous Author",
         author_email: correspondingAuthor?.email || "N/A",
-        affiliation: correspondingAuthor?.institution || pub.submission?.correspondingAuthor?.profile?.institute || "N/A",
+        affiliation: correspondingAuthor?.institution || "N/A",
         status: pub.submission?.status || "published",
         doi: pub.doi || "",
         file_path: pub.finalPdfUrl || "",
@@ -275,6 +294,6 @@ function mapPublicationToUI(pub: PublicationInput): PublishedPaperUI {
         issue_number: pub.issue?.issueNumber || 0,
         publication_year: pub.issue?.year || 0,
         month_range: pub.issue?.monthRange || "",
-        co_authors: otherAuthors.length > 0 ? JSON.stringify(otherAuthors) : null
+        co_authors: null // We've bundled them into author_name per requirements
     };
 }

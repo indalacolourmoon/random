@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
 import { useLatestIssuePapers, useArchivePapers } from '@/hooks/queries/usePublic';
-import { InputGroup,InputGroupInput } from '@/components/ui/input-group';
+import { InputGroup,InputGroupAddon,InputGroupInput } from '@/components/ui/input-group';
+import { Card } from '@/components/ui/card';
 
 interface ArchivesClientProps {
     initialPapers: any[];
@@ -37,85 +38,92 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
     }, [papers, searchQuery]);
 
     return (
-        <section className=" px-5 mx-auto">
-            {/* Search Section - Higher Fidelity */}
-            <div className="mb-20 xl:mb-32">
-                <div className="relative group max-w-4xl mx-auto">
-                    <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] blur-2xl group-focus-within:bg-secondary/10 transition-colors -z-10 border-2" />
-                    <div className="absolute left-8 top-1/2 -translate-y-1/2 text-primary/20 z-10 transition-colors group-focus-within:text-secondary group-hover:text-primary/40">
-                        <Search className="w-8 h-8 2xl:w-12 2xl:h-12" />
-                    </div>
-                    <Input
-                        type="text"
-                        placeholder="Scan Archives: Title, Research Domain, or PI..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className=" text-xl h-20 2xl:h-32 pl-20 2xl:pl-28 pr-12 rounded-[2.5rem] bg-card border-primary/5 shadow-3xl focus-visible:ring-secondary/20 placeholder:text-primary/20  text-lg 2xl:text-3xl tracking-tight transition-all w-full glassmorphism "
-                    />
-                    <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-2">
-                    </div>
+        <section className=" px-5 mx-auto section-padding">
+            {/* Search Section */}
+            <div className="mb-8">
+                <div className="max-w-4xl mx-auto">
+                    <InputGroup className="h-12 xl:h-14 rounded-xl border-border bg-card shadow-sm">
+                        <InputGroupAddon align="inline-start" className="pl-4">
+                            <Search className="w-5 h-5 text-muted-foreground/50" />
+                        </InputGroupAddon>
+                        <InputGroupInput 
+                            placeholder="Find by Title, Author, or Keywords..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="text-sm xl:text-base placeholder:text-muted-foreground/30 border-none bg-transparent"
+                        />
+                    </InputGroup>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-12">
                 {/* Main Content */}
                 <div className="lg:col-span-8 space-y-20 xl:space-y-32">
+                    {/* Volume and Issue Header */}
+                    {!isLoading && filteredPapers.length > 0 && (
+                        <div className="mb-8 border-b border-border/50 pb-4">
+                            <h2 className="text-xl font-semibold text-[#000066]">
+                                Volume {filteredPapers[0].volume_number} Issue {filteredPapers[0].issue_number} ({filteredPapers[0].publication_year})
+                            </h2>
+                        </div>
+                    )}
+
                     {isLoading ? (
-                        <div className="p-32 flex flex-col items-center justify-center gap-6">
-                            <div className="w-16 h-16 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin" />
-                            <p className="text-xs font-black text-primary/40 tracking-[0.4em] uppercase animate-pulse">Syncing Archive Nodes...</p>
+                        <div className="py-24 flex flex-col items-center justify-center gap-4 text-center">
+                            <div className="w-12 h-12 border-2 border-primary/10 border-t-primary rounded-full animate-spin" />
+                            <p className="text-xs text-muted-foreground font-medium">Fetching Archives...</p>
                         </div>
                     ) : filteredPapers.length > 0 ? (
-                        <div className="space-y-16">
-                            <div className="space-y-1 2xl:space-y-5">
+                        <div className="space-y-6">
+                            <div className="space-y-4">
                                 {filteredPapers.map((paper: any) => (
                                     <PaperCard key={paper.paper_id} paper={paper} basePath={mode === 'current' ? '/current-issue' : '/archives'} />
                                 ))}
                             </div>
                         </div>
                     ) : (
-                        <div className="p-20 2xl:p-32 bg-card border border-primary/5 rounded-[4rem] shadow-3xl text-center space-y-12 relative overflow-hidden group">
-                           <div className="absolute inset-0 bg-primary/1 -z-10 group-hover:bg-primary/3 transition-colors" />
-                            <div className="w-24 h-24 2xl:w-40 2xl:h-40 bg-primary/5 rounded-[3rem] flex items-center justify-center mx-auto text-primary/10 group-hover:scale-110 transition-transform shadow-inner">
-                                <FileText className="w-12 h-12 2xl:w-20 2xl:h-20" />
+                        <Card className="border-dashed border-2 py-16 xl:py-24 text-center rounded-2xl border-border bg-muted/20">
+                            <div className="max-w-md mx-auto space-y-6">
+                                <div className="w-16 h-16 rounded-2xl bg-card border border-border flex items-center justify-center mx-auto text-muted-foreground/30">
+                                    <FileText className="w-8 h-8" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h2 className="text-xl xl:text-2xl font-serif font-semibold text-foreground">Archive In Progress</h2>
+                                    <p className="text-sm text-muted-foreground px-12 leading-relaxed">
+                                        Our global research portfolio for the current volume is undergoing rigorous archival validation and peer-review synchronization.
+                                    </p>
+                                </div>
+                                <Button asChild className="h-10 px-8 bg-[#000066] text-white rounded-lg font-bold text-[10px] uppercase tracking-wider">
+                                    <Link href="/submit" className="flex items-center gap-2">
+                                        Submit <ChevronRight className="w-4 h-4" />
+                                    </Link>
+                                </Button>
                             </div>
-                            <div className="space-y-6">
-                                <h2 className="m-0 font-serif font-black text-foreground tracking-tighter text-4xl 2xl:text-6xl uppercase leading-none">Inaugural Archive <br/><span className="text-primary/30">In Progress</span></h2>
-                                <p className="text-primary/50 text-base 2xl:text-3xl font-bold max-w-xl mx-auto leading-relaxed uppercase opacity-60">
-                                    Our global research portfolio for the {new Date().getFullYear()} volume is undergoing rigorous archival validation.
-                                </p>
-                            </div>
-                            <Button asChild className="h-16 2xl:h-24 px-12 2xl:px-20 bg-secondary text-white font-black text-[10px] 2xl:text-2xl tracking-[0.4em] shadow-2xl shadow-secondary/20 rounded-2xl 2xl:rounded-[2.5rem] hover:scale-105 transition-all">
-                                <Link href="/submit" className="flex items-center gap-4">
-                                    Initiate Submission <ChevronRight className="w-5 h-5 2xl:w-10 2xl:h-10" />
-                                </Link>
-                            </Button>
-                        </div>
+                        </Card>
                     )}
                 </div>
 
-                {/* Sidebar - Enhanced Fidelity */}
-                <aside className="lg:col-span-4 space-y-16">
-                    <div className="group/widget transition-all duration-500 hover:-translate-y-2">
-                        <div className="bg-card/50 backdrop-blur-xl p-4 rounded-[3rem] shadow-3xl border border-primary/5 glassmorphism">
+                {/* Sidebar */}
+                <aside className="lg:col-span-4 space-y-8">
+                    <Card className="p-1 border-border/50 bg-muted/20 rounded-2xl">
+                        <div className="bg-card p-4 rounded-xl shadow-sm border border-border/50">
                             <TrackManuscriptWidget />
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="space-y-10">
-                        <div className="flex items-center gap-4 pl-4 border-l-4 border-secondary">
-                             <p className="text-[10px] 2xl:text-xl font-black tracking-[0.4em] text-primary/40 m-0 uppercase">Editorial Protocol</p>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 pl-3 border-l-2 border-[#000066]">
+                             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase m-0">Information</p>
                         </div>
-                        <article className="p-10 2xl:p-16 bg-card border border-primary/5 rounded-[3rem] shadow-2xl relative overflow-hidden group hover:border-secondary/20 transition-all">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-secondary/10 transition-colors" />
-                            <div className="w-14 h-14 2xl:w-24 2xl:h-24 bg-primary/5 rounded-2xl 2xl:rounded-4xl flex items-center justify-center mb-10 text-primary group-hover:bg-secondary group-hover:text-white transition-all shadow-inner group-hover:rotate-6">
-                                <Info className="w-7 h-7 2xl:w-12 2xl:h-12" />
+                        <Card className="p-6 border-border/50 bg-card rounded-xl">
+                            <div className="w-10 h-10 bg-[#000066]/5 rounded-lg flex items-center justify-center mb-4 text-[#000066]">
+                                <Info className="w-5 h-5" />
                             </div>
-                            <h3 className="font-serif font-black text-foreground tracking-tight mb-4 text-2xl 2xl:text-4xl uppercase">Digital Permanent <span className="text-secondary opacity-50">Sovereignty</span></h3>
-                            <p className="text-primary/50 text-xs 2xl:text-2xl font-bold leading-relaxed uppercase opacity-80">
-                                All published research is archived with permanent DOI assignment and long-term digital preservation through global open-access discovery hubs.
+                            <h3 className="text-sm font-semibold text-gray-900 mb-2">Preservation</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                All research is preserved with DOI assignment and long-term digital storage.
                             </p>
-                        </article>
+                        </Card>
                     </div>
                 </aside>
             </div>

@@ -76,8 +76,8 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
             {groupedBoard.map((category, idx) => (
                 <section key={idx} className="overflow-hidden rounded-xl border border-primary/10 shadow-sm">
                     {/* Role Header */}
-                    <div className="bg-[#4a154b] p-3 px-6 2xl:p-8 2xl:px-14">
-                        <h2 className="text-white m-0 font-bold text-lg 2xl:text-2xl tracking-tight">
+                    <div className="bg-[#000066] p-4 px-6 xl:px-8">
+                        <h2 className="text-white m-0 font-serif font-semibold text-lg xl:text-xl 2xl:text-2xl">
                             {category.role}
                         </h2>
                     </div>
@@ -86,27 +86,27 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
                         {category.members.map((member: BoardMember, mIdx: number) => (
                             <article key={mIdx} className="group">
                                 {/* Name Row */}
-                                <header className="bg-[#f0f9ff] py-3 px-6 2xl:py-8 2xl:px-14 flex items-center gap-3">
-                                    <h3 className="text-[#2563eb] m-0 font-bold text-base 2xl:text-xl">
+                                <header className="bg-muted/30 py-3 px-6 xl:px-8 border-b border-border/50">
+                                    <h3 className="text-primary m-0 font-semibold text-sm xl:text-base 2xl:text-lg">
                                         {member.full_name}
                                     </h3>
                                 </header>
 
                                 {/* Institution & Details Row */}
-                                <div className="bg-[#f8fafc] py-4 px-6 2xl:py-10 2xl:px-14 space-y-2 2xl:space-y-6">
-                                    <div className="flex gap-3 text-slate-600 font-medium text-xs sm:text-sm lg:text-base 2xl:text-lg">
-                                        <p className="m-0">
-                                            {member.designation}. {member.institute}
+                                <div className="bg-card py-4 px-6 xl:px-8 space-y-2">
+                                    <div className="flex gap-3 text-muted-foreground text-xs xl:text-sm">
+                                        <p className="m-0 leading-relaxed">
+                                            <span className="font-medium text-foreground">{member.designation}</span> • {member.institute}
                                             {member.nationality && member.institute.toLowerCase().indexOf(member.nationality.toLowerCase()) === -1 
-                                                ? `. ${member.nationality}` 
+                                                ? ` • ${member.nationality}` 
                                                 : ""
                                             }
                                         </p>
                                     </div>
                                     {member.email && (idx === 0 || member.role === 'admin') && (
-                                        <div className="flex gap-3 text-primary/60 font-medium text-sm">
-                                            <Mail className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
-                                            <a href={`mailto:${member.email}`} className="hover:text-secondary hover:underline transition-colors truncate">
+                                        <div className="flex items-center gap-2 text-xs text-primary/70">
+                                            <Mail className="w-3.5 h-3.5 text-primary/40 shrink-0" />
+                                            <a href={`mailto:${member.email}`} className="hover:text-primary hover:underline transition-colors truncate">
                                                 {member.email}
                                             </a>
                                         </div>
@@ -119,15 +119,15 @@ export default function EditorialBoardClient({ settings, initialMembers }: Edito
             ))}
 
             {/* Support/Contact Footer */}
-            <section className="pt-12 border-t border-primary/10">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-8 py-10">
-                    <div>
-                        <h3 className="text-primary mb-2 m-0 font-bold text-lg 2xl:text-2xl">Editorial Support</h3>
-                        <p className="text-primary/50 font-medium m-0 text-sm">For inquiries related to editor roles or board selection.</p>
+            <section className="pt-8 border-t border-border/50">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 py-8">
+                    <div className="text-center sm:text-left">
+                        <h3 className="text-lg font-semibold text-primary mb-1">Editorial Support</h3>
+                        <p className="text-xs text-muted-foreground">For inquiries related to editor roles or board selection.</p>
                     </div>
                     <a
                         href={`mailto:${supportEmail}`}
-                        className="text-secondary hover:text-primary transition-colors border-b-2 border-secondary/20 hover:border-primary pb-1 font-bold text-lg lg:text-2xl"
+                        className="text-primary font-semibold text-lg xl:text-xl border-b border-primary/20 hover:border-primary transition-all pb-0.5"
                     >
                         {supportEmail}
                     </a>

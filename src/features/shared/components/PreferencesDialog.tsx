@@ -46,20 +46,20 @@ export default function PreferencesDialog({ open, onOpenChange }: PreferencesDia
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] border-primary/5 rounded-[2.5rem] p-10 shadow-vip bg-background/95 backdrop-blur-xl">
-                <DialogHeader className="space-y-4 text-center sm:text-left">
-                    <DialogTitle className="text-xs font-black text-primary/40 tracking-[0.3em] flex items-center gap-4 uppercase">
-                        <Shield className="w-6 h-6 text-primary/20 dark:text-green-900" /> Interface Protocols
+            <DialogContent className="sm:max-w-md border-border/50 rounded-xl p-8 shadow-sm bg-card">
+                <DialogHeader className="space-y-1 text-left">
+                    <DialogTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <Monitor className="w-5 h-5 text-[#000066]" /> Display Settings
                     </DialogTitle>
-                    <DialogDescription className="text-2xl font-black text-foreground tracking-wider uppercase dark:text-green-900">
-                        Personnel Personalization
+                    <DialogDescription className="text-xs text-muted-foreground">
+                        Configure your interface theme preferences.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="mt-12 space-y-8">
-                    <div className="space-y-4">
-                        <label className="text-[10px] font-black text-primary/40 tracking-[0.2em] px-1 uppercase">Visual Theme Selection</label>
-                        <div className="grid grid-cols-3 gap-6">
+                <div className="mt-8 space-y-6">
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-[#000066] uppercase tracking-wider px-1">Theme Selection</label>
+                        <div className="grid grid-cols-3 gap-4">
                             {themes.map((t) => {
                                 const Icon = t.icon;
                                 const isActive = theme === t.id;
@@ -68,48 +68,43 @@ export default function PreferencesDialog({ open, onOpenChange }: PreferencesDia
                                     <button
                                         key={t.id}
                                         onClick={() => setTheme(t.id)}
-                                        className={`relative group flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all duration-300 ${isActive
-                                            ? `${t.borderColor} bg-primary/5 shadow-inner`
-                                            : 'border-transparent hover:bg-muted bg-muted/30'
+                                        className={`relative group flex flex-col items-center gap-3 p-4 rounded-xl border transition-all duration-200 ${isActive
+                                            ? `border-[#000066]/50 bg-[#000066]/5 shadow-sm`
+                                            : 'border-border/50 hover:bg-muted/50 bg-muted/20'
                                             }`}
                                     >
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${isActive ? `${t.color} text-white dark:text-black shadow-lg` : 'text-muted-foreground'
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isActive 
+                                            ? `bg-[#000066] text-white shadow-sm` 
+                                            : 'text-muted-foreground'
                                             }`}>
-                                            <Icon className={`w-7 h-7 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                            <Icon className={`w-5 h-5 ${isActive ? 'scale-100' : 'group-hover:scale-105'}`} />
                                         </div>
-                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                        <span className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? 'text-[#000066]' : 'text-muted-foreground'}`}>
                                             {t.id}
                                         </span>
-                                        {isActive && (
-                                            <motion.div
-                                                layoutId="active-theme"
-                                                className="absolute inset-0 rounded-3xl border-2 border-primary/20 pointer-events-none"
-                                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                            />
-                                        )}
                                     </button>
                                 );
                             })}
                         </div>
                     </div>
 
-                    <div className="p-8 rounded-[2rem] bg-primary/5 border border-primary/10 flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Monitor className="w-5 h-5 text-primary" />
+                    <div className="p-4 rounded-lg bg-[#000066]/5 border border-border/50 flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#000066]/10 flex items-center justify-center flex-shrink-0">
+                            <Monitor className="w-4 h-4 text-[#000066]" />
                         </div>
                         <div className="space-y-1">
-                            <p className="text-xs font-black text-primary uppercase tracking-wider">System Synchronization</p>
-                            <p className="text-[11px] font-bold text-muted-foreground leading-relaxed">Your interface will automatically adjust to match your operating system's visual signature.</p>
+                            <p className="text-[10px] font-bold text-[#000066] uppercase tracking-wider">System Sync</p>
+                            <p className="text-[10px] font-bold text-muted-foreground leading-relaxed uppercase opacity-60">Automatically matches your OS theme.</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-10 flex justify-end">
+                <div className="mt-8 flex justify-end">
                     <Button
                         onClick={() => onOpenChange(false)}
-                        className="h-14 px-10 rounded-2xl font-black uppercase text-xs tracking-widest bg-primary text-white dark:text-slate-900 hover:scale-105 transition-all"
+                        className="h-10 px-8 rounded-lg font-bold uppercase text-[10px] tracking-widest bg-[#000066] text-white hover:bg-[#000088] transition-all"
                     >
-                        Sync Preferences
+                        Save
                     </Button>
                 </div>
             </DialogContent>

@@ -136,25 +136,23 @@ export default function SubmissionForm() {
 
     if (submissionMutation.isSuccess) {
         return (
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-primary/5 border border-primary/10 rounded-xl shadow-sm overflow-hidden p-8 text-center space-y-6"
-            >
-                <div className="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-inner border border-primary/20 mx-auto">
-                    <CheckCircle2 className="w-10 h-10" />
+            <div className="bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden p-8 text-center space-y-6">
+                <div className="w-16 h-16 bg-[#000066]/5 text-[#000066] rounded-xl flex items-center justify-center border border-[#000066]/10 mx-auto">
+                    <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <div className="space-y-2">
-                    <h2>Submission Successful</h2>
-                    <p className="max-w-md mx-auto">
-                        Your paper has been successfully submitted. 
-                        Submission ID: <span className="text-primary opacity-80">{(submissionMutation.data as any)?.paperId}</span>
+                <div className="space-y-2 text-center">
+                    <h2 className="text-xl font-semibold text-gray-900">Submission Successful</h2>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                        Your paper has been successfully submitted. We have sent a confirmation email to the primary author.
+                    </p>
+                    <p className="text-xs font-bold text-[#000066] mt-4">
+                        Submission ID: {(submissionMutation.data as any)?.paperId}
                     </p>
                 </div>
-                <Button onClick={() => submissionMutation.reset()} variant="outline" className="h-10 px-6 rounded-lg border-primary/10 text-primary hover:bg-primary/5 font-semibold text-xs transition-all">
+                <Button onClick={() => submissionMutation.reset()} variant="outline" className="h-10 px-6 rounded-lg border-border/50 text-[#000066] hover:bg-[#000066]/5 font-semibold text-xs transition-all">
                     Submit Another Paper
                 </Button>
-            </motion.div>
+            </div>
         );
     }
 
@@ -168,47 +166,43 @@ export default function SubmissionForm() {
                         control={form.control}
                         name="title"
                         render={({ field }) => (
-                            <FormItem className="space-y-3">
-                                <div className="flex items-center gap-3 ml-1">
-                                    <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm">
-                                        <FileText className="w-5 h-5" />
-                                    </div>
-                                    <FormLabel className="text-primary">Paper Title</FormLabel>
+                            <FormItem className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <FileText className="w-4 h-4 text-[#000066]" />
+                                    <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Research Paper Title</FormLabel>
                                 </div>
                                 <FormControl>
                                     <Input
                                         placeholder="Full title of your research paper..."
                                         {...field}
                                         value={field.value ?? ""}
-                                        className="h-10 bg-primary/5 border-primary/10 rounded-lg font-medium text-primary shadow-sm px-4 text-xs"
+                                        className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                     />
                                 </FormControl>
-                                <FormMessage className="text-xs font-medium text-secondary px-4" />
+                                <FormMessage className="text-xs font-medium text-destructive px-1" />
                             </FormItem>
                         )}
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <FormField
                             control={form.control}
                             name="author_name"
                             render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <div className="flex items-center gap-3 ml-1">
-                                        <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
-                                            <User className="w-4.5 h-4.5" />
-                                        </div>
-                                         <FormLabel className="text-primary">Author Name</FormLabel>
+                                <FormItem className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <User className="w-4 h-4 text-[#000066]" />
+                                        <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Author Name</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
-                                            placeholder="Placeholder Text"
+                                            placeholder="Full Name"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-10 bg-primary/5 border-primary/10 rounded-lg font-medium text-primary shadow-sm px-4 text-xs"
+                                            className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-xs font-medium text-secondary px-1" />
+                                    <FormMessage className="text-xs font-medium text-destructive px-1" />
                                 </FormItem>
                             )}
                         />
@@ -216,12 +210,10 @@ export default function SubmissionForm() {
                             control={form.control}
                             name="author_email"
                             render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <div className="flex items-center gap-3 ml-1">
-                                        <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
-                                            <Mail className="w-4.5 h-4.5" />
-                                        </div>
-                                        <FormLabel className="text-primary">Email Address</FormLabel>
+                                <FormItem className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Mail className="w-4 h-4 text-[#000066]" />
+                                        <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Email Address</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
@@ -229,10 +221,10 @@ export default function SubmissionForm() {
                                             placeholder="email@example.com"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-10 bg-primary/5 border-primary/10 rounded-lg font-medium text-primary shadow-sm px-4 text-xs"
+                                            className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-xs font-medium text-secondary px-1" />
+                                    <FormMessage className="text-xs font-medium text-destructive px-1" />
                                 </FormItem>
                             )}
                         />
@@ -240,49 +232,45 @@ export default function SubmissionForm() {
                             control={form.control}
                             name="author_phone"
                             render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <div className="flex items-center gap-3 ml-1">
-                                        <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
-                                            <Phone className="w-4.5 h-4.5" />
-                                        </div>
-                                        <FormLabel className="text-primary">Phone Number</FormLabel>
+                                <FormItem className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Phone className="w-4 h-4 text-[#000066]" />
+                                        <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Phone Number</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
                                             type="tel"
-                                            placeholder="Phone Number"
+                                            placeholder="+1 234 567 890"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-10 bg-primary/5 border-primary/10 rounded-lg font-semibold text-primary shadow-sm px-4 text-xs"
+                                            className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-xs font-semibold text-secondary px-4" />
+                                    <FormMessage className="text-xs font-medium text-destructive px-1" />
                                 </FormItem>
                             )}
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="author_designation"
                             render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <div className="flex items-center gap-3 ml-1">
-                                        <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary">
-                                            <Briefcase className="w-4.5 h-4.5" />
-                                        </div>
-                                        <FormLabel className="text-primary">Designation</FormLabel>
+                                <FormItem className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Briefcase className="w-4 h-4 text-[#000066]" />
+                                        <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Designation</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
                                             placeholder="e.g. Professor"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-10 bg-primary/5 border-primary/10 rounded-lg font-medium text-primary shadow-sm px-4 text-xs"
+                                            className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-xs font-medium text-secondary px-1" />
+                                    <FormMessage className="text-xs font-medium text-destructive px-1" />
                                 </FormItem>
                             )}
                         />
@@ -291,22 +279,20 @@ export default function SubmissionForm() {
                             control={form.control}
                             name="affiliation"
                             render={({ field }) => (
-                                <FormItem className="space-y-3">
-                                    <div className="flex items-center gap-3 ml-1">
-                                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
-                                            <School className="w-4.5 h-4.5" />
-                                        </div>
-                                        <FormLabel className="text-primary">Affiliation / College / Institute</FormLabel>
+                                <FormItem className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <School className="w-4 h-4 text-[#000066]" />
+                                        <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Affiliation / Institution</FormLabel>
                                     </div>
                                     <FormControl>
                                         <Input
                                             placeholder="e.g., Department, University, City, Country"
                                             {...field}
                                             value={field.value ?? ""}
-                                            className="h-10 bg-primary/5 border-primary/10 rounded-lg font-semibold text-primary shadow-sm px-4 text-xs"
+                                            className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                         />
                                     </FormControl>
-                                    <FormMessage className="text-xs font-semibold text-secondary px-4" />
+                                    <FormMessage className="text-xs font-medium text-destructive px-1" />
                                 </FormItem>
                             )}
                         />
@@ -316,26 +302,24 @@ export default function SubmissionForm() {
                         control={form.control}
                         name="abstract"
                         render={({ field }) => (
-                            <FormItem className="space-y-3">
-                                <div className="flex items-center gap-3 ml-1">
-                                    <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm">
-                                        <BookOpen className="w-4.5 h-4.5" />
-                                    </div>
-                                     <FormLabel className="text-primary">Abstract</FormLabel>
+                            <FormItem className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <BookOpen className="w-4 h-4 text-[#000066]" />
+                                    <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Abstract</FormLabel>
                                 </div>
                                 <FormControl>
                                     <Textarea
                                         placeholder="Summarize your research paper here..."
-                                        className="bg-primary/5 border-primary/10 rounded-lg font-medium text-primary shadow-sm p-4 resize-none min-h-[150px] text-xs leading-relaxed"
+                                        className="bg-muted/20 border-border/50 rounded-lg font-medium text-foreground p-4 resize-none min-h-[150px] text-xs xl:text-sm leading-relaxed"
                                         {...field}
                                         value={field.value ?? ""}
                                     />
                                 </FormControl>
-                                <div className="flex justify-between items-center px-4">
-                                    <FormDescription className="text-xs font-medium text-muted-foreground">Word Count: 100 - 500 Words</FormDescription>
-                                    <span className="text-xs font-medium text-primary/60">{field.value.length} chars</span>
+                                <div className="flex justify-between items-center px-1">
+                                    <FormDescription className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Requirement: 100 - 500 Words</FormDescription>
+                                    <span className="text-[10px] font-bold text-[#000066] uppercase">{field.value.length} Characters</span>
                                 </div>
-                                <FormMessage className="text-xs font-medium text-secondary px-4" />
+                                <FormMessage className="text-xs font-medium text-destructive px-1" />
                             </FormItem>
                         )}
                     />
@@ -344,43 +328,41 @@ export default function SubmissionForm() {
                         control={form.control}
                         name="keywords"
                         render={({ field }) => (
-                            <FormItem className="space-y-3">
-                                <div className="flex items-center gap-3 ml-1">
-                                    <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm">
-                                        <Tag className="w-4.5 h-4.5" />
-                                    </div>
-                                     <FormLabel className="text-primary">Keywords</FormLabel>
+                            <FormItem className="space-y-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Tag className="w-4 h-4 text-[#000066]" />
+                                    <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider">Keywords</FormLabel>
                                 </div>
                                 <FormControl>
                                     <Input
                                         placeholder="e.g., AI, Machine Learning, Metallurgy..."
                                         {...field}
                                         value={field.value ?? ""}
-                                        className="h-10 bg-primary/5 border-primary/10 rounded-lg font-semibold text-primary shadow-sm px-4 text-xs"
+                                        className="h-11 bg-muted/20 border-border/50 rounded-lg font-medium text-foreground px-4 text-xs xl:text-sm"
                                     />
                                 </FormControl>
-                                <FormDescription className="text-xs font-semibold text-muted-foreground px-4">Provide at least 5 keywords separated by commas.</FormDescription>
-                                <FormMessage className="text-xs font-semibold text-secondary px-4" />
+                                <FormDescription className="text-[10px] text-muted-foreground font-bold uppercase px-1">Separate keywords with commas.</FormDescription>
+                                <FormMessage className="text-xs font-medium text-destructive px-1" />
                             </FormItem>
                         )}
                     />
                 </div>
 
                 {/* Co-Authors - Visual Polish */}
-                <div className="space-y-8 pt-12 border-t border-primary/10">
+                <div className="space-y-8 pt-12 border-t border-border/50">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
+                            <div className="w-10 h-10 rounded-xl bg-[#000066]/5 text-[#000066] flex items-center justify-center border border-[#000066]/10">
                                 <Users className="w-5 h-5" />
                             </div>
-                            <h3 className="text-primary">Co-Authors</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">Co-Authors</h3>
                         </div>
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => append({ name: "", email: "", phone: "", designation: "", institution: "" })}
                             disabled={fields.length >= 5}
-                            className="h-10 px-4 rounded-lg border-primary/10 text-primary font-semibold text-xs hover:bg-primary hover:text-white transition-all shadow-sm"
+                            className="h-10 px-4 rounded-lg border-border/50 text-[#000066] font-bold text-[10px] uppercase tracking-wider hover:bg-[#000066] hover:text-white transition-all shadow-sm"
                         >
                             <Plus className="w-4 h-4 mr-2" />
                             Add Author
@@ -397,36 +379,36 @@ export default function SubmissionForm() {
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <Card className="group relative bg-primary/5 border border-primary/10 shadow-sm rounded-xl overflow-hidden transition-all p-1">
+                                    <div className="bg-card border border-border/50 shadow-sm rounded-xl overflow-hidden transition-all p-1">
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => remove(index)}
-                                            className="absolute top-4 right-4 text-secondary hover:bg-secondary/10 rounded-lg transition-all z-20"
+                                            className="absolute top-4 right-4 text-destructive hover:bg-destructive/5 rounded-lg transition-all z-20"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
 
                                         <CardContent className="p-6 sm:p-8 space-y-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                                            <div className="flex items-center gap-4 border-b border-border/50 pb-4">
+                                                <div className="w-10 h-10 rounded-lg bg-[#000066]/5 border border-[#000066]/10 flex items-center justify-center text-[#000066] font-bold text-sm">
                                                     {index + 1}
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <h4 className="text-primary">Author Details</h4>
-                                                    <p className="opacity-60">Enter co-author information</p>
+                                                <div className="space-y-0.5">
+                                                    <h4 className="text-sm font-semibold text-gray-900">Author Details</h4>
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Affiliated contributor</p>
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-4">
+                                            <div className="space-y-4 pt-2">
                                                 <FormField
                                                     control={form.control}
                                                     name={`co_authors.${index}.name`}
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormControl>
-                                                                 <Input placeholder="Full Name" {...field} value={field.value ?? ""} className="h-10 bg-background border-primary/10 rounded-lg font-semibold shadow-sm px-4 placeholder:truncate text-xs" />
+                                                                 <Input placeholder="Full Name" {...field} value={field.value ?? ""} className="h-10 bg-muted/20 border-border/50 rounded-lg font-medium shadow-none px-4 text-xs" />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -438,7 +420,7 @@ export default function SubmissionForm() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormControl>
-                                                                <Input type="email" placeholder="E-Mail Address" {...field} value={field.value ?? ""} className="h-10 bg-background border-primary/10 rounded-lg font-semibold shadow-sm px-4 placeholder:truncate text-xs" />
+                                                                 <Input type="email" placeholder="Email Address" {...field} value={field.value ?? ""} className="h-10 bg-muted/20 border-border/50 rounded-lg font-medium shadow-none px-4 text-xs" />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -451,7 +433,7 @@ export default function SubmissionForm() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormControl>
-                                                                    <Input type="tel" placeholder="Phone no" {...field} value={field.value ?? ""} className="h-10 bg-background border-primary/10 rounded-lg font-semibold shadow-sm px-4 placeholder:truncate text-xs" />
+                                                                    <Input type="tel" placeholder="Phone" {...field} value={field.value ?? ""} className="h-10 bg-muted/20 border-border/50 rounded-lg font-medium shadow-none px-4 text-xs" />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
@@ -463,7 +445,7 @@ export default function SubmissionForm() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormControl>
-                                                                    <Input placeholder="Designation" {...field} value={field.value ?? ""} className="h-10 bg-background border-primary/10 rounded-lg font-semibold shadow-sm px-4 placeholder:truncate text-xs" />
+                                                                    <Input placeholder="Designation" {...field} value={field.value ?? ""} className="h-10 bg-muted/20 border-border/50 rounded-lg font-medium shadow-none px-4 text-xs" />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
@@ -476,7 +458,7 @@ export default function SubmissionForm() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormControl>
-                                                                <Input placeholder="Institution / Organization" {...field} value={field.value ?? ""} className="h-10 bg-background border-primary/10 rounded-lg font-semibold shadow-sm px-4 placeholder:truncate text-xs" />
+                                                                <Input placeholder="Institution / Organization" {...field} value={field.value ?? ""} className="h-10 bg-muted/20 border-border/50 rounded-lg font-medium shadow-none px-4 text-xs" />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -484,51 +466,49 @@ export default function SubmissionForm() {
                                                 />
                                             </div>
                                         </CardContent>
-                                    </Card>
+                                    </div>
+
                                 </motion.div>
                             ))}
                         </AnimatePresence>
                     </div>
 
                     {fields.length === 0 && (
-                        <div className="py-12 border-2 border-dashed border-primary/10 rounded-xl bg-primary/5 flex flex-col items-center justify-center text-center px-6 transition-all hover:bg-primary/10">
-                             <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center text-primary/40 mb-4 shadow-sm border border-primary/10">
-                                <Users className="w-7 h-7" />
+                        <div className="py-12 border-2 border-dashed border-border/50 rounded-xl bg-muted/20 flex flex-col items-center justify-center text-center px-6">
+                             <div className="w-12 h-12 bg-card border border-border/50 rounded-xl flex items-center justify-center text-muted-foreground/30 mb-4 shadow-sm">
+                                <Users className="w-6 h-6" />
                             </div>
-                            <h4>Single Author Submission</h4>
-                            <p className="opacity-60 max-w-xs">
-                                You are submitting as a single author. You may add up to 5 additional authors above.
+                            <h4 className="text-sm font-semibold text-gray-900">Single Author Submission</h4>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase max-w-xs mt-1">
+                                No co-authors listed. Up to 5 allowed.
                             </p>
                         </div>
                     )}
                 </div>
 
                 {/* Upload Infrastructure - Dual Uploads */}
-                <div className="pt-10 border-t border-slate-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                <div className="pt-10 border-t border-border/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Manuscript Upload */}
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="flex items-center justify-between gap-4 ml-1">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center shadow-sm border border-primary/10">
-                                        <FileText className="w-6 h-6" />
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#000066]/5 text-[#000066] flex items-center justify-center border border-[#000066]/10">
+                                        <FileText className="w-5 h-5" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <FormLabel className="text-primary"></FormLabel>
-                                        <p className="opacity-40">Upload your research paper file</p>
-                                    </div>
+                                    <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider m-0">Manuscript Upload</FormLabel>
                                 </div>
                                 {settings.template_url && (
-                                    <Button asChild variant="ghost" size="sm" className="text-primary font-semibold text-[9px] hover:bg-primary/5">
+                                    <Button asChild variant="ghost" size="sm" className="h-8 text-[#000066] font-bold text-[9px] uppercase tracking-wider hover:bg-[#000066]/5">
                                         <a href={settings.template_url} download>
-                                            <Download className="w-3.5 h-3.5 mr-2" />
-                                            Get Template
+                                            <Download className="w-3 h-3 mr-2" />
+                                            Template
                                         </a>
                                     </Button>
                                 )}
                             </div>
                             
-                            <div className="relative group/upload">
+                            <div className="relative">
                                 <input
                                     type="file"
                                     onChange={handleManuscriptChange}
@@ -538,26 +518,26 @@ export default function SubmissionForm() {
                                 />
                                 <label
                                     htmlFor="manuscript-upload"
-                                    className={`flex flex-col items-center justify-center w-full min-h-[200px] border-2 border-dashed rounded-lg transition-all duration-300 cursor-pointer shadow-sm relative overflow-hidden ${manuscriptFile
-                                        ? 'border-primary/40 bg-primary/5'
-                                        : 'border-primary/10 hover:border-primary/30 hover:bg-primary/5'
+                                    className={`flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed rounded-xl transition-all cursor-pointer shadow-sm relative overflow-hidden ${manuscriptFile
+                                        ? 'border-[#000066]/50 bg-[#000066]/5'
+                                        : 'border-border/50 bg-card hover:border-[#000066]/30 hover:bg-[#000066]/5'
                                         }`}
                                 >
                                     {manuscriptFile ? (
-                                        <div className="text-center px-8 relative z-10">
-                                            <div className="w-16 h-16 bg-primary text-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                                <Check className="w-8 h-8" />
+                                        <div className="text-center px-4">
+                                            <div className="w-12 h-12 bg-[#000066] text-white rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
+                                                <Check className="w-6 h-6" />
                                             </div>
-                                            <p className="opacity-80 truncate max-w-[280px] mb-1">{manuscriptFile.name}</p>
-                                            <p className="opacity-60 mb-2">Manuscript Selected</p>
+                                            <p className="text-xs font-semibold text-gray-900 truncate max-w-[200px]">{manuscriptFile.name}</p>
+                                            <p className="text-[10px] font-bold text-[#000066]/60 uppercase mt-1">Ready to upload</p>
                                         </div>
                                     ) : (
-                                        <div className="text-center relative z-10 transition-all">
-                                            <div className="w-16 h-16 bg-primary/5 border border-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Upload className="w-6 h-6 text-primary" />
+                                        <div className="text-center">
+                                            <div className="w-12 h-12 bg-muted/20 border border-border/50 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                                <Upload className="w-5 h-5 text-[#000066]/40" />
                                             </div>
-                                            <p className="opacity-80 mb-1">Upload Manuscript</p>
-                                            <p className="opacity-60">Word or PDF</p>
+                                            <p className="text-xs font-semibold text-gray-900">Upload Research Paper</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">DOC, DOCX, or PDF</p>
                                         </div>
                                     )}
                                 </label>
@@ -565,28 +545,25 @@ export default function SubmissionForm() {
                         </div>
 
                         {/* Copyright Upload */}
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="flex items-center justify-between gap-4 ml-1">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center shadow-sm border border-primary/10">
-                                        <Shield className="w-6 h-6" />
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#000066]/5 text-[#000066] flex items-center justify-center border border-[#000066]/10">
+                                        <Shield className="w-5 h-5" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <FormLabel className="text-primary"></FormLabel>
-                                        <p className="opacity-40">Signed copyright agreement</p>
-                                    </div>
+                                    <FormLabel className="text-[#000066] text-[11px] font-bold uppercase tracking-wider m-0">Copyright Agreement</FormLabel>
                                 </div>
                                 {settings.copyright_url && (
-                                    <Button asChild variant="ghost" size="sm" className="text-primary font-semibold text-[9px] hover:bg-primary/5">
+                                    <Button asChild variant="ghost" size="sm" className="h-8 text-[#000066] font-bold text-[9px] uppercase tracking-wider hover:bg-[#000066]/5">
                                         <a href={settings.copyright_url} download>
-                                            <Download className="w-3.5 h-3.5 mr-2" />
-                                            Download form
+                                            <Download className="w-3 h-3 mr-2" />
+                                            Agreement Form
                                         </a>
                                     </Button>
                                 )}
                             </div>
                             
-                            <div className="relative group/upload">
+                            <div className="relative">
                                 <input
                                     type="file"
                                     onChange={handleCopyrightChange}
@@ -596,26 +573,26 @@ export default function SubmissionForm() {
                                 />
                                 <label
                                     htmlFor="copyright-upload"
-                                    className={`flex flex-col items-center justify-center w-full min-h-[200px] border-2 border-dashed rounded-lg transition-all duration-300 cursor-pointer shadow-sm relative overflow-hidden ${copyrightFile
-                                        ? 'border-primary/40 bg-primary/5'
-                                        : 'border-primary/10 hover:border-primary/30 hover:bg-primary/5'
+                                    className={`flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed rounded-xl transition-all cursor-pointer shadow-sm relative overflow-hidden ${copyrightFile
+                                        ? 'border-[#000066]/50 bg-[#000066]/5'
+                                        : 'border-border/50 bg-card hover:border-[#000066]/30 hover:bg-[#000066]/5'
                                         }`}
                                 >
                                     {copyrightFile ? (
-                                        <div className="text-center px-8 relative z-10">
-                                            <div className="w-16 h-16 bg-primary text-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                                <Shield className="w-8 h-8" />
+                                        <div className="text-center px-4">
+                                            <div className="w-12 h-12 bg-[#000066] text-white rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
+                                                <Check className="w-6 h-6" />
                                             </div>
-                                            <p className="opacity-80 truncate max-w-[280px] mb-1">{copyrightFile.name}</p>
-                                            <p className="opacity-60 mb-2">Copyright Form Selected</p>
+                                            <p className="text-xs font-semibold text-gray-900 truncate max-w-[200px]">{copyrightFile.name}</p>
+                                            <p className="text-[10px] font-bold text-[#000066]/60 uppercase mt-1">Ready to upload</p>
                                         </div>
                                     ) : (
-                                        <div className="text-center relative z-10 transition-all">
-                                            <div className="w-16 h-16 bg-primary/5 border border-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Upload className="w-6 h-6 text-primary" />
+                                        <div className="text-center">
+                                            <div className="w-12 h-12 bg-muted/20 border border-border/50 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                                <Upload className="w-5 h-5 text-[#000066]/40" />
                                             </div>
-                                            <p className="opacity-80 mb-1">Upload Copyright Form</p>
-                                            <p className="opacity-60">Signed Word or PDF</p>
+                                            <p className="text-xs font-semibold text-gray-900">Upload Signed Form</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Signed Word or PDF</p>
                                         </div>
                                     )}
                                 </label>
@@ -625,35 +602,29 @@ export default function SubmissionForm() {
                 </div>
 
                 {/* Terms and Submission Control */}
-                <div className="space-y-8 pt-10 border-t border-slate-100">
+                <div className="space-y-8 pt-10 border-t border-border/50">
                     <FormField
                         control={form.control}
                         name="terms_accepted"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-4 space-y-0 p-6 rounded-2xl bg-primary/5 border border-primary/10 shadow-sm group/terms transition-all hover:bg-primary/10">
+                            <FormItem className="flex flex-row items-center space-x-4 space-y-0 p-6 rounded-xl bg-muted/20 border border-border/50 shadow-sm">
                                 <FormControl>
                                     <Checkbox
                                         checked={!!field.value}
                                         onCheckedChange={field.onChange}
-                                        className="w-6 h-6 rounded-lg border-2 border-indigo-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all group-hover/terms:scale-110"
+                                        className="w-5 h-5 rounded border-2 border-border data-[state=checked]:bg-[#000066] data-[state=checked]:border-[#000066] transition-all"
                                     />
                                 </FormControl>
-                                <div className="space-y-1.5 m-0!">
-                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                        <span className="opacity-80">I hereby verify that I have read the</span>
-                                        <Link href="/guidelines" target="_blank" className="text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">
-                                            Author Guidelines
-                                            <ExternalLink className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
-                                        </Link>
-                                        <span className="opacity-80">and the</span>
-                                        <Link href="/guidelines#terms" target="_blank" className="text-indigo-600 hover:text-indigo-800 underline decoration-indigo-200 underline-offset-4 group/link flex items-center gap-1 transition-all">
-                                            Terms of Use.
-                                            <ExternalLink className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
-                                        </Link>
+                                <div className="space-y-1 m-0!">
+                                    <div className="flex flex-wrap items-center gap-x-1.5 text-xs font-medium text-foreground">
+                                        <span>I verify that I have read the</span>
+                                        <Link href="/guidelines" target="_blank" className="text-[#000066] font-bold hover:underline">Guidelines</Link>
+                                        <span>and comply with all</span>
+                                        <Link href="/guidelines#terms" target="_blank" className="text-[#000066] font-bold hover:underline">Terms of Use</Link>
                                     </div>
-                                    <p className="opacity-40">I confirm that I am submitting original work and following all guidelines.</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">Mandatory verification for all research submissions.</p>
                                 </div>
-                                <FormMessage className="text-[10px] 2xl:text-xs font-black text-secondary px-4" />
+                                <FormMessage className="text-[10px] font-bold text-destructive px-2" />
                             </FormItem>
                         )}
                     />
@@ -661,17 +632,17 @@ export default function SubmissionForm() {
                     <Button
                         type="submit"
                         disabled={submissionMutation.isPending}
-                        className="w-full h-14 bg-primary text-white font-semibold text-sm rounded-xl shadow-lg transition-all duration-300 hover:bg-primary/90 active:scale-[0.99] group/submit"
+                        className="w-full h-12 bg-[#000066] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all hover:bg-[#000088] active:scale-[0.99]"
                     >
                         {submissionMutation.isPending ? (
                             <div className="flex items-center gap-3">
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                Submitting...
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Processing Submission...
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
-                                Submit Paper
-                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                Complete Submission
+                                <ChevronRight className="w-4 h-4" />
                             </div>
                         )}
                     </Button>

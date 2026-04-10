@@ -13,19 +13,15 @@ interface ExpertiseDossierProps {
 
 export const ExpertiseDossier = React.memo(({ bio }: ExpertiseDossierProps) => {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-        >
-            <Card className="border-border shadow-sm bg-card hover:shadow-md transition-shadow">
+        <div>
+            <Card className="border-border/50 shadow-sm bg-card overflow-hidden">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-black flex items-center gap-2 text-foreground dark:text-primary uppercase tracking-widest m-0">
-                        <FileText className="w-5 h-5" /> Research Bio & Expertise
+                    <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
+                        <FileText className="w-5 h-5 text-[#000066]" /> Bio & Expertise
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Label htmlFor="bio" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Professional Biography</Label>
+                    <Label htmlFor="bio" className="text-[10px] font-bold uppercase tracking-wider text-[#000066] ml-1">Professional Biography</Label>
                     <div className="relative">
                         <Textarea
                             id="bio"
@@ -33,12 +29,12 @@ export const ExpertiseDossier = React.memo(({ bio }: ExpertiseDossierProps) => {
                             defaultValue={bio}
                             placeholder="Tell us about your research expertise and background..."
                             rows={6}
-                            className="bg-muted/30 border-border resize-none focus-visible:ring-primary shadow-sm rounded-xl p-6 leading-relaxed"
+                            className="bg-muted/20 border-border/50 resize-none focus-visible:ring-primary shadow-sm rounded-lg p-6 leading-relaxed text-xs xl:text-sm"
                         />
                     </div>
                 </CardContent>
             </Card>
-        </motion.div>
+        </div>
     );
 });
 

@@ -24,64 +24,61 @@ export default function SubmitClient({ settings }: SubmitClientProps) {
         <section className="container-responsive section-padding">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20">
                 {/* Main Submission Form */}
-                <div className="lg:col-span-2 space-y-12">
-                    <section className="bg-white border border-primary/5 rounded-[2.5rem] shadow-sm overflow-hidden relative group border-l-[6px] border-l-primary/10">
-                        <div className="bg-primary p-10 xl:p-12 2xl:p-20 text-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                            <div className="relative z-10 space-y-4">
-                                <h2 className="text-white m-0 font-black uppercase tracking-widest">Submit Your Research</h2>
-                                <p className="text-white/60 font-medium max-w-xl border-l-2 border-secondary/50 pl-6 m-0 leading-relaxed">
-                                    Begin your journey towards global impact. Please fill in the details below to submit your manuscript for peer review.
+                <div className="lg:col-span-2 space-y-10">
+                    <section className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
+                        <div className="bg-[#000066] p-8 sm:p-12 text-white relative overflow-hidden">
+                            <div className="relative z-10 space-y-3">
+                                <h2 className="text-xl font-semibold m-0 text-white">Submit Research</h2>
+                                <p className="text-white/60 text-sm m-0 leading-relaxed border-l-2 border-white/20 pl-6">
+                                    Fill in the details below to submit your manuscript for peer review.
                                 </p>
                             </div>
                         </div>
-                        <div className="p-8">
+                        <div className="p-6 sm:p-10">
                             <SubmissionForm />
                         </div>
                     </section>
                 </div>
 
                 {/* Sidebar */}
-                <aside className="space-y-12">
-                    <div className="group/widget transition-transform duration-500 hover:-translate-y-1">
-                        <div className="bg-white/50 backdrop-blur-sm p-3 rounded-[2.3rem]">
-                            <TrackManuscriptWidget />
-                        </div>
+                <aside className="space-y-10">
+                    <div className="bg-muted/20 p-2 rounded-2xl border border-border/50">
+                        <TrackManuscriptWidget />
                     </div>
 
                     <section className="space-y-6">
-                        <h3 className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest text-primary pl-4 border-l-2 border-primary/30 m-0 uppercase">Quick Checklist</h3>
-                        <div className="p-8 2xl:p-12 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm border-l-[6px] border-l-secondary/10 hover:border-l-secondary transition-all group">
-                            <div className="space-y-8">
+                        <h3 className="text-sm font-semibold text-primary m-0">Quick Checklist</h3>
+                        <div className="p-8 bg-card border border-border/50 rounded-xl shadow-sm border-l-4 border-l-secondary/10 transition-all hover:border-l-secondary">
+                            <div className="space-y-6 mb-10">
                                 {REQUIREMENTS.map((item, idx) => (
                                     <div key={idx} className="flex gap-4">
-                                        <div className="w-6 h-6 2xl:w-10 2xl:h-10 rounded-full bg-secondary/5 border border-secondary/10 flex items-center justify-center shrink-0">
-                                            <CheckCircle2 className="w-3.5 h-3.5 2xl:w-6 2xl:h-6 text-secondary" />
+                                        <div className="w-5 h-5 rounded-lg bg-secondary/5 border border-secondary/10 flex items-center justify-center shrink-0">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-secondary" />
                                         </div>
                                         <div>
-                                            <h3 className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest text-primary mb-1 m-0 uppercase">{item.title}</h3>
-                                            <p className="text-black/50 m-0 text-sm leading-relaxed">{item.desc}</p>
+                                            <h3 className="text-sm font-semibold text-primary mb-1 m-0">{item.title}</h3>
+                                            <p className="text-muted-foreground m-0 text-xs leading-relaxed">{item.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <Button asChild className="btn-primary w-full shadow-lg shadow-primary/20 font-black tracking-widest text-xs uppercase">
-                                <Link href="/guidelines">View Full Guidelines</Link>
+                            <Button asChild className="w-full h-10 bg-[#000066] hover:bg-[#000088] text-white font-bold text-[10px] tracking-wider rounded-lg shadow-sm transition-all uppercase">
+                                <Link href="/guidelines">View Guidelines</Link>
                             </Button>
                         </div>
                     </section>
 
-                    <section className="p-8 2xl:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-                        <div className="relative z-10 ">
-                            <div className="w-12 h-12 2xl:w-16 2xl:h-16 bg-white/10 rounded-xl flex items-center justify-center text-primary border border-white/20">
-                                <HelpCircle className="w-6 h-6 2xl:w-10 2xl:h-10" />
+                    <section className="p-8 bg-[#000066] rounded-xl shadow-sm relative overflow-hidden text-white">
+                        <div className="relative z-10 space-y-4">
+                            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white border border-white/10">
+                                <HelpCircle className="w-5 h-5" />
                             </div>
-                            <h3 className="text-primary mb-3 m-0 font-black uppercase tracking-wider">Need Assistance?</h3>
-                            <p className="text-black/50 mb-4 m-0 text-sm font-medium leading-relaxed">
-                                Encountering technical issues during submission? Our editorial desk is available to assist you 24/7.
+                            <h3 className="text-lg font-semibold m-0 text-white">Need Support?</h3>
+                            <p className="text-white/60 text-xs font-medium leading-relaxed m-0">
+                                Encountering technical issues? Our board is available to assist you.
                             </p>
-                            <Link href="/contact" className="text-xs font-black tracking-widest text-primary hover:text-secondary inline-flex items-center gap-2 m-0 uppercase">
-                                Contact Support <ChevronRight className="w-4 h-4 2xl:w-6 2xl:h-6" />
+                            <Link href="/contact" className="text-[10px] font-bold tracking-widest text-white hover:text-secondary inline-flex items-center gap-2 m-0 uppercase transition-colors">
+                                Contact Support <ChevronRight className="w-3.5 h-3.5" />
                             </Link>
                         </div>
                     </section>

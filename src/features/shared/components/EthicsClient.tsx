@@ -295,13 +295,13 @@ export default function EthicsClient({ settings }: EthicsClientProps) {
                     sidebarClassName="hidden lg:block sticky top-32 h-fit"
                     sidebar={
                         <>
-                            <h3 className="text-primary mb-6 m-0 font-black tracking-widest uppercase opacity-60">Quick Navigation</h3>
+                            <h3 className="text-sm font-semibold text-primary opacity-60 mb-6">Quick Navigation</h3>
                             <nav className="space-y-4 border-l border-primary/10 pl-4">
                                 {sections.map((section, idx) => (
                                     <a
                                         key={idx}
                                         href={`#section-${idx}`}
-                                        className="text-primary/60 hover:text-secondary block py-1 m-0 text-sm font-medium transition-colors"
+                                        className="text-primary/60 hover:text-primary block py-1 m-0 text-sm transition-colors"
                                     >
                                         {section.title}
                                     </a>
@@ -310,13 +310,13 @@ export default function EthicsClient({ settings }: EthicsClientProps) {
                         </>
                     }
                 >
-                    <div className="space-y-10">
+                    <div className="space-y-12">
                         {sections.map((section, idx) => (
-                            <section key={idx} id={`section-${idx}`} className="scroll-mt-32">
-                                <h2 className="text-primary mb-2 m-0 font-black uppercase tracking-wider">
+                            <section key={idx} id={`section-${idx}`} className="scroll-mt-32 space-y-4">
+                                <h2 className="text-lg font-semibold text-primary">
                                     {section.title}
                                 </h2>
-                                <div className="text-justify text-primary/80 space-y-6 font-medium border-l-[3px] border-secondary/20 pl-8 2xl:pl-12">
+                                <div className="text-sm text-muted-foreground leading-relaxed border-l-2 border-border pl-6">
                                     {section.content}
                                 </div>
                             </section>
@@ -327,14 +327,13 @@ export default function EthicsClient({ settings }: EthicsClientProps) {
 
             {/* Report Section - Separated for Emphasis */}
             <Section background="gradient" padding={false} className="pb-24">
-                <div className="bg-primary p-10 sm:p-14 2xl:p-24 rounded-[2.5rem] 2xl:rounded-[5rem] text-white relative overflow-hidden shadow-2xl">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <div className="bg-[#000066] p-10 sm:p-14 rounded-2xl text-white relative overflow-hidden">
                     <div className="relative z-10 space-y-6 text-center">
-                        <h2 className="text-white font-black m-0">Ethics Committee</h2>
-                        <p className="text-white/60 max-w-xl mx-auto font-medium">Report any ethics concerns or plagiarism sightings directly to our board for immediate evaluation and action.</p>
+                        <h2 className="text-xl xl:text-2xl 2xl:text-3xl font-serif font-semibold text-white">Ethics Committee</h2>
+                        <p className="text-white/60 max-w-xl mx-auto text-sm">Report any ethics concerns or plagiarism sightings directly to our board for immediate evaluation and action.</p>
                         <a
                             href={`mailto:${supportEmail}`}
-                            className="text-secondary hover:text-white transition-colors border-b-2 border-secondary/30 hover:border-white pb-2 inline-block font-black text-xl lg:text-3xl"
+                            className="text-white hover:underline transition-all font-semibold text-xl lg:text-2xl"
                         >
                             {supportEmail}
                         </a>

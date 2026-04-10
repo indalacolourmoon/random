@@ -14,18 +14,13 @@ import {
 } from "@/components/ui/tooltip";
 
 const Badge = ({ count }: { count: number }) => (
-    <AnimatePresence>
+    <>
         {count > 0 && (
-            <motion.span
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                className="absolute -top-1 -right-1 flex h-5 w-5 2xl:h-7 2xl:w-7 items-center justify-center rounded-full bg-primary text-[9px] sm:text-[10px] 2xl:text-xs font-black text-white shadow-lg shadow-primary/30 ring-2 ring-background z-20"
-            >
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 2xl:h-7 2xl:w-7 items-center justify-center rounded-full bg-[#000066] text-[9px] sm:text-[10px] 2xl:text-xs font-bold text-white shadow-sm ring-2 ring-background z-20">
                 {count > 9 ? '9+' : count}
-            </motion.span>
+            </span>
         )}
-    </AnimatePresence>
+    </>
 );
 
 export default function NotificationCenter() {
@@ -62,8 +57,8 @@ export default function NotificationCenter() {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Link href={submissionLink} className="relative group">
-                            <div className="h-10 w-10 2xl:h-14 2xl:w-14 rounded-xl flex items-center justify-center bg-primary/5 text-primary hover:bg-primary/10 transition-all shadow-inner border border-primary/10">
-                                <FileStack className="w-5 h-5 2xl:w-7 2xl:h-7 group-hover:scale-110 transition-transform" />
+                            <div className="h-10 w-10 2xl:h-12 2xl:w-12 rounded-xl flex items-center justify-center bg-[#000066]/5 text-[#000066] hover:bg-[#000066]/10 transition-all border border-border/50">
+                                <FileStack className="w-5 h-5 2xl:w-6 2xl:h-6" />
                                 <Badge count={counts.submissions} />
                             </div>
                         </Link>
@@ -81,8 +76,8 @@ export default function NotificationCenter() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Link href="/admin/messages" className="relative group">
-                                <div className="h-11 w-11 2xl:h-14 2xl:w-14 rounded-xl flex items-center justify-center bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all shadow-inner border border-emerald-500/5">
-                                    <MessageSquareDot className="w-5 h-5 2xl:w-7 2xl:h-7 group-hover:scale-110 transition-transform" />
+                                <div className="h-10 w-10 2xl:h-12 2xl:w-12 rounded-xl flex items-center justify-center bg-[#000066]/5 text-[#000066] hover:bg-[#000066]/10 transition-all border border-border/50">
+                                    <MessageSquareDot className="w-5 h-5 2xl:w-6 2xl:h-6" />
                                     <Badge count={counts.messages} />
                                 </div>
                             </Link>

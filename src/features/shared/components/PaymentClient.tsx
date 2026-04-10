@@ -33,30 +33,27 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="w-16 h-16 border-4 border-primary/5 rounded-full animate-spin border-t-secondary" />
-                    <Loader2 className="w-8 h-8 text-primary animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <p className="font-black text-primary/40  tracking-[0.4em] text-[10px] animate-pulse">Authenticating Secure Session</p>
+            <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase opacity-50">Secure Session Initializing</p>
             </div>
         </div>
     );
 
     if (error || (manuscript && manuscript.status !== 'accepted' && manuscript.status !== 'published')) return (
         <div className="min-h-screen flex items-center justify-center bg-background p-6">
-            <div className="max-w-xl w-full bg-white border border-primary/5 rounded-[3.5rem] text-center p-12 sm:p-20 shadow-sm border-l-[6px] border-l-destructive/20 transition-all hover:shadow-xl group">
-                <div className="w-20 h-20 bg-destructive/5 rounded-4xl flex items-center justify-center mx-auto mb-10 text-destructive group-hover:bg-destructive group-hover:text-white transition-all duration-700">
-                    <AlertCircle className="w-10 h-10" />
+            <div className="max-w-md w-full bg-card border border-border/50 rounded-xl text-center p-8 sm:p-12 shadow-sm border-l-4 border-l-destructive/50">
+                <div className="w-16 h-16 bg-destructive/5 rounded-xl flex items-center justify-center mx-auto mb-8 text-destructive">
+                    <AlertCircle className="w-8 h-8" />
                 </div>
-                <div className="space-y-4">
-                    <h2 className="font-black text-primary tracking-widest uppercase ">Authentication Failed</h2>
-                    <p className="text-sm text-primary/40 font-medium leading-relaxed ">
-                        The provided manuscript credentials could not be verified for active payment processing. Please synchronize with the editorial desk.
+                <div className="space-y-2">
+                    <h2 className="text-xl font-semibold m-0">Access Denied</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed m-0">
+                        Credentials could not be verified for active payment processing.
                     </p>
                 </div>
-                <Button asChild className="h-14 mt-10 px-10 bg-primary hover:bg-primary/95 text-white font-black  tracking-[0.2em] text-xs rounded-2xl shadow-xl transition-all">
-                    <Link href="/track">Return to Portal</Link>
+                <Button asChild className="h-10 mt-8 px-8 bg-[#000066] hover:bg-[#000088] text-white font-bold text-[10px] tracking-wider rounded-lg shadow-sm transition-all uppercase">
+                    <Link href="/track">Return home</Link>
                 </Button>
             </div>
         </div>
@@ -64,21 +61,20 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
 
     if (paid || (manuscript && manuscript.status === 'published')) return (
         <div className="min-h-screen flex items-center justify-center bg-background p-6">
-            <div className="max-w-xl w-full bg-white border border-primary/5 rounded-[3.5rem] text-center p-12 sm:p-20 shadow-sm border-l-[6px] border-l-secondary transition-all hover:shadow-xl group">
-                <div className="w-20 h-20 bg-secondary/5 rounded-4xl flex items-center justify-center mx-auto mb-10 text-secondary group-hover:bg-secondary group-hover:text-white transition-all duration-700">
-                    <CheckCircle2 className="w-10 h-10" />
+            <div className="max-w-md w-full bg-card border border-border/50 rounded-xl text-center p-8 sm:p-12 shadow-sm border-l-4 border-l-secondary">
+                <div className="w-16 h-16 bg-secondary/5 rounded-xl flex items-center justify-center mx-auto mb-8 text-secondary">
+                    <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <div className="space-y-4">
-                    <h2 className="font-black text-primary tracking-widest uppercase ">Legacy Secured</h2>
-                    <p className="text-sm text-primary/40 font-medium leading-relaxed ">
-                        Grant processed successfully. Your research is now officially queued for global indexing and long-term digital preservation.
+                <div className="space-y-2">
+                    <h2 className="text-xl font-semibold m-0">Grant Secured</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed m-0">
+                        Payment processed successfully. Your research is now queued for global indexing.
                     </p>
                 </div>
-                <div className="pt-10 space-y-4">
-                    <Button asChild className="h-14 w-full bg-primary hover:bg-primary/95 text-white font-black  tracking-[0.2em] text-xs rounded-2xl shadow-xl">
-                        <Link href="/">Return Home</Link>
+                <div className="pt-8 space-y-4">
+                    <Button asChild className="h-10 w-full bg-[#000066] hover:bg-[#000088] text-white font-bold text-[10px] tracking-wider rounded-lg shadow-sm transition-all uppercase">
+                        <Link href="/">Return home</Link>
                     </Button>
-                    <p className="text-[10px] font-black  tracking-widest text-primary/20 animate-pulse">Session finalized • Encrypted</p>
                 </div>
             </div>
         </div>
@@ -92,7 +88,7 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
             />
             <PageHeader
                 title="Manuscript Grant"
-                description="Secure Article Processing Fee (APC) for finalized research."
+                description="Article Processing Charge (APC) for finalized research."
                 breadcrumbs={[
                     { name: 'Home', href: '/' },
                     { name: 'Track', href: '/track' },
@@ -105,60 +101,57 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
 
                     {/* Invoice Left */}
                     <div className="lg:col-span-7 space-y-12">
-                        <section className="bg-white border border-primary/5 rounded-[2.5rem] shadow-sm overflow-hidden border-l-[6px] border-l-primary/10 transition-all hover:shadow-xl">
-                            <div className="p-10 sm:p-14 border-b border-primary/5 bg-primary/2">
-                                <div className="flex flex-wrap items-center justify-between gap-6 mb-8">
-                                    <Badge className="bg-primary/5 text-primary border-primary/10 px-4 h-6 text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black tracking-widest uppercase">Official Invoice</Badge>
-                                    <span className="text-[9px] sm:text-[10px] xl:text-[11px] 2xl:text-xs font-black text-primary/40 tracking-widest uppercase">Date: {new Date().toLocaleDateString()}</span>
+                        <section className="bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden">
+                            <div className="p-8 sm:p-10 border-b border-border/50 bg-muted/20">
+                                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                    <Badge className="bg-[#000066]/5 text-[#000066] border-[#000066]/20 px-3 h-6 text-[10px] font-bold tracking-wider uppercase">Official Invoice</Badge>
+                                    <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Date: {new Date().toLocaleDateString()}</span>
                                 </div>
-                                <h3 className="font-black text-primary tracking-widest leading-wider mb-4 uppercase">{manuscript.title}</h3>
-                                <div className="flex items-center gap-4 text-primary/50 font-black  tracking-widest text-[11px]">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center">
-                                        <TrendingUp className="w-4 h-4 text-secondary" />
-                                    </div>
-                                    Manuscript ID: {manuscript.paper_id}
+                                <h3 className="text-xl font-semibold text-primary m-0 leading-tight">{manuscript.title}</h3>
+                                <div className="flex items-center gap-3 text-muted-foreground pt-4">
+                                    <TrendingUp className="w-4 h-4 text-secondary/60" />
+                                    <span className="text-xs font-medium">Manuscript ID: {manuscript.paper_id}</span>
                                 </div>
                             </div>
 
-                            <div className="p-10 sm:p-14 space-y-10">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-primary/30  tracking-[0.3em]">Beneficiary</p>
-                                        <p className="text-base font-black text-primary ">{manuscript.author_name}</p>
+                            <div className="p-8 sm:p-10 space-y-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Beneficiary</p>
+                                        <p className="text-base font-semibold text-primary m-0">{manuscript.author_name}</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-primary/30  tracking-[0.3em]">Currency Profile</p>
-                                        <p className="text-base font-black text-primary">INR (₹) - Unified Settlement</p>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Currency Profile</p>
+                                        <p className="text-base font-semibold text-primary m-0">INR (₹) - Unified Settlement</p>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6 pt-10 border-t border-primary/5">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black text-primary/40  tracking-widest">Core APC (85%)</span>
-                                        <span className="text-sm font-black text-primary/60">₹ {apcFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                <div className="space-y-4 pt-8 border-t border-border/50">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-muted-foreground">Article Processing Fee (85%)</span>
+                                        <span className="font-semibold text-primary">₹ {apcFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black text-primary/40  tracking-widest">Metadata Proxy & Indexing (15%)</span>
-                                        <span className="text-sm font-black text-primary/60">₹ {apcIndexing.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-muted-foreground">Global Indexing Fee (15%)</span>
+                                        <span className="font-semibold text-primary">₹ {apcIndexing.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
-                                    <div className="flex justify-between items-center pt-10 mt-6 border-t-2 border-dashed border-primary/10">
-                                        <span className="text-base font-black text-primary  tracking-[0.2em]">Total Due</span>
-                                        <span className="text-4xl font-black text-secondary tracking-widerer">₹ {apcTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                    <div className="flex justify-between items-center pt-8 mt-4 border-t border-dashed border-border/50">
+                                        <span className="text-base font-bold text-primary tracking-widest uppercase">Total Due</span>
+                                        <span className="text-3xl font-bold text-[#000066]">₹ {apcTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <section className="p-10 sm:p-14 bg-slate-900 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
-                            <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
-                                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 border border-white/20">
-                                    <ShieldAlert className="w-8 h-8 text-secondary" />
+                        <section className="p-8 bg-[#000066] rounded-xl text-white relative overflow-hidden shadow-sm">
+                            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+                                <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center shrink-0 border border-white/10 text-white">
+                                    <ShieldAlert className="w-7 h-7" />
                                 </div>
-                                <div className="space-y-3">
-                                    <h4 className="font-black tracking-wider ">Zero Refund Protocol</h4>
-                                    <p className="text-white/50 text-xs font-medium leading-relaxed  border-l-2 border-secondary/50 pl-6">
-                                        "Submission of payment constitutes final agreement for global dissemination. Once article is processed, transactions are non-reversible according to COPE integrity standards."
+                                <div className="space-y-2">
+                                    <h4 className="text-base font-semibold m-0">No Refund Policy</h4>
+                                    <p className="text-white/60 text-xs leading-relaxed border-l-2 border-white/20 pl-6">
+                                        Submission of payment constitutes final agreement. Transactions are non-reversible according to ethics standards.
                                     </p>
                                 </div>
                             </div>
@@ -168,13 +161,13 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
                     {/* Action Right */}
                     <div className="lg:col-span-5">
                         <div className="lg:sticky lg:top-32 space-y-12">
-                            <section className="bg-white border border-primary/5 rounded-[3rem] shadow-sm p-10 sm:p-14 text-center space-y-10 border-l-[6px] border-l-secondary transition-all hover:shadow-xl">
-                                <div className="w-20 h-20 bg-secondary/5 rounded-3xl flex items-center justify-center mx-auto text-secondary border border-secondary/10">
-                                    <CreditCard className="w-10 h-10" />
+                            <section className="bg-card border border-border/50 rounded-xl shadow-sm p-8 text-center space-y-8 border-l-4 border-l-secondary">
+                                <div className="w-16 h-16 bg-secondary/5 rounded-xl flex items-center justify-center mx-auto text-secondary border border-secondary/10">
+                                    <CreditCard className="w-8 h-8" />
                                 </div>
-                                <div className="space-y-4">
-                                    <h3 className="font-black text-primary tracking-wider ">Secure Settlement</h3>
-                                    <p className="text-[10px] font-black  tracking-[0.3em] text-primary/40 ">256-Bit SSL Encryption Active</p>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-semibold text-primary m-0">Secure Settlement</h3>
+                                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase opacity-50">256-Bit SSL Active</p>
                                 </div>
 
                                 {apcTotal > 0 ? (
@@ -183,25 +176,24 @@ export default function PaymentClient({ id, settings }: PaymentClientProps) {
                                         paperId={manuscript.paper_id}
                                     />
                                 ) : (
-                                    <p className="text-[10px] font-black text-primary/60">No payment required for this manuscript.</p>
+                                    <p className="text-xs font-semibold text-muted-foreground">No payment required.</p>
                                 )}
 
-                                <div className="flex items-center justify-center gap-6 pt-4 grayscale opacity-40">
-                                    <div className="w-10 h-6 bg-primary/10 rounded flex items-center justify-center text-[8px] font-black tracking-widerer">VISA</div>
-                                    <div className="w-10 h-6 bg-primary/10 rounded flex items-center justify-center text-[8px] font-black tracking-widerer">MC</div>
-                                    <div className="w-10 h-6 bg-primary/10 rounded flex items-center justify-center text-[8px] font-black tracking-widerer">UPI</div>
+                                <div className="flex items-center justify-center gap-4 pt-2 opacity-30">
+                                    <span className="text-[10px] font-bold tracking-widest uppercase">VISA</span>
+                                    <span className="text-[10px] font-bold tracking-widest uppercase">MC</span>
+                                    <span className="text-[10px] font-bold tracking-widest uppercase">UPI</span>
                                 </div>
                             </section>
 
-                            <section className="p-8 bg-primary/5 rounded-[2.5rem] flex items-start gap-6 relative group overflow-hidden">
-                                <div className="absolute right-0 bottom-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
-                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm text-primary">
-                                    <Handshake className="w-6 h-6" />
+                            <section className="p-6 bg-muted/20 border border-border/50 rounded-xl flex items-start gap-5 relative overflow-hidden">
+                                <div className="w-10 h-10 bg-card rounded-lg flex items-center justify-center shrink-0 shadow-sm text-primary border border-border/50">
+                                    <Handshake className="w-5 h-5" />
                                 </div>
-                                <div className="space-y-2 relative z-10">
-                                    <h4 className="text-[9px] sm:text-[10px] xl:text-[11px] font-black text-primary tracking-[0.3em] uppercase">Support Desk</h4>
-                                    <p className="text-[11px] text-primary/50 font-medium leading-relaxed ">
-                                        For transaction disputes or bulk processing requests, please contact our financial desk at <span className="text-secondary">{settings.support_email}</span>.
+                                <div className="space-y-1">
+                                    <h4 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Support Desk</h4>
+                                    <p className="text-xs text-muted-foreground/60 leading-relaxed font-medium m-0">
+                                        For disputes or bulk requests, contact <span className="text-secondary font-semibold">{settings.support_email}</span>.
                                     </p>
                                 </div>
                             </section>

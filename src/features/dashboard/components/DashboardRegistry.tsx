@@ -15,7 +15,7 @@ import { NumberTicker } from '@/components/ui/number-ticker';
 interface Stat {
     label: string;
     value: number | string;
-    icon: string; // Changed from ReactNode to string
+    icon: string;
     variant: string;
     prefix?: string;
 }
@@ -26,7 +26,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 interface DashboardRegistryProps {
-    role: 'admin' | 'editor';
+    role: 'admin' | 'editor' | 'author';
     user: any;
     stats: Stat[];
     recentSubmissions: any[];
@@ -67,22 +67,22 @@ export function DashboardRegistry({
     return (
         <section className="space-y-6">
             {/* Header Section */}
-            <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 py-4 border-b border-border/50">
-                <div className="space-y-2">
+            <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 py-6 border-b border-border/50">
+                <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                        <Badge className="bg-primary/10 text-primary border-none px-3 py-1 rounded-md">
-                            {role === 'admin' ? 'admin' : 'editor'}
+                        <Badge variant="outline" className="bg-[#000066]/5 text-[#000066] border-[#000066]/10 px-3 py-0.5 rounded-md text-[10px] font-medium">
+                            {role}
                         </Badge>
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="opacity-60">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="text-xs text-muted-foreground">
                             {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' })}
                         </span>
                     </div>
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                        {role === 'admin' ? 'Admin' : 'Editor'} Dashboard
+                    <h1 className="text-xl xl:text-2xl font-semibold text-[#000066]">
+                        {role.charAt(0).toUpperCase() + role.slice(1)} Dashboard
                     </h1>
-                    <p className="opacity-60 mt-1">
-                        Logged in as <span className="text-foreground">{user?.fullName || user?.name}</span>
+                    <p className="text-sm text-muted-foreground">
+                        Logged in as <span className="font-medium text-foreground">{user?.fullName || user?.name || 'User'}</span>
                     </p>
                 </div>
                 <div className="flex flex-wrap sm:flex-nowrap gap-3">
@@ -91,17 +91,14 @@ export function DashboardRegistry({
             </header>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat) => (
-                    <Card key={stat.label} className="border-border/50 shadow-sm bg-card hover:shadow-md transition-all rounded-xl overflow-hidden group">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-sm ${stat.variant === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
-                                        stat.variant === 'blue' ? 'bg-blue-50 text-blue-600' :
-                                            stat.variant === 'indigo' ? 'bg-indigo-50 text-indigo-600' :
-                                                stat.variant === 'primary' ? 'bg-primary/5 text-primary' :
-                                                    'bg-amber-50 text-amber-600'
-                                    }`}>
+                    <Card key={stat.label} className="border-border/50 shadow-sm bg-card transition-all rounded-xl">
+                        <CardContent className="p-5">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center border border-border/5 ${
+                                    stat.variant === 'primary' ? 'bg-[#000066]/5 text-[#000066]' : 'bg-muted/50 text-muted-foreground'
+                                }`}>
                                     <div className="[&>svg]:w-5 [&>svg]:h-5">
                                         {(() => {
                                             const Icon = ICON_MAP[stat.icon] || Box;
@@ -110,9 +107,9 @@ export function DashboardRegistry({
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <p className="opacity-60">{stat.label}</p>
-                                <h3 className="text-foreground">
+                            <div className="space-y-0.5">
+                                <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+                                <h3 className="text-xl lg:text-2xl font-bold text-foreground">
                                     {typeof stat.value === 'number' ? <NumberTicker value={stat.value} prefix={stat.prefix} /> : stat.value}
                                 </h3>
                             </div>
@@ -122,54 +119,52 @@ export function DashboardRegistry({
             </div>
 
             <Tabs defaultValue="overview" className="space-y-4">
-                <TabsList className="bg-muted/50 p-1 w-full flex flex-wrap sm:inline-flex justify-start sm:justify-center h-auto gap-1 rounded-xl border border-primary/5">
-                    <TabsTrigger value="overview" className="flex-1 sm:flex-none px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Recent</TabsTrigger>
-                    <TabsTrigger value="my-papers" className="flex-1 sm:flex-none px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Papers</TabsTrigger>
-                    <TabsTrigger value="infrastructure" className="flex-1 sm:flex-none px-4 py-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white transition-all shadow-none">Status</TabsTrigger>
+                <TabsList className="bg-muted/50 flex flex-wrap sm:inline-flex justify-start h-auto gap-1 rounded-xl border border-border/50 p-1">
+                    <TabsTrigger value="overview" className="px-6 py-2 rounded-lg data-[state=active]:bg-[#000066] data-[state=active]:text-white font-medium transition-all">Overview</TabsTrigger>
+                    <TabsTrigger value="my-papers" className="px-6 py-2 rounded-lg data-[state=active]:bg-[#000066] data-[state=active]:text-white font-medium transition-all">My Papers</TabsTrigger>
+                    <TabsTrigger value="infrastructure" className="px-6 py-2 rounded-lg data-[state=active]:bg-[#000066] data-[state=active]:text-white font-medium transition-all">Health</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-4">
-                            <Card className="border-primary/5 shadow-sm bg-card/50">
-                                <CardHeader className="flex flex-row items-center justify-between p-6 border-b border-border/50">
-                                    <div className="space-y-1">
-                                        <CardTitle className="flex items-center gap-2 text-primary">
-                                            {recentSubmissionsTitle}
-                                        </CardTitle>
-                                    </div>
-                                    <Button asChild variant="ghost" size="sm" className="h-9 group text-primary hover:bg-primary/5 cursor-pointer rounded-lg">
-                                        <Link href={`/${role}/submissions`} className="flex items-center gap-2 cursor-pointer">
-                                            View all <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            <Card className="border-border/50 shadow-sm bg-card">
+                                <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-border/50">
+                                    <CardTitle className="text-lg font-semibold text-[#000066]">
+                                        {recentSubmissionsTitle}
+                                    </CardTitle>
+                                    <Button asChild variant="ghost" size="sm" className="text-[#000066] hover:bg-[#000066]/5 rounded-lg">
+                                        <Link href={`/${role}/submissions`} className="flex items-center gap-1">
+                                            View all <ArrowRight className="w-4 h-4 ml-1" />
                                         </Link>
                                     </Button>
                                 </CardHeader>
                                 <CardContent className="p-0">
-                                    <div className="divide-y divide-primary/5">
+                                    <div className="divide-y divide-border/30">
                                         {recentSubmissions.length === 0 ? (
-                                            <div className="p-12 text-center text-xs font-medium text-muted-foreground/50">No submissions found.</div>
+                                            <div className="p-12 text-center text-xs text-muted-foreground/50">No submissions found.</div>
                                         ) : recentSubmissions.map((sub: any) => (
                                             <Link
                                                 href={`/${role}/submissions/${sub.id}`}
-                                                key={sub.paper_id}
-                                                className="flex items-center justify-between p-5 hover:bg-primary/2 transition-all group"
+                                                key={sub.id}
+                                                className="flex items-center justify-between p-4 hover:bg-muted/30 transition-all group"
                                             >
                                                 <div className="flex items-center gap-4 min-w-0">
-                                                    <div className="w-12 h-10 rounded-lg bg-muted flex flex-col items-center justify-center font-bold text-[10px] text-muted-foreground border border-border/50 shrink-0">
-                                                        <span>ID</span>
-                                                        <span className="text-primary font-bold">{sub.paper_id.split('-').pop()}</span>
+                                                    <div className="w-10 h-8 rounded bg-muted flex flex-col items-center justify-center text-[9px] font-bold text-muted-foreground border border-border/50 shrink-0">
+                                                        <span className="text-[#000066]">{sub.paper_id?.split('-').pop() || 'N/A'}</span>
                                                     </div>
-                                                    <div className="min-w-0 px-2">
-                                                        <h4 className="text-foreground truncate group-hover:text-primary transition-colors leading-tight mb-1">{sub.title || "Untitled Project"}</h4>
-                                                        <p className="opacity-60">
+                                                    <div className="min-w-0">
+                                                        <h4 className="text-sm font-medium text-foreground truncate group-hover:text-[#000066] transition-colors mb-0.5">{sub.title || "Untitled Project"}</h4>
+                                                        <p className="text-xs text-muted-foreground">
                                                             {sub.author_name} • {new Date(sub.submitted_at).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <Badge className={`border-none text-[10px] font-bold py-1 px-3 rounded-md ${sub.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' :
-                                                        sub.status === 'retracted' ? 'bg-rose-500/10 text-rose-600' :
-                                                            'bg-primary/10 text-primary'}`}>
-                                                    {sub.status.replace('_', ' ')}
+                                                <Badge className={`px-2 py-0.5 text-[10px] font-semibold rounded-md border-none ${
+                                                        sub.status === 'published' ? 'bg-emerald-50 text-emerald-600' :
+                                                        sub.status === 'retracted' ? 'bg-rose-50 text-rose-600' :
+                                                        'bg-[#000066]/5 text-[#000066]'}`}>
+                                                    {sub.status?.replace('_', ' ')}
                                                 </Badge>
                                             </Link>
                                         ))}
@@ -178,25 +173,25 @@ export function DashboardRegistry({
                             </Card>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Card className="p-6 border-primary/5 bg-card/50">
-                                    <h4 className="opacity-60 mb-4">Statistics</h4>
+                                <Card className="p-5 border-border/50 bg-card">
+                                    <h4 className="text-xs font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Activity Overview</h4>
                                     <div className="space-y-4">
                                         <div>
-                                            <div className="flex justify-between text-[10px] font-bold mb-1.5">
+                                            <div className="flex justify-between text-[10px] font-semibold mb-1.5 uppercase tracking-tighter">
                                                 <span>{metricsLabels.pubRate}</span>
                                                 <span>{percentages.pub.toFixed(1)}%</span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-primary/5 rounded-full overflow-hidden">
+                                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                                 <div className="h-full bg-emerald-500" style={{ width: `${percentages.pub}%` }} />
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-[10px] font-bold mb-1.5">
+                                            <div className="flex justify-between text-[10px] font-semibold mb-1.5 uppercase tracking-tighter">
                                                 <span>{metricsLabels.revRate}</span>
                                                 <span>{percentages.rev.toFixed(1)}%</span>
                                             </div>
-                                            <div className="h-1.5 w-full bg-primary/5 rounded-full overflow-hidden">
-                                                <div className="h-full bg-blue-500" style={{ width: `${percentages.rev}%` }} />
+                                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                                <div className="h-full bg-[#000066]" style={{ width: `${percentages.rev}%` }} />
                                             </div>
                                         </div>
                                     </div>
@@ -209,26 +204,24 @@ export function DashboardRegistry({
 
                         <div className="space-y-4">
                             {role === 'admin' && pendingApplications.length > 0 && (
-                                <Card className="border-primary/5 shadow-sm bg-card/50">
-                                    <CardHeader className="pb-3 border-b border-primary/5 bg-primary/2">
-                                        <CardTitle className="text-foreground flex items-center gap-2">
-                                            <ClipboardList className="w-4 h-4 text-primary" /> Applications
+                                <Card className="border-border/50 bg-card">
+                                    <CardHeader className="p-4 border-b border-border/50 bg-muted/20">
+                                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                            <ClipboardList className="w-4 h-4 text-[#000066]" /> Pending Applications
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-0">
-                                        <div className="divide-y divide-primary/5">
+                                        <div className="divide-y divide-border/30">
                                             {pendingApplications.map((app: any) => (
-                                                <div key={app.id} className="p-5 space-y-3">
+                                                <div key={app.id} className="p-4 space-y-2">
                                                     <div className="flex items-center justify-between">
-                                                        <Badge variant="outline" className="opacity-60 px-2 h-5 rounded-md border-primary/10 text-primary/60">{app.applicationType || app.type}</Badge>
-                                                        <span className="opacity-60">{new Date(app.createdAt).toLocaleDateString()}</span>
+                                                        <Badge variant="outline" className="text-[10px] font-medium h-5 rounded px-2">{app.applicationType || app.type}</Badge>
+                                                        <span className="text-[10px] text-muted-foreground">{new Date(app.createdAt).toLocaleDateString()}</span>
                                                     </div>
-                                                    <h5 className="text-foreground">{app.fullName}</h5>
-                                                    {role === 'admin' && (
-                                                        <Button asChild size="sm" variant="ghost" className="w-full h-9 border border-primary/5 rounded-lg hover:bg-primary/5 cursor-pointer">
-                                                            <Link href="/admin/applications" className="cursor-pointer">Process</Link>
-                                                        </Button>
-                                                    )}
+                                                    <h5 className="text-sm font-medium">{app.fullName}</h5>
+                                                    <Button asChild size="sm" variant="outline" className="w-full h-8 text-xs rounded-lg hover:bg-muted">
+                                                        <Link href="/admin/reviewer-applications">Review</Link>
+                                                    </Button>
                                                 </div>
                                             ))}
                                         </div>
@@ -237,30 +230,29 @@ export function DashboardRegistry({
                             )}
 
                             {role === 'editor' && (
-                                <Card className="border-primary/5 shadow-sm bg-card/50 h-full">
-                                    <CardHeader className="p-6 border-b border-primary/5 bg-primary/2">
-                                        <CardTitle className="text-foreground flex items-center gap-2">
-                                            <ClipboardList className="w-4 h-4 text-primary" /> Tasks
+                                <Card className="border-border/50 bg-card h-full">
+                                    <CardHeader className="p-4 border-b border-border/50 bg-muted/20">
+                                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                            <ClipboardList className="w-4 h-4 text-[#000066]" /> Active Tasks
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="p-8 mt-4 space-y-4">
+                                    <CardContent className="p-6 space-y-4">
                                         {[
-                                            { icon: <FileStack />, label: 'Manuscript Screening' },
-                                            { icon: <ShieldCheck />, label: 'Peer Review Oversight' },
-                                            { icon: <AlertCircle />, label: 'Workflow Deadlines' }
+                                            { icon: <FileStack className="w-4 h-4" />, label: 'Manuscript Screening' },
+                                            { icon: <ShieldCheck className="w-4 h-4" />, label: 'Peer Review Oversight' },
+                                            { icon: <AlertCircle className="w-4 h-4" />, label: 'Workflow Deadlines' }
                                         ].map((task, i) => (
-                                            <div key={i} className="flex items-center gap-3 group">
-                                                <div className="w-5 h-5 opacity-40 group-hover:text-primary transition-colors shrink-0">
+                                            <div key={i} className="flex items-center gap-3 text-sm text-muted-foreground group">
+                                                <div className="group-hover:text-[#000066] transition-colors">
                                                     {task.icon}
                                                 </div>
-                                                <span className="opacity-60">{task.label}</span>
+                                                <span>{task.label}</span>
                                             </div>
                                         ))}
-                                        <div className="mt-8 pt-8 border-t border-primary/5 text-center">
-                                            <p className="opacity-60 mb-6 px-4 leading-relaxed">System monitoring active.</p>
-                                            <Button asChild className="w-full h-10 bg-primary text-white rounded-lg shadow-sm hover:bg-primary/90 transition-all cursor-pointer">
-                                                <Link href="/editor/submissions" className="flex items-center gap-2 justify-center cursor-pointer">
-                                                    View Queue <ArrowRight className="w-4 h-4" />
+                                        <div className="pt-6 border-t border-border/50 text-center">
+                                            <Button asChild className="w-full h-10 bg-[#000066] text-white rounded-lg shadow-sm hover:bg-[#000066]/90 transition-all">
+                                                <Link href="/editor/submissions" className="flex items-center gap-2 justify-center">
+                                                    Open Queue <ArrowRight className="w-4 h-4" />
                                                 </Link>
                                             </Button>
                                         </div>
@@ -273,44 +265,45 @@ export function DashboardRegistry({
 
                 <TabsContent value="my-papers" className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {mySubmissions.length === 0 ? (
-                            <Card className="md:col-span-2 lg:col-span-3 border-dashed border-2 bg-primary/2 py-16 text-center rounded-xl border-primary/10">
+                         {mySubmissions.length === 0 ? (
+                            <Card className="md:col-span-2 lg:col-span-3 border-dashed border bg-muted/20 py-12 text-center rounded-xl border-border">
                                 <div className="max-w-xs mx-auto space-y-4">
-                                    <div className="w-16 h-16 rounded-xl bg-card border border-primary/5 flex items-center justify-center mx-auto shadow-sm">
-                                        <FileText className="w-8 h-8 opacity-20" />
+                                    <div className="w-12 h-12 rounded-xl bg-card border border-border flex items-center justify-center mx-auto">
+                                        <FileText className="w-6 h-6 text-muted-foreground/30" />
                                     </div>
-                                    <p className="opacity-60 px-8">Submit and track your own manuscripts from the portal.</p>
-                                    <Button asChild className="h-10 px-8 bg-primary text-white rounded-lg cursor-pointer">
-                                        <Link className="cursor-pointer" href="/submit">Submit Paper</Link>
+                                    <p className="text-sm text-muted-foreground px-8">Submit and track your own manuscripts from the portal.</p>
+                                    <Button asChild className="h-9 px-6 bg-[#000066] text-white rounded-lg">
+                                        <Link href="/submit">Submit Paper</Link>
                                     </Button>
                                 </div>
                             </Card>
                         ) : mySubmissions.map((paper: any) => (
-                            <Card key={paper.id} className="border-primary/5 shadow-sm bg-card/50 hover:bg-card hover:border-primary/20 transition-all group overflow-hidden rounded-xl">
-                                <div className="p-6 space-y-4">
+                            <Card key={paper.id} className="border-border/50 shadow-sm bg-card hover:border-[#000066]/20 transition-all group overflow-hidden rounded-xl">
+                                <div className="p-5 space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <Badge variant="outline" className="opacity-40 px-2 py-0.5 rounded-md">ID: {paper.paper_id}</Badge>
-                                        <Badge className={`py-1 px-3 border-none rounded-md ${paper.status === 'published' ? 'bg-emerald-500/10 text-emerald-600' :
-                                            paper.status === 'rejected' ? 'bg-rose-500/10 text-rose-600' :
-                                                'bg-indigo-500/10 text-indigo-600'
+                                        <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5 rounded">ID: {paper.paper_id}</Badge>
+                                        <Badge className={`text-[10px] font-semibold py-0.5 px-2.5 border-none rounded ${
+                                                paper.status === 'published' ? 'bg-emerald-50 text-emerald-600' :
+                                                paper.status === 'rejected' ? 'bg-rose-50 text-rose-600' :
+                                                'bg-[#000066]/5 text-[#000066]'
                                             }`}>
                                             {paper.status}
                                         </Badge>
                                     </div>
-                                    <h3 className="text-foreground line-clamp-2 h-12 group-hover:text-primary transition-colors leading-tight">{paper.title}</h3>
-                                    <div className="flex items-center justify-between pt-4 border-t border-primary/5">
-                                        <span className="opacity-60 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
-                                        <Button asChild variant="ghost" size="sm" className="h-9 px-4 text-primary hover:bg-primary/5 rounded-lg cursor-pointer">
-                                            <Link href={`/track?id=${paper.paper_id}`} className="flex items-center gap-2 cursor-pointer">
-                                                Track <ExternalLink className="w-3.5 h-3.5" />
+                                    <h3 className="text-sm font-semibold text-foreground line-clamp-2 h-10 group-hover:text-[#000066] transition-colors leading-tight">{paper.title}</h3>
+                                    <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1.5"><Clock className="w-3 h-3" /> {new Date(paper.submitted_at).toLocaleDateString()}</span>
+                                        <Button asChild variant="ghost" size="sm" className="h-8 px-3 text-xs text-[#000066] hover:bg-[#000066]/5 rounded-lg">
+                                            <Link href={`/track?id=${paper.paper_id}`} className="flex items-center gap-1.5">
+                                                Track <ExternalLink className="w-3 h-3" />
                                             </Link>
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="h-1 bg-primary/5 overflow-hidden">
+                                <div className="h-1 bg-muted overflow-hidden">
                                     <div
-                                        className={`h-full transition-all duration-700 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-primary'}`}
-                                        style={{ width: paper.status === 'published' ? '100%' : '15%' }}
+                                        className={`h-full transition-all duration-700 ${paper.status === 'published' ? 'bg-emerald-500' : 'bg-[#000066]'}`}
+                                        style={{ width: paper.status === 'published' ? '100%' : '20%' }}
                                     />
                                 </div>
                             </Card>
@@ -320,36 +313,37 @@ export function DashboardRegistry({
 
                 <TabsContent value="infrastructure" className="space-y-4">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <Card className="lg:col-span-2 border-primary/5 shadow-sm bg-card/50 overflow-hidden rounded-xl">
-                            <CardHeader className="p-6 border-b border-primary/5 flex flex-row items-center justify-between bg-primary/2">
-                                <CardTitle className="flex items-center gap-2 text-foreground">
-                                    <Users className="w-4 h-4 text-primary" /> Active Users
+                        <Card className="lg:col-span-2 border-border/50 bg-card overflow-hidden rounded-xl">
+                            <CardHeader className="p-4 border-b border-border/50 flex flex-row items-center justify-between bg-muted/20">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                                    <Users className="w-4 h-4 text-[#000066]" /> Active Users
                                 </CardTitle>
                                 {role === 'admin' && (
-                                    <Button size="sm" asChild className="h-9 px-4 bg-primary text-white hover:bg-primary/90 rounded-lg cursor-pointer">
-                                        <Link className="cursor-pointer" href="/admin/users">Manage Users</Link>
+                                    <Button size="sm" asChild className="h-8 px-4 bg-[#000066] text-white rounded-lg">
+                                        <Link href="/admin/users">Manage</Link>
                                     </Button>
                                 )}
                             </CardHeader>
                             <CardContent className="p-0">
                                 {allStaff.length === 0 ? (
-                                    <div className="p-16 text-center text-xs font-medium text-muted-foreground/40">No users found.</div>
+                                    <div className="p-12 text-center text-xs text-muted-foreground/40">No users found.</div>
                                 ) : (
-                                    <div className="divide-y divide-primary/5">
+                                    <div className="divide-y divide-border/30">
                                         {allStaff.map((staff: any) => (
-                                            <div key={staff.id} className="p-4 flex items-center justify-between hover:bg-primary/2 transition-all">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-bold text-sm border border-primary/5 shadow-inner">
-                                                        {staff.full_name?.charAt(0) || staff.email.charAt(0)}
+                                            <div key={staff.id} className="p-3 px-4 flex items-center justify-between hover:bg-muted/30 transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-[#000066]/5 text-[#000066] flex items-center justify-center font-bold text-xs border border-[#000066]/5">
+                                                        {staff.full_name?.charAt(0) || staff.email?.charAt(0) || 'U'}
                                                     </div>
                                                     <div>
-                                                        <h5 className="text-foreground leading-none mb-1">{staff.full_name || 'User'}</h5>
-                                                        <p className="opacity-60">{staff.email}</p>
+                                                        <h5 className="text-sm font-medium text-foreground leading-none mb-1">{staff.full_name || 'User'}</h5>
+                                                        <p className="text-[10px] text-muted-foreground">{staff.email}</p>
                                                     </div>
                                                 </div>
-                                                <Badge variant="outline" className={`h-7 border-none px-3 rounded-md ${staff.role === 'admin' ? 'bg-rose-500/10 text-rose-600' :
-                                                        staff.role === 'editor' ? 'bg-blue-500/10 text-blue-600' :
-                                                            'bg-emerald-500/10 text-emerald-600'
+                                                <Badge variant="outline" className={`text-[9px] font-semibold h-5 border-none px-2 rounded ${
+                                                        staff.role === 'admin' ? 'bg-rose-50 text-rose-600' :
+                                                        staff.role === 'editor' ? 'bg-[#000066]/5 text-[#000066]' :
+                                                        'bg-emerald-50 text-emerald-600'
                                                     }`}>
                                                     {staff.role}
                                                 </Badge>
@@ -360,26 +354,24 @@ export function DashboardRegistry({
                             </CardContent>
                         </Card>
 
-                        <Card className="border-primary/5 shadow-sm bg-card/50 transition-colors rounded-xl">
-                            <CardHeader className="p-4 pb-2 border-b border-primary/5">
-                                <CardTitle className="text-lg font-bold">Status</CardTitle>
+                        <Card className="border-border/50 bg-card rounded-xl">
+                            <CardHeader className="p-4 border-b border-border/50 bg-muted/20">
+                                <CardTitle className="text-sm font-semibold">System Health</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-6 space-y-3">
+                            <CardContent className="p-4 space-y-2">
                                 {healthMetrics.map((metric) => (
-                                    <div key={metric.label} className="p-4 rounded-xl bg-primary/2 border border-primary/5 space-y-1 hover:bg-primary/5 transition-all group">
-                                        <div className="flex justify-between items-center opacity-60">
+                                    <div key={metric.label} className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-0.5 hover:bg-muted/30 transition-all">
+                                        <div className="flex justify-between items-center text-[10px] font-semibold text-muted-foreground">
                                             <span className="flex items-center gap-1.5">
-                                                <div className="[&>svg]:w-3.5 [&>svg]:h-3.5 group-hover:text-primary transition-colors">
-                                                    {(() => {
-                                                        const Icon = ICON_MAP[metric.icon as string] || Box;
-                                                        return <Icon />;
-                                                    })()}
-                                                </div>
+                                                {(() => {
+                                                    const Icon = ICON_MAP[metric.icon as string] || Box;
+                                                    return <Icon className="w-3 h-3" />;
+                                                })()}
                                                 {metric.label}
                                             </span>
                                             <span className={metric.status === 'Optimal' || metric.status === 'Healthy' || metric.status === 'Excellent' ? 'text-emerald-500' : 'text-amber-500'}>{metric.status}</span>
                                         </div>
-                                        <p className="text-foreground">{metric.value}</p>
+                                        <p className="text-sm font-medium text-foreground">{metric.value}</p>
                                     </div>
                                 ))}
                             </CardContent>

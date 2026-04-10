@@ -4,6 +4,7 @@ import { Search, Database, ChevronRight, Globe, Layers, BarChart3, Binary } from
 import RoadmapSection from '@/features/indexing/components/RoadmapSection';
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
 import { Button } from "@/components/ui/button";
+import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 interface IndexingClientProps {
     settings: Record<string, string>;
@@ -25,42 +26,42 @@ export default function IndexingClient({ settings }: IndexingClientProps) {
                 {/* Main Content Area */}
                 <div className="lg:col-span-2 space-y-20">
                     {/* Vision Statement */}
-                    <section className="bg-primary p-10 sm:p-14 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                        <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-                            <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shrink-0">
-                                <Search className="w-10 h-10 text-secondary" />
+                    {/* Vision Statement */}
+                    <Card className="bg-[#000066] p-8 sm:p-12 rounded-2xl text-white relative overflow-hidden">
+                        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                            <div className="w-16 h-16 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 shrink-0">
+                                <Search className="w-8 h-8 text-primary-foreground/50" />
                             </div>
-                            <div className="space-y-4">
-                                <h2 className="font-black uppercase tracking-widest text-white m-0">Global Visibility</h2>
-                                <p className="text-white/60 font-medium leading-relaxed border-l-2 border-secondary/50 pl-6 m-0">
+                            <div className="space-y-3">
+                                <h2 className="text-xl font-semibold text-white">Global Visibility</h2>
+                                <p className="text-sm text-white/70 border-l-2 border-white/10 pl-6 m-0 leading-relaxed">
                                     "Our strategic mandate is to ensure that every validated innovation published in {journalShortName} reaches the global scientific community through premier indexing hubs."
                                 </p>
                             </div>
                         </div>
-                    </section>
+                    </Card>
 
                     {/* Integrated Roadmap */}
                     <RoadmapSection />
 
                     {/* Technical Standards */}
-                    <section className="space-y-12">
-                        <h2 className="font-black text-primary tracking-wider flex items-baseline gap-4 m-0 uppercase">
-                            <span className="text-secondary text-xs sm:text-sm lg:text-lg font-serif tracking-widest">02.</span>
+                    <section className="space-y-8">
+                        <h2 className="text-xl font-semibold text-primary flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground font-mono">01.</span>
                             Technical Protocols
                         </h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {techSpecs.map((spec, idx) => (
-                                <div key={idx} className="p-8 bg-white border border-primary/5 rounded-4xl shadow-sm hover:shadow-xl transition-all duration-500 border-l-[6px] border-l-primary/10 hover:border-l-secondary">
-                                    <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary mb-6 transition-colors">
-                                        <spec.icon className="w-6 h-6" />
+                                <Card key={idx} className="p-6 border-border/50 bg-card rounded-xl hover:border-primary/20 transition-all">
+                                    <div className="w-10 h-10 bg-primary/5 rounded-lg flex items-center justify-center text-primary mb-4">
+                                        <spec.icon className="w-5 h-5" />
                                     </div>
-                                    <h3 className=" font-black text-primary tracking-wider mb-2 ">{spec.title}</h3>
-                                    <p className="text-sm text-primary/60 font-medium leading-relaxed">
+                                    <h3 className="text-sm font-semibold text-primary mb-2">{spec.title}</h3>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
                                         {spec.desc}
                                     </p>
-                                </div>
+                                </Card>
                             ))}
                         </div>
                     </section>
@@ -74,32 +75,33 @@ export default function IndexingClient({ settings }: IndexingClientProps) {
                         </div>
                     </div>
 
-                    <section className="space-y-6">
-                        <h3 className=" font-black tracking-widest text-primary/40 pl-4 border-l border-primary/10 uppercase">Strategic Integration</h3>
-                        <div className="p-8 bg-white border border-primary/5 rounded-[2.5rem] shadow-sm border-l-[6px] border-l-primary/10 hover:border-l-secondary transition-all group">
-                            <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center mb-6 text-primary group-hover:bg-secondary group-hover:text-white transition-colors">
-                                <Database className="w-6 h-6" />
+                    <section className="space-y-4">
+                         <div className="flex items-center gap-2 pl-3 border-l-2 border-primary">
+                             <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase m-0">Strategic Integration</p>
+                        </div>
+                        <Card className="p-6 border-border/50 bg-card rounded-xl hover:border-primary/20 transition-all">
+                            <div className="w-10 h-10 bg-primary/5 rounded-lg flex items-center justify-center mb-4 text-primary">
+                                <Database className="w-5 h-5" />
                             </div>
-                             <h3 className="font-black text-primary tracking-wider mb-4 uppercase">Inaugural 2026</h3>
-                            <p className="text-sm text-primary/60 leading-relaxed font-medium mb-8">
+                             <h3 className="text-sm font-semibold text-primary mb-2">Inaugural 2026</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed mb-6">
                                 Submissions for our 2026 volume are now open. All accepted papers receive priority metadata assignment and SJIF evaluation.
                             </p>
-                            <Button asChild className="w-full h-12 bg-primary hover:bg-primary/95 text-white font-black text-xs tracking-widest rounded-xl transition-all shadow-lg shadow-primary/20 uppercase">
+                            <Button asChild className="w-full h-10 bg-[#000066] hover:bg-[#000088] text-white font-bold text-[10px] tracking-wider rounded-lg transition-all shadow-sm uppercase">
                                 <Link href="/submit">Submit Paper</Link>
                             </Button>
-                        </div>
+                        </Card>
                     </section>
 
-                    <section className="p-8 bg-slate-900 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-[50px] pointer-events-none" />
-                        <div className="relative z-10 space-y-6">
-                            <h3 className=" font-black tracking-wider text-white ">Policy Matrix</h3>
-                            <p className="text-white/50 text-xs font-medium leading-relaxed">Our indexing adheres strictly to the Committee on Publication Ethics (COPE) benchmarks.</p>
-                            <Link href="/ethics" className="inline-flex items-center gap-2 text-xs font-black tracking-widest text-secondary hover:text-white transition-colors uppercase">
-                                View Ethics Guide <ChevronRight className="w-4 h-4" />
+                    <Card className="p-6 bg-[#000066] rounded-xl text-white relative overflow-hidden">
+                        <div className="relative z-10 space-y-4">
+                            <h3 className="text-sm font-semibold text-white">Policy Matrix</h3>
+                            <p className="text-white/60 text-xs leading-relaxed">Our indexing adheres strictly to the Committee on Publication Ethics (COPE) benchmarks.</p>
+                            <Link href="/ethics" className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-white hover:underline transition-all uppercase">
+                                View Ethics Guide <ChevronRight className="w-3.5 h-3.5" />
                             </Link>
                         </div>
-                    </section>
+                    </Card>
                 </aside>
             </div>
         </section>

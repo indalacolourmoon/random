@@ -49,18 +49,18 @@ function FileInput({
 
     return (
         <div className="space-y-2">
-            <Label className="opacity-70 pl-1">
-                {label} <span className="text-secondary">*</span>
+            <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider pl-1">
+                {label} <span className="text-destructive">*</span>
             </Label>
             <div
                 onClick={() => inputRef.current?.click()}
                 className={`
                     relative group cursor-pointer overflow-hidden
-                    border-2 border-dashed rounded-xl p-4
-                    transition-all duration-300
+                    border-2 border-dashed rounded-xl p-6
+                    transition-all duration-200
                     ${value
-                        ? 'border-emerald-200 bg-emerald-50/20'
-                        : 'border-primary/10 bg-primary/5 hover:border-primary/20 hover:bg-primary/10'
+                        ? 'border-[#000066]/50 bg-[#000066]/5'
+                        : 'border-border/50 bg-card hover:border-[#000066]/30 hover:bg-[#000066]/5'
                     }
                 `}
             >
@@ -76,17 +76,17 @@ function FileInput({
 
                 <div className="flex flex-col items-center gap-4 relative z-10 text-center">
                     <div className={`
-                        w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm border border-slate-100
-                        ${value ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-white text-primary/40 group-hover:rotate-12 group-hover:text-primary group-hover:border-primary/20'}
+                        w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-sm border
+                        ${value ? 'bg-[#000066] text-white border-[#000066]' : 'bg-muted/20 text-[#000066]/40 border-border/50'}
                     `}>
-                        {value ? <CheckCircle2 className="w-8 h-8" /> : <Icon className="w-8 h-8" />}
+                        {value ? <CheckCircle2 className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
                     </div>
 
                     <div className="space-y-1">
-                        <p className={`truncate max-w-[200px] ${value ? 'text-emerald-700' : 'text-primary/80'}`}>
+                        <p className={`text-xs font-semibold truncate max-w-[200px] ${value ? 'text-[#000066]' : 'text-foreground'}`}>
                             {value ? value.name : `Select ${label}`}
                         </p>
-                        <p className={`opacity-40 ${value ? 'text-emerald-600/60' : 'text-primary/40'}`}>
+                        <p className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground/60">
                             {value ? "File selected" : accept.replace(/\./g, ' ')}
                         </p>
                     </div>
@@ -220,71 +220,60 @@ export default function ReviewerApplicationForm() {
 
     if (reviewerMutation.isSuccess) {
         return (
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-8 bg-primary/5 border border-primary/10 rounded-[2.5rem] shadow-sm transition-all border-l-[6px] border-l-primary/10 hover:border-l-secondary group relative"
-            >
-                <div className="absolute top-0 right-0 p-12 text-primary/5 pointer-events-none">
-                    <CheckCircle2 className="w-64 h-64" />
+            <div className="bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden p-8 text-center space-y-6">
+                <div className="w-16 h-16 bg-[#000066]/5 text-[#000066] rounded-xl flex items-center justify-center border border-[#000066]/10 mx-auto">
+                    <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <div className="relative z-10">
-                    <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
-                        <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-                    </div>
-                    <header className="mb-6 text-center">
-                        <Badge className="bg-primary/5 text-primary border-none mb-3 opacity-60 px-3 py-0.5">Submitted</Badge>
-                        <h2 className="text-primary mb-2">Confirmed</h2>
-                        <p className="opacity-60 max-w-sm mx-auto">
-                            Your application was received.
-                        </p>
-                    </header>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
-                        <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
-                            <p className="opacity-40 mb-1">Applicant</p>
-                            <p className="text-primary truncate">{formData.fullName}</p>
-                            <p className="opacity-60">{formData.email}</p>
-                        </div>
-                        <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
-                            <p className="opacity-40 mb-1">Reference</p>
-                            <p className="text-primary">#{Math.random().toString(36).substr(2, 9)}</p>
-                            <Badge variant="outline" className="mt-1.5 opacity-60 border-primary/20">Pending review</Badge>
-                        </div>
-                    </div>
-
-                    <Button onClick={() => window.location.reload()} variant="outline" className="h-12 px-8 rounded-xl border-primary text-primary hover:bg-primary hover:text-white transition-all"> Return to Portal </Button>
+                <div className="space-y-2 text-center">
+                    <h2 className="text-xl font-semibold text-gray-900">Application Received</h2>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                        Thank you for your interest. Our editorial team will review your credentials and contact you soon.
+                    </p>
                 </div>
-            </motion.div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                    <div className="p-4 bg-muted/20 rounded-lg border border-border/50 text-left">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Applicant</p>
+                        <p className="text-xs font-semibold text-[#000066] truncate">{formData.fullName}</p>
+                    </div>
+                    <div className="p-4 bg-muted/20 rounded-lg border border-border/50 text-left">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Status</p>
+                        <p className="text-xs font-semibold text-[#000066]">Under Review</p>
+                    </div>
+                </div>
+
+                <Button onClick={() => window.location.reload()} variant="outline" className="h-10 px-6 rounded-lg border-border/50 text-[#000066] hover:bg-[#000066]/5 font-semibold text-xs transition-all">
+                    Return
+                </Button>
+            </div>
         );
     }
 
     return (
-        <div className="p-8 bg-primary/5 border border-primary/10 rounded-3xl shadow-sm transition-all border-l-[6px] border-l-primary/10 flex flex-col min-h-[600px]">
-            {/* Dossier Stepper Header */}
-            <div className="bg-primary p-6 sm:p-10 text-white relative rounded-2xl">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] pointer-events-none" />
-                
-                    <h2 className="mb-6 text-white text-center">Reviewer Application</h2>
+        <div className="bg-card border border-border/50 rounded-xl shadow-sm transition-all flex flex-col min-h-[550px] overflow-hidden">
+            {/* Header Stepper */}
+            <div className="bg-[#000066] p-6 text-white relative">
+                <div className="flex flex-col items-center">
+                    <h2 className="text-lg font-semibold text-white mb-6">Reviewer Application</h2>
                     
-                    {/* Stepper */}
-                    <div className="w-full max-w-md flex items-center justify-between relative px-2">
-                        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/20 -translate-y-1/2 z-0" />
+                    <div className="w-full max-w-xs flex items-center justify-between relative px-2">
+                        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/10 -translate-y-1/2 z-0" />
                         {[1, 2, 3].map((s) => (
-                            <div key={s} className="relative z-10 flex flex-col items-center gap-2">
+                            <div key={s} className="relative z-10 flex flex-col items-center gap-1.5">
                                 <div className={`
-                                    w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300
-                                    ${step >= s ? 'bg-secondary border-secondary text-white shadow-lg' : 'bg-primary border-white/20 text-white/40'}
+                                    w-7 h-7 rounded-lg flex items-center justify-center border text-[11px] font-bold transition-all
+                                    ${step >= s ? 'bg-white text-[#000066] border-white' : 'bg-[#000066] border-white/20 text-white/40'}
                                 `}>
-                                    {step > s ? <CheckCircle2 className="w-4 h-4" /> : s}
+                                    {step > s ? <CheckCircle2 className="w-3.5 h-3.5" /> : s}
                                 </div>
-                                <span className={`${step >= s ? 'text-white' : 'text-white/30'}`}>
-                                    {s === 1 ? 'Info' : s === 2 ? 'Research' : 'Upload'}
+                                <span className={`text-[9px] font-bold uppercase tracking-wider ${step >= s ? 'text-white' : 'text-white/30'}`}>
+                                    {s === 1 ? 'Info' : s === 2 ? 'Research' : 'Files'}
                                 </span>
                             </div>
                         ))}
                     </div>
                 </div>
+            </div>
 
             <div className="flex-1 p-6 sm:p-10 flex flex-col justify-between overflow-hidden">
                 <div className="relative flex-1 px-1">
@@ -302,49 +291,50 @@ export default function ReviewerApplicationForm() {
                             {step === 1 && (
                                 <div className="space-y-6">
                                     <header className="space-y-1">
-                                        <Badge className="bg-primary/5 text-primary border-none px-2.5">Step 1</Badge>
-                                        <h3 className="text-primary">Info</h3>
-                                        <p className="opacity-60">Add your info.</p>
+                                        <div className="flex items-center gap-2">
+                                            <Badge className="bg-[#000066]/5 text-[#000066] border-[#000066]/10 text-[10px] font-bold uppercase py-0 px-2 rounded-md">Phase 01</Badge>
+                                            <h3 className="text-base font-semibold text-gray-900">Personal Information</h3>
+                                        </div>
                                     </header>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:gap-8">
-                                        <div className="space-y-3">
-                                            <Label className="opacity-80 pl-1">Full Name <span className="text-secondary">*</span></Label>
+                                    <div className="grid grid-cols-1 gap-5">
+                                        <div className="space-y-2">
+                                            <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider pl-1 font-bold">Full Name <span className="text-destructive">*</span></Label>
                                             <Input
                                                 value={formData.fullName}
                                                 onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                                                 required
-                                                className="h-10 bg-primary/5 border-primary/10 rounded-lg text-primary shadow-sm px-4"
+                                                className="h-11 bg-muted/20 border-border/50 rounded-lg text-foreground px-4 text-xs xl:text-sm"
                                                 placeholder="e.g. Dr. Alexander Vance"
                                             />
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <Label className="opacity-80 pl-1">Designation <span className="text-secondary">*</span></Label>
+                                        <div className="space-y-2">
+                                            <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider pl-1 font-bold">Designation <span className="text-destructive">*</span></Label>
                                             <Input
                                                 value={formData.designation}
                                                 onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
                                                 required
-                                                className="h-10 bg-primary/5 border-primary/10 rounded-lg text-primary shadow-sm px-4"
+                                                className="h-11 bg-muted/20 border-border/50 rounded-lg text-foreground px-4 text-xs xl:text-sm"
                                                 placeholder="e.g. Associate Professor"
                                             />
                                         </div>
 
-                                        <div className="space-y-3">
+                                        <div className="space-y-2">
                                             <div className="flex items-center justify-between px-1">
-                                                <Label className="opacity-80">Email Address <span className="text-secondary">*</span></Label>
-                                                {emailStatus.loading && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
+                                                <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider font-bold">Email Address <span className="text-destructive">*</span></Label>
+                                                {emailStatus.loading && <Loader2 className="w-3 h-3 animate-spin text-[#000066]" />}
                                             </div>
                                             <div className="relative">
                                                 <Input
                                                     type="email"
                                                     value={formData.email}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                                    className={`h-10 rounded-lg shadow-sm px-4 bg-primary/5 ${emailStatus.exists ? 'border-secondary/50 bg-secondary/5' : 'border-primary/10'}`}
+                                                    className={`h-11 rounded-lg px-4 bg-muted/20 text-xs xl:text-sm ${emailStatus.exists ? 'border-destructive/50 bg-destructive/5' : 'border-border/50'}`}
                                                     placeholder="vance@university.edu"
                                                 />
                                                 {emailStatus.exists && (
-                                                    <p className="absolute -bottom-5 left-1 text-secondary opacity-60">
+                                                    <p className="text-[10px] font-bold text-destructive uppercase px-1 mt-1">
                                                         Email already registered.
                                                     </p>
                                                 )}
@@ -357,35 +347,36 @@ export default function ReviewerApplicationForm() {
                             {step === 2 && (
                                 <div className="space-y-6">
                                     <header className="space-y-1">
-                                        <Badge className="bg-primary/5 text-primary border-none px-2.5">Step 2</Badge>
-                                        <h3 className="text-primary">Research</h3>
-                                        <p className="opacity-60">Add research info.</p>
+                                         <div className="flex items-center gap-2">
+                                            <Badge className="bg-[#000066]/5 text-[#000066] border-[#000066]/10 text-[10px] font-bold uppercase py-0 px-2 rounded-md">Phase 02</Badge>
+                                            <h3 className="text-base font-semibold text-gray-900">Academic Context</h3>
+                                        </div>
                                     </header>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:gap-8">
-                                        <div className="space-y-3">
-                                            <Label className="opacity-80 pl-1">Institution <span className="text-secondary">*</span></Label>
+                                    <div className="grid grid-cols-1 gap-5">
+                                        <div className="space-y-2">
+                                            <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider pl-1 font-bold">Institution <span className="text-destructive">*</span></Label>
                                             <div className="relative group">
-                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20 group-focus-within:text-secondary transition-colors" />
+                                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 group-focus-within:text-[#000066] transition-colors" />
                                                 <Input
                                                     value={formData.institute}
                                                     onChange={(e) => setFormData(prev => ({ ...prev, institute: e.target.value }))}
                                                     required
-                                                    className="h-10 bg-primary/5 border-primary/10 pl-11 pr-4 rounded-lg text-primary shadow-sm"
+                                                    className="h-11 bg-muted/20 border-border/50 pl-11 pr-4 rounded-lg text-foreground text-xs xl:text-sm"
                                                     placeholder="University Name"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <Label className="opacity-80 pl-1">Nationality <span className="text-secondary">*</span></Label>
+                                        <div className="space-y-2">
+                                            <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider pl-1 font-bold">Nationality <span className="text-destructive">*</span></Label>
                                             <Select value={formData.nationality} onValueChange={(val) => setFormData(prev => ({ ...prev, nationality: val }))}>
-                                                <SelectTrigger className="h-10 bg-primary/5 border-primary/10 rounded-lg text-primary shadow-sm px-4">
+                                                <SelectTrigger className="h-11 bg-muted/20 border-border/50 rounded-lg text-foreground px-4 text-xs xl:text-sm">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent className="max-h-80 rounded-xl">
                                                     {countries.map(c => (
-                                                        <SelectItem key={c.code} value={c.name} className="py-2.5 rounded-lg">
+                                                        <SelectItem key={c.code} value={c.name} className="py-2.5 rounded-lg text-xs">
                                                             <div className="flex items-center gap-3">
                                                                 <Image 
                                                                     src={getFlagUrl(c.name)} 
@@ -394,7 +385,7 @@ export default function ReviewerApplicationForm() {
                                                                     height={12} 
                                                                     className="object-cover rounded shadow-sm shrink-0" 
                                                                 />
-                                                                <span className="text-primary">{c.name}</span>
+                                                                <span className="text-foreground">{c.name}</span>
                                                             </div>
                                                         </SelectItem>
                                                     ))}
@@ -403,20 +394,19 @@ export default function ReviewerApplicationForm() {
                                         </div>
 
                                         <div className="space-y-4">
-                                            <Label className="opacity-80 pl-1">Research Interests <span className="text-secondary">*</span></Label>
+                                            <Label className="text-[#000066] text-[11px] font-bold uppercase tracking-wider pl-1 font-bold">Research Interests <span className="text-destructive">*</span></Label>
                                             
-                                            {/* Tag Selector Grid */}
-                                            <div className="flex flex-wrap gap-2 mb-4">
+                                            <div className="flex flex-wrap gap-1.5 mb-3">
                                                 {PREDEFINED_INTERESTS.map(tag => (
                                                     <Badge
                                                         key={tag}
                                                         onClick={() => toggleInterest(tag)}
                                                         variant="outline"
                                                         className={`
-                                                            cursor-pointer py-1.5 px-3 rounded-lg transition-all
+                                                            cursor-pointer py-1.5 px-3 rounded-lg transition-all text-[10px] font-bold uppercase tracking-tight
                                                             ${formData.researchInterests.includes(tag) 
-                                                                ? 'bg-primary text-white border-primary shadow-md' 
-                                                                : 'bg-primary/5 text-primary/50 border-primary/10 hover:border-primary/20 hover:text-primary'}
+                                                                ? 'bg-[#000066] text-white border-[#000066] shadow-sm' 
+                                                                : 'bg-muted/30 text-muted-foreground border-border/50 hover:border-[#000066]/30 hover:text-[#000066]'}
                                                         `}
                                                     >
                                                         {tag}
@@ -424,28 +414,27 @@ export default function ReviewerApplicationForm() {
                                                 ))}
                                             </div>
 
-                                            {/* Custom Tag Input */}
                                             <div className="relative group">
-                                                <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/20" />
+                                                <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                                 <Input
                                                     value={customInterest}
                                                     onChange={(e) => setCustomInterest(e.target.value)}
                                                     onKeyDown={(e) => e.key === 'Enter' && addCustomInterest(e)}
-                                                    placeholder="Add other interests..."
-                                                    className="h-10 bg-primary/5 border-primary/10 pl-11 pr-28 rounded-lg text-primary"
+                                                    placeholder="Other interests..."
+                                                    className="h-11 bg-muted/20 border-border/50 pl-11 pr-28 rounded-lg text-foreground text-xs xl:text-sm"
                                                 />
                                                 <Button 
                                                     type="button"
                                                     onClick={() => addCustomInterest()}
-                                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 bg-primary text-white px-3 rounded-md"
+                                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 bg-[#000066] text-white px-4 rounded-md text-[10px] font-bold uppercase"
                                                 >
                                                     Add
                                                 </Button>
                                             </div>
 
-                                            <div className="flex flex-wrap gap-2 mt-3 min-h-[30px]">
+                                            <div className="flex flex-wrap gap-2 mt-2">
                                                 {formData.researchInterests.filter(i => !PREDEFINED_INTERESTS.includes(i)).map(tag => (
-                                                    <Badge key={tag} className="bg-secondary/5 text-secondary border border-secondary/10 flex items-center gap-2 py-1 px-2.5 rounded-lg opacity-60">
+                                                    <Badge key={tag} className="bg-[#000066]/5 text-[#000066] border border-[#000066]/10 flex items-center gap-2 py-1 px-3 rounded-lg text-[10px] font-bold uppercase">
                                                         {tag} <X className="w-3 h-3 cursor-pointer" onClick={() => toggleInterest(tag)} />
                                                     </Badge>
                                                 ))}
@@ -458,15 +447,16 @@ export default function ReviewerApplicationForm() {
                             {step === 3 && (
                                 <div className="space-y-6">
                                     <header className="space-y-1">
-                                        <Badge className="bg-primary/5 text-primary border-none px-2.5">Step 3</Badge>
-                                        <h3 className="text-primary">Upload</h3>
-                                        <p className="opacity-60">Upload documents.</p>
+                                         <div className="flex items-center gap-2">
+                                            <Badge className="bg-[#000066]/5 text-[#000066] border-[#000066]/10 text-[10px] font-bold uppercase py-0 px-2 rounded-md">Phase 03</Badge>
+                                            <h3 className="text-base font-semibold text-gray-900">Documents</h3>
+                                        </div>
                                     </header>
 
-                                    <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="grid md:grid-cols-2 gap-6">
                                         <FileInput
                                             name="cv"
-                                            label="Academic CV (PDF/DOC)"
+                                            label="CV"
                                             accept=".pdf,.doc,.docx"
                                             icon={FileText}
                                             value={formData.cv}
@@ -474,7 +464,7 @@ export default function ReviewerApplicationForm() {
                                         />
                                         <FileInput
                                             name="photo"
-                                            label="Digital Portrait (JPG/PNG)"
+                                            label="Photo"
                                             accept=".jpg,.jpeg,.png"
                                             icon={ImageIcon}
                                             value={formData.photo}
@@ -482,12 +472,12 @@ export default function ReviewerApplicationForm() {
                                         />
                                     </div>
 
-                                    <aside className="p-5 bg-amber-50/50 border border-amber-200/50 rounded-2xl flex gap-4">
-                                        <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-                                        <div className="space-y-0.5">
-                                            <p className="opacity-60">Verification</p>
-                                            <p className="opacity-40 leading-relaxed">
-                                                By submitting these documents, you verify their authenticity.
+                                    <aside className="p-4 bg-muted/20 border border-border/50 rounded-lg flex gap-3">
+                                        <AlertCircle className="w-4 h-4 text-[#000066]/40 shrink-0 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-[#000066] uppercase">Verification</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 leading-relaxed">
+                                                I verify the authenticity of the documents provided.
                                             </p>
                                         </div>
                                     </aside>
@@ -498,12 +488,12 @@ export default function ReviewerApplicationForm() {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="mt-8 flex items-center justify-between gap-4">
+                <div className="mt-8 flex items-center justify-between gap-4 border-t border-border/50 pt-6">
                     {step > 1 ? (
                         <Button 
                             onClick={handleBack}
                             variant="ghost" 
-                            className="h-12 px-6 rounded-xl text-primary/40 hover:text-primary transition-all"
+                            className="h-10 px-6 rounded-lg text-muted-foreground/60 hover:text-[#000066] font-bold text-[10px] uppercase tracking-wider transition-all"
                         >
                             <ChevronLeft className="w-4 h-4 mr-2" /> Back
                         </Button>
@@ -514,23 +504,23 @@ export default function ReviewerApplicationForm() {
                     {step < 3 ? (
                         <Button 
                             onClick={handleNext}
-                            className="h-12 px-8 bg-primary text-white rounded-xl shadow-lg hover:bg-primary/90 transition-all group"
+                            className="h-10 px-8 bg-[#000066] text-white rounded-lg shadow-sm hover:bg-[#000088] font-bold text-[10px] uppercase tracking-wider transition-all"
                         >
-                            Continue <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                            Continue <ChevronRight className="w-3.5 h-3.5 ml-1" />
                         </Button>
                     ) : (
                         <Button 
                             onClick={handleSubmit}
                             disabled={reviewerMutation.isPending}
-                            className="h-12 px-8 bg-secondary text-white rounded-xl shadow-lg hover:bg-secondary/90 transition-all"
+                            className="h-10 px-8 bg-[#000066] text-white rounded-lg shadow-md hover:bg-[#000088] font-bold text-[10px] uppercase tracking-wider transition-all"
                         >
                             {reviewerMutation.isPending ? (
                                 <>
-                                    <Loader2 className="w-4 h-4 animate-spin mr-2" /> Submitting...
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> Processing...
                                 </>
                             ) : (
                                 <>
-                                    Submit <CheckCircle2 className="w-4 h-4 ml-2" />
+                                    Submit
                                 </>
                             )}
                         </Button>

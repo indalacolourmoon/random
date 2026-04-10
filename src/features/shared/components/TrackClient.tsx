@@ -27,35 +27,28 @@ interface MilestoneProps {
  
 function Milestone({ title, date, description, icon: Icon, active, last }: MilestoneProps) {
     return (
-        <div className="flex gap-8 relative items-start">
+        <div className="flex gap-4 relative items-start">
             {!last && (
-                <div className="absolute left-6 top-12 bottom-0 w-[2px] bg-primary/5 -translate-x-1/2 overflow-hidden">
-                    {active && <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: '100%' }}
-                        transition={{ duration: 1, delay: 0.4 }}
-                        className="w-full bg-secondary"
-                    />}
-                </div>
+                <div className="absolute left-5 top-10 bottom-0 w-[1px] bg-border/50" />
             )}
 
-            <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-700 border-2 ${active
-                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                : 'bg-white text-primary/20 border-primary/5'
+            <div className={`relative z-10 w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border ${active
+                ? 'bg-primary text-white border-primary'
+                : 'bg-muted/20 text-muted-foreground border-border/50'
                 }`}>
-                <Icon className={`w-5 h-5`} />
+                <Icon className="w-4 h-4" />
             </div>
 
-            <div className="pb-12 pt-1 flex-1">
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-                    <h3 className={`opacity-40 ${active ? 'text-primary' : 'text-primary/20'}`}>{title}</h3>
+            <div className="pb-8 pt-1 flex-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                    <h3 className={`text-sm font-semibold m-0 ${active ? 'text-primary' : 'text-muted-foreground/50'}`}>{title}</h3>
                     {date && (
-                        <Badge variant="secondary" className="px-3 h-5 rounded-full bg-primary/5 text-primary/60 border-primary/10">
-                            {new Date(date).toLocaleDateString(undefined, { dateStyle: 'medium' })}
-                        </Badge>
+                        <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/50 font-mono">
+                            {new Date(date).toLocaleDateString()}
+                        </span>
                     )}
                 </div>
-                <p className={`leading-relaxed border-l-2 pl-4 ${active ? 'text-primary/60 border-secondary/50' : 'text-primary/10 border-primary/5'}`}>{description}</p>
+                <p className={`text-xs leading-relaxed ${active ? 'text-muted-foreground' : 'text-muted-foreground/30'}`}>{description}</p>
             </div>
         </div>
     );
@@ -115,35 +108,28 @@ export default function TrackClient({ settings }: TrackClientProps) {
     };
 
     return (
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-32 overflow-visible">
+        <section className="container-responsive py-12 sm:py-24">
             {/* Tracking Form */}
-            <motion.section 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-primary/5 rounded-[3rem] shadow-vip overflow-hidden relative group transition-all duration-500 hover:shadow-2xl"
-            >
-                <div className="bg-primary p-12 sm:p-20 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-                    
-                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-10">
-                        <div className="w-20 h-20 2xl:w-28 2xl:h-28 bg-white/10 rounded-4xl flex items-center justify-center text-white border border-white/20 shadow-2xl backdrop-blur-md">
-                            <Search className="w-10 h-10 2xl:w-14 2xl:h-14" />
+            <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-[#000066] p-8 sm:p-12 text-white relative overflow-hidden">
+                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-8">
+                        <div className="w-16 h-16 bg-white/5 rounded-xl flex items-center justify-center text-white border border-white/10">
+                            <Search className="w-8 h-8" />
                         </div>
-                        <div className="text-center sm:text-left space-y-3">
-                            <h2 className="font-serif m-0 leading-none">Manuscript <span className="opacity-40">Registry</span></h2>
-                            <p className="opacity-60 m-0 flex items-center justify-center sm:justify-start gap-3">
-                                <ShieldAlert className="w-4 h-4 text-secondary" /> Secure Dossier Access
+                        <div className="text-center sm:text-left space-y-1">
+                            <h2 className="text-xl font-semibold m-0 text-white">Track Manuscript</h2>
+                            <p className="text-white/60 text-sm m-0 flex items-center justify-center sm:justify-start gap-2">
+                                <ShieldAlert className="w-4 h-4 text-white/50" /> Secure Access
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-12 sm:p-20 bg-card/50 backdrop-blur-xl">
-                    <form onSubmit={handleTrack} className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div className="space-y-4">
-                            <label className="opacity-40 px-2 leading-none">Access Token (Manuscript ID)</label>
-                            <div className="relative group/input">
+                <div className="p-8 sm:p-12">
+                    <form onSubmit={handleTrack} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Manuscript ID</label>
+                            <div className="relative">
                                 <Input
                                     value={paperIdInput}
                                     onChange={(e) => {
@@ -151,17 +137,17 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                         setSearchTriggered(false);
                                     }}
                                     required
-                                    className="h-16 2xl:h-24 rounded-2xl 2xl:rounded-3xl bg-primary/3 border-primary/10 focus-visible:ring-2 focus-visible:ring-secondary/20 text-primary shadow-inner px-8 transition-all"
+                                    className="h-12 rounded-xl bg-muted/20 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 text-primary px-5 transition-all text-sm"
                                     placeholder={`${journalShortName}-2026-XXX`}
                                 />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/10">
-                                    <FileText className="w-6 h-6 2xl:w-10 2xl:h-10" />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/30">
+                                    <FileText className="w-5 h-5" />
                                 </div>
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <label className="opacity-40 px-2 leading-none">Registered Correspondent Email</label>
-                            <div className="relative group/input">
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Email Address</label>
+                            <div className="relative">
                                 <Input
                                     type="email"
                                     value={emailInput}
@@ -170,227 +156,200 @@ export default function TrackClient({ settings }: TrackClientProps) {
                                         setSearchTriggered(false);
                                     }}
                                     required
-                                    className="h-16 2xl:h-24 rounded-2xl 2xl:rounded-3xl bg-primary/3er-primary/10 focus-visible:ring-2 focus-visible:ring-secondary/20 font-black text-primary shadow-inner px-8 text-lg 2xl:text-3xl transition-all"
+                                    className="h-12 rounded-xl bg-muted/20 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 text-primary px-5 text-sm transition-all"
                                     placeholder="author@institution.edu"
                                 />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/10">
-                                    <User className="w-6 h-6 2xl:w-10 2xl:h-10" />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/30">
+                                    <User className="w-5 h-5" />
                                 </div>
                             </div>
                         </div>
-                        <div className="md:col-span-2 pt-6">
+                        <div className="md:col-span-2 pt-4">
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full h-16 2xl:h-24 bg-primary hover:bg-primary/95 text-white rounded-2xl 2xl:rounded-3xl shadow-2xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer border-t border-white/10"
+                                className="w-full h-12 bg-[#000066] hover:bg-[#000088] text-white rounded-xl shadow-sm transition-all active:scale-[0.99] cursor-pointer font-bold text-xs tracking-wider uppercase"
                             >
                                 {isLoading ? (
-                                    <div className="flex items-center gap-4">
-                                        Authenticating Access <Loader2 className="w-6 h-6 animate-spin" />
+                                    <div className="flex items-center gap-3">
+                                        Searching <Loader2 className="w-4 h-4 animate-spin" />
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-3">
-                                        Query Manuscript Database <ArrowRight className="w-6 h-6" />
+                                    <div className="flex items-center gap-2">
+                                        Track Manuscript <ArrowRight className="w-4 h-4" />
                                     </div>
                                 )}
                             </Button>
-                            <p className="text-center mt-6 opacity-40">
-                                Global Publication Tracking Protocol v4.0 • Encrypted Connection
+                            <p className="text-center mt-6 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                                Global Publication Protocol • v4.0
                             </p>
                         </div>
                     </form>
                 </div>
-            </motion.section>
+            </div>
 
             {/* Results Section */}
-            <div id="tracking-results" ref={resultsRef} className="mt-24 sm:mt-40 scroll-mt-32">
-                <AnimatePresence mode="wait">
-                    {isSuccess && manuscript && (
-                        <motion.div
-                            key="success"
-                            initial={{ opacity: 0, scale: 0.98, y: 40 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.98, y: -40 }}
-                            className="space-y-16"
-                        >
-                            <div className="p-12 sm:p-20 bg-card border border-primary/5 rounded-[4rem] shadow-vip relative overflow-hidden group border-t-8 border-t-secondary/40">
-                                <div className="absolute top-0 right-0 w-full h-full bg-linear-to-br from-secondary/2 to-transparent pointer-events-none" />
-                                
-                                <section className="mb-16 space-y-10 relative z-10">
-                                    <div className="flex flex-wrap items-center justify-between gap-8">
-                                        <div className="flex items-center gap-4">
-                                            <Badge className="bg-secondary text-white border-none px-6 h-10 rounded-2xl shadow-xl shadow-secondary/20">
-                                                Status: {manuscript.status.replace('_', ' ')}
-                                            </Badge>
-                                            <span className="opacity-40 bg-primary/3 px-6 py-2 rounded-2xl border border-primary/5">
-                                                NODE ID: {manuscript.paper_id}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-3 opacity-40">
-                                            <Calendar className="w-4 h-4" /> Received: {new Date(manuscript.submitted_at).getFullYear()}
-                                        </div>
+            <div id="tracking-results" ref={resultsRef} className="mt-16 sm:mt-24 scroll-mt-32">
+                {isSuccess && manuscript && (
+                    <div className="space-y-12">
+                        <div className="p-8 sm:p-12 bg-card border border-border/50 rounded-xl shadow-sm relative overflow-hidden border-t-4 border-t-secondary/40">
+                            <section className="mb-12 space-y-8 relative z-10">
+                                <div className="flex flex-wrap items-center justify-between gap-6">
+                                    <div className="flex items-center gap-3">
+                                        <Badge className="bg-primary/5 text-primary border-primary/20 px-4 h-8 rounded-lg">
+                                            Status: {manuscript.status.replace('_', ' ')}
+                                        </Badge>
+                                        <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-3 py-1 rounded border border-border/50">
+                                            ID: {manuscript.paper_id}
+                                        </span>
                                     </div>
-
-                                    <h2 className="font-serif text-foreground leading-[1.1] tracking-tight max-w-4xl border-l-12 border-secondary/20 pl-10 py-2">
-                                        {manuscript.title}
-                                    </h2>
-
-                                    <div className="flex items-center gap-6 text-foreground pt-4">
-                                        <div className="w-14 h-14 2xl:w-20 2xl:h-20 rounded-2xl 2xl:rounded-3xl bg-secondary/10 flex items-center justify-center border border-secondary/20 shadow-inner group-hover:scale-110 transition-transform">
-                                            <User className="w-6 h-6 2xl:w-10 2xl:h-10 text-secondary" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="opacity-40">Corresponding Author</p>
-                                            {manuscript.author_name}
-                                        </div>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                        <Calendar className="w-3.5 h-3.5" /> {new Date(manuscript.submitted_at).getFullYear()}
                                     </div>
-                                </section>
+                                </div>
 
-                                <section className="space-y-12 pt-16 border-t border-primary/5 max-w-3xl">
-                                    <div className="flex items-center gap-4 mb-16">
-                                        <div className="h-0.5 w-12 bg-secondary/30" />
-                                        <h3 className="opacity-30 m-0 leading-none">
-                                            Publication Journey
-                                        </h3>
+                                <h2 className="text-xl xl:text-2xl font-serif font-semibold text-primary leading-tight max-w-4xl border-l-4 border-secondary/20 pl-6">
+                                    {manuscript.title}
+                                </h2>
+
+                                <div className="flex items-center gap-4 text-primary pt-2">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center border border-primary/10">
+                                        <User className="w-6 h-6 text-primary" />
                                     </div>
-
-                                    <div className="space-y-8 pl-4">
-                                        <Milestone
-                                            title="Manuscript Received"
-                                            date={manuscript.submitted_at}
-                                            description="Initial version received and queued for mandatory editorial screening and compliance audit."
-                                            icon={FileText}
-                                            active={isStepActive('submitted')}
-                                        />
-                                        <Milestone
-                                            title="Global Peer Review"
-                                            date={manuscript.review_started_at}
-                                            description="Assigned to independent domain experts for double-blind peer evaluation and technical verification."
-                                            icon={Search}
-                                            active={isStepActive('review')}
-                                        />
-                                        <Milestone
-                                            title="Editorial Decision"
-                                            date={manuscript.status !== 'under_review' && manuscript.status !== 'submitted' ? manuscript.updated_at : undefined}
-                                            description={
-                                                manuscript.status === 'accepted' ? "Elite approval granted for publication in the upcoming volume." :
-                                                manuscript.status === 'rejected' ? "Manuscript returned Following in-depth scientific evaluation." :
-                                                manuscript.status === 'published' ? "Manuscript published and indexed in the global digital archives." :
-                                                "Final verification in progress by the Chief Editorial Board."
-                                            }
-                                            icon={ShieldAlert}
-                                            active={isStepActive('decision')}
-                                            last
-                                        />
+                                    <div className="space-y-0.5">
+                                        <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase m-0">Corresponding Author</p>
+                                        <p className="text-sm font-semibold">{manuscript.author_name}</p>
                                     </div>
-                                </section>
+                                </div>
+                            </section>
 
-                                {/* Conditional Action Cards */}
-                                <div className="mt-16 pt-16 border-t border-primary/5">
-                                    {manuscript.status === 'accepted' && (
-                                        <motion.section 
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="bg-primary p-1.5 rounded-[3.5rem] shadow-3xl relative overflow-hidden group"
-                                        >
-                                            <div className="bg-slate-950/40 backdrop-blur-3xl p-12 sm:p-16 rounded-[3.4rem] relative z-10">
-                                                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-12">
-                                                    <div className="space-y-6">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-12 h-12 bg-secondary/20 rounded-2xl flex items-center justify-center text-secondary">
-                                                                <CreditCard className="w-6 h-6" />
-                                                            </div>
-                                                            <h3 className="text-white font-serif tracking-tight m-0 leading-none">Access <span className="text-secondary">Fees</span> Required</h3>
-                                                        </div>
-                                                        <p className="text-white/60 leading-relaxed max-w-2xl border-l-4 border-secondary/50 pl-8 ">
-                                                            "Your research trajectory has been approved. Please finalize the Article Processing Charge (APC) to proceed with typesetting, indexing, and SJIF impact assessment."
-                                                        </p>
+                            <section className="space-y-10 pt-12 border-t border-border/50 max-w-3xl">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase m-0">Manuscript Timeline</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <Milestone
+                                        title="Manuscript Received"
+                                        date={manuscript.submitted_at}
+                                        description="Initial submission received and queued for editorial screening."
+                                        icon={FileText}
+                                        active={isStepActive('submitted')}
+                                    />
+                                    <Milestone
+                                        title="Peer Review"
+                                        date={manuscript.review_started_at}
+                                        description="Assigned to experts for technical evaluation."
+                                        icon={Search}
+                                        active={isStepActive('review')}
+                                    />
+                                    <Milestone
+                                        title="Editorial Decision"
+                                        date={manuscript.status !== 'under_review' && manuscript.status !== 'submitted' ? manuscript.updated_at : undefined}
+                                        description={
+                                            manuscript.status === 'accepted' ? "Accepted for publication in the upcoming volume." :
+                                            manuscript.status === 'rejected' ? "Returned following scientific evaluation." :
+                                            manuscript.status === 'published' ? "Published and indexed in digital archives." :
+                                            "Awaiting final verification."
+                                        }
+                                        icon={ShieldAlert}
+                                        active={isStepActive('decision')}
+                                        last
+                                    />
+                                </div>
+                            </section>
+
+                            {/* Action Cards */}
+                            <div className="mt-12 pt-12 border-t border-border/50">
+                                {manuscript.status === 'accepted' && (
+                                    <div className="bg-[#000066] p-8 sm:p-12 rounded-xl text-white relative overflow-hidden">
+                                        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white">
+                                                        <CreditCard className="w-5 h-5" />
                                                     </div>
-                                                    <Button asChild className="h-20 2xl:h-28 px-12 2xl:px-20 bg-secondary hover:bg-secondary/90 text-white rounded-3xl 2xl:rounded-[2.5rem] shadow-3xl transition-all shrink-0 cursor-pointer border-t border-white/20 active:scale-95">
-                                                        <Link href={`/payment/${manuscript.paper_id}`} className="flex items-center gap-4 cursor-pointer">
-                                                            PROCESS PAYMENT <CreditCard className="w-6 h-6 2xl:w-10 2xl:h-10" />
-                                                        </Link>
-                                                    </Button>
+                                                    <h3 className="text-xl font-semibold m-0 leading-none">Access Fees Required</h3>
                                                 </div>
-                                            </div>
-                                        </motion.section>
-                                    )}
-
-                                    {manuscript.status === 'published' && (
-                                        <motion.section 
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="bg-emerald-500/5 p-10 sm:p-16 rounded-[3.5rem] border border-emerald-500/20 shadow-inner flex flex-col md:flex-row items-center justify-between gap-10"
-                                        >
-                                            <div className="space-y-4 text-center md:text-left">
-                                                <div className="flex items-center justify-center md:justify-start gap-4">
-                                                    <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600">
-                                                        <CheckCircle2 className="w-6 h-6" />
-                                                    </div>
-                                                    <h3 className="text-emerald-700 font-serif tracking-tight m-0 leading-none">Fully <span className="opacity-40">Indexed</span></h3>
-                                                </div>
-                                                <p className="text-emerald-600/70 tracking-wide max-w-2xl">
-                                                    Your research is now live in the global scientific archives and assigned a unique permanent resource identifier.
+                                                <p className="text-white/60 text-sm leading-relaxed max-w-2xl border-l-2 border-white/20 pl-6">
+                                                    Your manuscript has been approved. Please finalize the Article Processing Charge (APC) to proceed with publication.
                                                 </p>
                                             </div>
-                                            <Button asChild className="h-16 px-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-xl transition-all shrink-0 cursor-pointer active:scale-95">
-                                                <Link href={`/archive`} className="flex items-center gap-3 cursor-pointer">
-                                                    VIEW IN ARCHIVE <ArrowRight className="w-5 h-5" />
+                                            <Button asChild size="lg" className="h-12 px-8 bg-white text-primary hover:bg-white/90 rounded-lg shadow-sm transition-all shrink-0 font-bold text-xs tracking-wider uppercase">
+                                                <Link href={`/payment/${manuscript.paper_id}`} className="flex items-center gap-2">
+                                                    Process Payment <CreditCard className="w-4 h-4" />
                                                 </Link>
                                             </Button>
-                                        </motion.section>
-                                    )}
+                                        </div>
+                                    </div>
+                                )}
 
-                                    {manuscript.status === 'rejected' && (
-                                        <section className="p-12 sm:p-20 bg-destructive/2 border border-destructive/10 rounded-[3.5rem] space-y-10 relative overflow-hidden backdrop-blur-sm">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full blur-3xl -mr-16 -mt-16" />
-                                            <div className="space-y-4">
-                                                <h4 className="font-serif text-destructive tracking-tight">Editorial Consultation Outcome</h4>
-                                                <p className="text-muted-foreground tracking-tight leading-relaxed max-w-3xl">
-                                                    The editorial committee has concluded its review. While the current version does not meet publication criteria, we encourage you to review the expert feedback provided below for future scientific refinements.
-                                                </p>
-                                            </div>
-                                            {manuscript.reviewer_feedback && manuscript.reviewer_feedback.length > 0 && (
-                                                <div className="grid grid-cols-1 gap-6">
-                                                    {manuscript.reviewer_feedback.map((feedback: string, i: number) => (
-                                                        <div key={i} className="p-10 bg-card rounded-4xl border border-destructive/10 text-foreground leading-[1.8] relative flex gap-6 shadow-sm group hover:border-destructive/30 transition-colors">
-                                                            <div className="w-1.5 h-auto bg-destructive/20 rounded-full shrink-0 group-hover:bg-destructive/40 transition-colors" />
-                                                            <div className="italic wrap-break-word w-full">"{feedback}"</div>
-                                                        </div>
-                                                    ))}
+                                {manuscript.status === 'published' && (
+                                    <div className="bg-emerald-50 p-8 sm:p-12 rounded-xl border border-emerald-100 flex flex-col md:flex-row items-center justify-between gap-8">
+                                        <div className="space-y-3 text-center md:text-left">
+                                            <div className="flex items-center justify-center md:justify-start gap-3">
+                                                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
+                                                    <CheckCircle2 className="w-5 h-5" />
                                                 </div>
-                                            )}
-                                        </section>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
+                                                <h3 className="text-xl font-semibold text-emerald-800 m-0">Fully Indexed</h3>
+                                            </div>
+                                            <p className="text-emerald-700/70 text-sm max-w-2xl">
+                                                Your research is now live in the global scientific archives.
+                                            </p>
+                                        </div>
+                                        <Button asChild size="lg" className="h-12 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition-all shrink-0 font-bold text-xs tracking-wider uppercase">
+                                            <Link href={`/archive`} className="flex items-center gap-2">
+                                                View in Archive <ArrowRight className="w-4 h-4" />
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                )}
 
-                    {(isError || (data && 'error' in data)) && (
-                        <motion.div key="error" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                            <div className="p-16 sm:p-24 bg-card border border-destructive/10 rounded-[4rem] shadow-vip text-center space-y-10 max-w-2xl mx-auto relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-full bg-linear-to-br from-destructive/2 to-transparent pointer-events-none" />
-                                <div className="w-20 h-20 2xl:w-32 2xl:h-32 bg-destructive/5 rounded-3xl flex items-center justify-center mx-auto text-destructive border border-destructive/10 shadow-inner group-hover:rotate-12 transition-transform">
-                                    <ShieldAlert className="w-10 h-10 2xl:w-16 2xl:h-16" />
-                                </div>
-                                <div className="space-y-4">
-                                    <h2 className="font-serif text-foreground tracking-tight m-0 leading-none">Authentication Failed</h2>
-                                    <p className="opacity-60 m-0">
-                                        Access Denied: Manuscript not found or credentials mismatched.
-                                    </p>
-                                    <p className="text-destructive/60">"{errorMessage}"</p>
-                                </div>
-                                <Button
-                                    onClick={() => setSearchTriggered(false)}
-                                    className="h-16 2xl:h-24 px-14 2xl:px-20 bg-primary hover:bg-primary/95 text-white rounded-2xl 2xl:rounded-3xl shadow-3xl transition-all cursor-pointer active:scale-95 border-t border-white/10"
-                                >
-                                    Re-authenticate
-                                </Button>
+                                {manuscript.status === 'rejected' && (
+                                    <div className="p-8 sm:p-12 bg-destructive/5 border border-destructive/10 rounded-xl space-y-8">
+                                        <div className="space-y-2">
+                                            <h3 className="text-xl font-semibold text-destructive">Editorial Decision</h3>
+                                            <p className="text-muted-foreground text-sm max-w-3xl leading-relaxed">
+                                                The committee has concluded its review. While the current version does not meet publication criteria, please see the feedback below.
+                                            </p>
+                                        </div>
+                                        {manuscript.reviewer_feedback && manuscript.reviewer_feedback.length > 0 && (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {manuscript.reviewer_feedback.map((feedback: string, i: number) => (
+                                                    <div key={i} className="p-6 bg-card border border-border/50 rounded-xl text-sm leading-relaxed flex gap-4">
+                                                        <div className="w-1 h-auto bg-destructive/20 rounded-full shrink-0" />
+                                                        <div className="italic">"{feedback}"</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        </div>
+                    </div>
+                )}
+
+                {(isError || (data && 'error' in data)) && (
+                    <div className="p-12 sm:p-20 bg-card border border-border/50 rounded-xl text-center space-y-8 max-w-2xl mx-auto shadow-sm">
+                        <div className="w-16 h-16 bg-destructive/5 rounded-xl flex items-center justify-center mx-auto text-destructive border border-destructive/10">
+                            <ShieldAlert className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-semibold m-0">Access Denied</h2>
+                            <p className="text-muted-foreground text-sm m-0">
+                                Manuscript not found or credentials mismatched.
+                            </p>
+                            <p className="text-destructive/60 text-xs italic">"{errorMessage}"</p>
+                        </div>
+                        <Button
+                            onClick={() => setSearchTriggered(false)}
+                            className="h-12 px-10 bg-[#000066] hover:bg-[#000088] text-white rounded-xl shadow-sm transition-all cursor-pointer active:scale-95 font-bold text-xs tracking-wider uppercase"
+                        >
+                            Try Again
+                        </Button>
+                    </div>
+                )}
             </div>
         </section>
     );
