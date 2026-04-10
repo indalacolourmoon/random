@@ -21,7 +21,7 @@ function WelcomeSection({ journalName, journalShortName, settings }: WelcomeSect
             className="relative group"
             aria-labelledby="welcome-heading"
         >
-            <h1 title="welcome-heading font-black" className="mb-8 sm:mb-12">
+            <h1 id="welcome-heading" className="text-3xl font-black mb-8 sm:mb-12">
                 Welcome to {shortName}
             </h1>
 

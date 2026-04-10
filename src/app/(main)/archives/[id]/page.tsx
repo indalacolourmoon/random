@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { getSettingsData } from '@/actions/settings';
 import SettingsInitializer from "@/components/providers/SettingsInitializer";
 import { getPublishedPapers } from "@/actions/archives";
+import { JsonLd } from "@/components/shared/JsonLd";
 
 export async function generateStaticParams() {
     try {
@@ -69,6 +70,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
 }
 
+
 export default async function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const [paperRes, settings] = await Promise.all([
@@ -79,6 +81,11 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
     const paper = paperRes.success ? paperRes.data : null;
 
     if (!paper) notFound();
+
+    const baseUrl = settings.journal_website || 'https://ijitest.org';
+    const mainAuthor = paper.author_name;
+    const coAuthors = paper.co_authors ? paper.co_authors.split(',').map((s: string) => s.trim()) : [];
+    const allAuthors = [mainAuthor, ...coAuthors].filter(Boolean);
 
     return (
         <div className="bg-white min-h-screen pb-20">
@@ -93,6 +100,44 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
                 ]}
             />
             <PaperDetailClient paper={paper} id={id} />
+            
+            <JsonLd 
+                id="scholarly-article"
+                data={{
+                    "@context": "https://schema.org",
+                    "@type": "ScholarlyArticle",
+                    "headline": paper.title,
+                    "description": paper.abstract,
+                    "author": allAuthors.map(author => ({
+                        "@type": "Person",
+                        "name": author
+                    })),
+                    "datePublished": paper.published_at ? new Date(paper.published_at).toISOString() : (paper.publication_year?.toString() || ""),
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": settings.journal_name || "IJITEST",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": `${baseUrl}/favicon_io/apple-touch-icon.png`
+                        }
+                    },
+                    "isPartOf": {
+                        "@type": "ScholarlyJournal",
+                        "name": settings.journal_name || "IJITEST",
+                        "issn": ""
+                    },
+                    "pageStart": paper.start_page?.toString(),
+                    "pageEnd": paper.end_page?.toString(),
+                    "volumeNumber": paper.volume_number?.toString(),
+                    "issueNumber": paper.issue_number?.toString(),
+                    "keywords": paper.keywords,
+                    "url": `${baseUrl}/archives/${id}`,
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": `${baseUrl}/archives/${id}`
+                    }
+                }}
+            />
         </div>
     );
 }

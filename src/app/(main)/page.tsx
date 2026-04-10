@@ -16,6 +16,8 @@ import AnnouncementBar from '@/features/home/components/AnnouncementBar';
 import SettingsInitializer from '@/components/providers/SettingsInitializer';
 import { Section } from '@/components/layout/Section';
 import { SidebarLayout } from '@/components/layout/SidebarLayout';
+import FaqSection from '@/features/home/components/FaqSection';
+import { JsonLd } from '@/components/shared/JsonLd';
 
 export const revalidate = 3600; // 1 hour
 
@@ -92,6 +94,57 @@ export default async function Home() {
       </Section>
 
       <PublisherSection settings={settings} />
+      <FaqSection />
+      
+      <JsonLd 
+        id="home-faq"
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How long does the peer-review process take?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our standard peer-review process typically takes 4-6 weeks. We prioritize quality and thoroughness while ensuring a fast-track publication path for groundbreaking research."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is IJITEST indexed in major databases?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, IJITEST is being indexed in various international databases including Google Scholar, Crossref, and other leading academic repositories to ensure maximum visibility for your research."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What are the submission guidelines for authors?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Authors should ensure their manuscripts follow our standard template, include an abstract, keywords, and properly formatted references. Detailed guidelines are available in our Author Resource Desk."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do you provide Open Access publication?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, IJITEST is a Gold Open Access journal. All published articles are immediately available to the global research community without any subscription barriers."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How can I join the Editorial Board or become a Reviewer?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We welcome experts from various engineering and science disciplines. You can apply through our 'Join Us' page by submitting your CV and area of expertise."
+              }
+            }
+          ]
+        }} 
+      />
     </main>
   );
 }

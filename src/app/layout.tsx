@@ -77,14 +77,53 @@ import ScrollToTop from "@/components/common/ScrollToTop";
 
 import { NuqsAdapter } from "nuqs/adapters/next";
 
+import { JsonLd } from "@/components/shared/JsonLd";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = {
+    journal_name: "IJITEST | International Journal of Innovative Trends in Engineering Science and Technology",
+    journal_short_name: "IJITEST",
+    url: "https://ijitest.org",
+    logo: "https://ijitest.org/favicon_io/apple-touch-icon.png"
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": settings.journal_name,
+    "alternateName": settings.journal_short_name,
+    "url": settings.url,
+    "logo": settings.logo,
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "",
+      "contactType": "customer service",
+      "availableLanguage": "English"
+    }
+  };
+
+  const journalSchema = {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyJournal",
+    "name": settings.journal_name,
+    "alternateName": settings.journal_short_name,
+    "url": settings.url,
+    "publisher": {
+      "@type": "Organization",
+      "name": "IJITEST Publishing"
+    },
+    "issn": ""
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased font-sans`}>
+        <JsonLd data={organizationSchema} id="global-org" />
+        <JsonLd data={journalSchema} id="global-journal" />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
