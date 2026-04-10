@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
 import { useLatestIssuePapers, useArchivePapers } from '@/hooks/queries/usePublic';
+import { InputGroup,InputGroupInput } from '@/components/ui/input-group';
 
 interface ArchivesClientProps {
     initialPapers: any[];
@@ -36,11 +37,11 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
     }, [papers, searchQuery]);
 
     return (
-        <section className="container-responsive section-padding max-w-7xl 2xl:max-w-[1700px] mx-auto">
+        <section className=" px-5 mx-auto">
             {/* Search Section - Higher Fidelity */}
             <div className="mb-20 xl:mb-32">
                 <div className="relative group max-w-4xl mx-auto">
-                    <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] blur-2xl group-focus-within:bg-secondary/10 transition-colors -z-10" />
+                    <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] blur-2xl group-focus-within:bg-secondary/10 transition-colors -z-10 border-2" />
                     <div className="absolute left-8 top-1/2 -translate-y-1/2 text-primary/20 z-10 transition-colors group-focus-within:text-secondary group-hover:text-primary/40">
                         <Search className="w-8 h-8 2xl:w-12 2xl:h-12" />
                     </div>
@@ -49,15 +50,14 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
                         placeholder="Scan Archives: Title, Research Domain, or PI..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-20 2xl:h-32 pl-20 2xl:pl-28 pr-12 rounded-[2.5rem] bg-card border-primary/5 shadow-3xl focus-visible:ring-secondary/20 placeholder:text-primary/20 font-black text-lg 2xl:text-3xl tracking-tight transition-all w-full glassmorphism uppercase"
+                        className=" text-xl h-20 2xl:h-32 pl-20 2xl:pl-28 pr-12 rounded-[2.5rem] bg-card border-primary/5 shadow-3xl focus-visible:ring-secondary/20 placeholder:text-primary/20  text-lg 2xl:text-3xl tracking-tight transition-all w-full glassmorphism "
                     />
                     <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-2">
-                        <Badge className="bg-primary/5 text-primary/40 border-none px-3 py-1 h-auto text-[9px] 2xl:text-lg font-black tracking-widest uppercase">Global Schema v4</Badge>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-12">
                 {/* Main Content */}
                 <div className="lg:col-span-8 space-y-20 xl:space-y-32">
                     {isLoading ? (
@@ -67,17 +67,7 @@ export default function ArchivesClient({ initialPapers, settings, mode = 'archiv
                         </div>
                     ) : filteredPapers.length > 0 ? (
                         <div className="space-y-16">
-                            <div className="flex items-end justify-between border-b border-primary/5 pb-10">
-                                <div className="space-y-2">
-                                    <p className="text-[10px] 2xl:text-xl font-black text-primary/40 tracking-[0.4em] uppercase">Registry Result</p>
-                                    <h2 className="m-0 font-serif font-black text-foreground tracking-tighter text-4xl 2xl:text-6xl lowercase">
-                                        {filteredPapers.length} <span className="text-primary/50">manuscripts</span>
-                                    </h2>
-                                </div>
-                                <Badge className="bg-emerald-500/10 text-emerald-600 border-none px-5 py-2.5 h-auto text-[10px] 2xl:text-2xl font-black tracking-widest uppercase rounded-xl">Verified Archive</Badge>
-                            </div>
-
-                            <div className="space-y-12 2xl:space-y-20">
+                            <div className="space-y-1 2xl:space-y-5">
                                 {filteredPapers.map((paper: any) => (
                                     <PaperCard key={paper.paper_id} paper={paper} basePath={mode === 'current' ? '/current-issue' : '/archives'} />
                                 ))}

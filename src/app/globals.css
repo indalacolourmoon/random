@@ -142,10 +142,7 @@
     @apply border border-primary/20 text-primary px-5 py-2 rounded-lg hover:bg-primary/5 transition-all inline-block text-center cursor-pointer font-semibold text-sm;
   }
 
-  /* Responsive Container System */
-  .container-responsive {
-    @apply max-w-7xl xl:max-w-screen-xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full;
-  }
+
 
   .section-padding {
     @apply py-12 sm:py-20 lg:py-28 xl:py-36 2xl:py-48;

@@ -25,11 +25,11 @@ export default function AnnouncementBar() {
             <div className="container-responsive relative z-10 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-center sm:text-left transition-all duration-500">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-secondary border border-white/20 animate-pulse">
-                        <Megaphone className="w-4 h-4" />
+                        <Megaphone className="size-5" />
                     </div>
                     <p className="text-white opacity-80 m-0 flex items-center gap-2">
-                        Latest Publication: <span className="text-secondary pl-1 sparkle-text">{monthYear} Issue Now Live</span>
-                        <Sparkles className="w-3 h-3 text-secondary animate-bounce" />
+                        Latest Publication <span className="text-orange-600 font-bold">:</span> <span className="text-white pl-1 sparkle-text">{monthYear} Issue Now Live</span>
+                        <Sparkles className="size-6 text-red-600 animate-bounce" />
                     </p>
                 </div>
                 

@@ -57,13 +57,13 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
 
                         <div className="relative z-10 space-y-8">
                             <div className="flex flex-wrap items-center gap-3">
-                                <span className="bg-primary/5 text-primary text-[10px] font-black px-4 py-2 rounded-full  tracking-[0.2em] border border-primary/10">Research Article</span>
+                                <span className="bg-primary/5 text-primary text-md px-4 py-2 rounded-full  border border-primary/10">Research Article</span>
                                 {paper.volume_number && (
-                                    <span className="flex items-center gap-2 bg-secondary/5 text-secondary text-[10px] font-black px-4 py-2 rounded-full  tracking-[0.2em] border border-secondary/10">
+                                    <span className="flex items-center gap-2 bg-primary/5 text-primary text-md px-4 py-2 rounded-full   border border-secondary/10">
                                         <BookOpen className="w-3 h-3" /> Volume {paper.volume_number}, Issue {paper.issue_number}
                                     </span>
                                 )}
-                                <span className="bg-gray-50 text-gray-600 text-[10px] font-black px-4 py-2 rounded-full  tracking-[0.2em] border border-gray-200">
+                                <span className="bg-primary/5 text-primary text-md px-4 py-2 rounded-full  border border-gray-200">
                                     Published: {new Date(paper.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </span>
                             </div>
@@ -72,59 +72,29 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
                                 {paper.title}
                             </h1>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-100/80">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100 flex-shrink-0">
-                                        <User className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-gray-600 tracking-widest mb-1">Corresponding Author</p>
-                                        <h4 className=" font-bold text-gray-900">{paper.author_name}</h4>
-                                        <p className="text-xs text-primary/80 font-bold flex items-center gap-1.5 mt-1">
-                                            <Mail className="w-3 h-3" /> {paper.author_email}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100 flex-shrink-0">
-                                        <Building2 className="w-6 h-6 text-emerald-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-gray-600 tracking-widest mb-1">Affiliation</p>
-                                        <h4 className=" font-bold text-gray-900 leading-snug">{paper.affiliation}</h4>
-                                    </div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-6 border-t border-gray-100">
+                                <span className="-black  tracking-widest  shrink-0">Authors <span className="text-red-600 font-bold">:</span></span>
+                                <div className="flex flex-wrap items-center gap-x-2">
+                                    <span className="font-normal leading-tight">{paper.author_name}</span>
+                                    {paper.co_authors && (() => {
+                                        try {
+                                            const coAuthors = JSON.parse(paper.co_authors);
+                                            if (!Array.isArray(coAuthors)) return null;
+                                            return coAuthors.map((author: any, idx: number) => (
+                                                <div key={idx} className="flex items-center gap-2">
+                                                    <span className="text-gray-900 font-bold">,</span>
+                                                    <span className=" font-normal font-black leading-tight">{author.name}</span>
+                                                </div>
+                                            ));
+                                        } catch (e) {
+                                            console.error("Failed to parse co-authors", e);
+                                            return null;
+                                        }
+                                    })()}
                                 </div>
                             </div>
 
-                            {/* Co-Authors List */}
-                            {paper.co_authors && (
-                                <div className="pt-8 border-t border-gray-100/80 space-y-6">
-                                    <h4 className="text-[10px] font-black text-gray-600 tracking-widest uppercase">Contributing Co-Authors</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {(() => {
-                                            try {
-                                                const coAuthors = JSON.parse(paper.co_authors);
-                                                if (!Array.isArray(coAuthors)) return null;
-                                                return coAuthors.map((author: any, idx: number) => (
-                                                    <div key={idx} className="flex items-start gap-4 group/coauthor">
-                                                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-200 flex-shrink-0 group-hover/coauthor:bg-primary/5 group-hover/coauthor:border-primary/10 transition-colors">
-                                                            <User className="w-5 h-5 text-gray-500 group-hover/coauthor:text-primary transition-colors" />
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <h5 className=" font-bold text-gray-900 leading-none">{author.name}</h5>
-                                                            <p className="text-[10px] font-bold text-primary/80 uppercase tracking-wider">{author.designation}</p>
-                                                            <p className="text-[11px] text-gray-700 font-medium leading-relaxed">{author.institution}</p>
-                                                        </div>
-                                                    </div>
-                                                ));
-                                            } catch (e) {
-                                                console.error("Failed to parse co-authors", e);
-                                                return null;
-                                            }
-                                        })()}
-                                    </div>
-                                </div>
-                            )}
+                            
                         </div>
                     </div>
 

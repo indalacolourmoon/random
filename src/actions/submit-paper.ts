@@ -21,14 +21,16 @@ import { ActionResponse } from "@/db/types";
 import { isNull } from "drizzle-orm";
 
 const submissionSchema = z.object({
-    author_name: z.string().min(2, "Author name is required"),
-    author_email: z.string().email("Invalid email address"),
-    author_phone: z.string().regex(/^[0-9]+$/, "Author phone must contain only numbers"),
-    author_designation: z.string().min(2, "Author designation is required"),
-    affiliation: z.string().min(2, "Affiliation is required"),
-    title: z.string().min(10, "Title must be at least 10 characters"),
+    author_name: z.string().min(2, "Author name is required").max(255, "Author name cannot exceed 255 characters"),
+    author_email: z.string().email("Invalid email address").max(255, "Email address cannot exceed 255 characters"),
+    author_phone: z.string()
+        .regex(/^[0-9]+$/, "Author phone must contain only numbers")
+        .max(20, "Phone number cannot exceed 20 characters"),
+    author_designation: z.string().min(2, "Author designation is required").max(255, "Designation cannot exceed 255 characters"),
+    affiliation: z.string().min(2, "Affiliation is required").max(500, "Institution name cannot exceed 500 characters"),
+    title: z.string().min(10, "Title must be at least 10 characters").max(1000, "Title cannot exceed 1000 characters"),
     abstract: z.string().min(50, "Abstract must be at least 50 characters"),
-    keywords: z.string().min(5, "Keywords are required"),
+    keywords: z.string().min(5, "Keywords are required").max(500, "Keywords cannot exceed 500 characters"),
     co_authors: z.string().optional(),
     terms_accepted: z.string().refine(val => val === "on", {
         message: "You must accept the terms and guidelines"

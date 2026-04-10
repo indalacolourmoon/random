@@ -168,14 +168,31 @@ export async function getProfileData(userId: string, role: 'admin' | 'editor' | 
 }
 
 export async function updateProfileField(userId: string, field: string, value: string): Promise<ActionResponse<string>> {
-    const whitelist = ['name', 'designation', 'orcid_id'];
+    const whitelist = ['name', 'designation', 'orcid_id', 'phone'];
     if (!whitelist.includes(field)) {
         return { success: false, error: 'Field not permitted' };
     }
 
     const trimmedValue = value.trim();
-    if (!trimmedValue && field !== 'orcid_id') {
+    if (!trimmedValue && field !== 'orcid_id' && field !== 'phone') {
         return { success: false, error: 'Value cannot be empty' };
+    }
+
+    // Database Guardrails: Ensure lengths match schema.ts
+    const limits: Record<string, number> = {
+        name: 255,
+        designation: 255,
+        orcid_id: 50,
+        phone: 20
+    };
+
+    if (limits[field] && trimmedValue.length > limits[field]) {
+        return { success: false, error: `Maximum of ${limits[field]} characters allowed for ${field}.` };
+    }
+
+    // Phone validation
+    if (field === 'phone' && trimmedValue && !/^[0-9+ ]+$/.test(trimmedValue)) {
+        return { success: false, error: "Phone number contains invalid characters." };
     }
 
     try {
@@ -183,6 +200,7 @@ export async function updateProfileField(userId: string, field: string, value: s
         if (field === 'name') updateDoc.fullName = trimmedValue;
         else if (field === 'orcid_id') updateDoc.orcidId = trimmedValue;
         else if (field === 'designation') updateDoc.designation = trimmedValue;
+        else if (field === 'phone') updateDoc.phone = trimmedValue;
 
         await db.update(userProfiles)
             .set(updateDoc)
