@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 08, 2026 at 02:30 PM
+-- Generation Time: Apr 10, 2026 at 05:32 PM
 -- Server version: 12.3.1-MariaDB-log
 -- PHP Version: 7.2.34
 
@@ -148,9 +148,9 @@ CREATE TABLE `payments` (
 INSERT INTO `payments` (`id`, `submission_id`, `amount`, `currency`, `status`, `provider`, `transaction_id`, `paid_at`, `created_at`) VALUES
 (1, 13, 2000.00, 'INR', 'paid', NULL, 'order_SPaqo2m3n7KLO4', '2026-03-14 07:58:23', '2026-03-10 16:42:52'),
 (2, 15, 0.00, 'INR', 'waived', NULL, NULL, '2026-03-30 09:06:12', '2026-03-30 09:05:40'),
-(3, 16, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-01 15:23:29', '2026-04-01 15:22:56'),
-(4, 18, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-01 15:56:06', '2026-04-01 15:55:46'),
-(5, 19, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-01 16:10:46', '2026-04-01 16:10:41');
+(3, 16, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:49:31', '2026-04-01 15:22:56'),
+(4, 18, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:50:42', '2026-04-01 15:55:46'),
+(5, 19, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:51:42', '2026-04-01 16:10:41');
 
 -- --------------------------------------------------------
 
@@ -175,10 +175,7 @@ CREATE TABLE `publications` (
 
 INSERT INTO `publications` (`id`, `submission_id`, `issue_id`, `final_pdf_url`, `start_page`, `end_page`, `doi`, `published_at`) VALUES
 (1, 13, 1, '/uploads/published/IJITEST-2026-001-published.pdf', 1, 7, NULL, '2026-03-15 22:49:44'),
-(2, 15, 1, '/uploads/submissions/secure-15-1774669245557.pdf', 8, 15, NULL, '2026-03-30 09:06:12'),
-(3, 16, 1, '/uploads/submissions/secure-16-1774888411617.pdf', 16, 22, NULL, '2026-04-01 15:23:29'),
-(4, 18, 1, '/uploads/submissions/secure-18-1775058470749.pdf', 23, 30, NULL, '2026-04-01 15:56:06'),
-(5, 19, 1, '/uploads/submissions/secure-19-1775059566911.pdf', 31, 38, NULL, '2026-04-01 16:10:46');
+(2, 15, 1, '/uploads/published/IJITEST-2026-002-published.pdf', 8, 15, NULL, '2026-03-30 09:06:12');
 
 -- --------------------------------------------------------
 
@@ -204,7 +201,10 @@ CREATE TABLE `reviews` (
 
 INSERT INTO `reviews` (`id`, `assignment_id`, `decision`, `score`, `confidence`, `comments_to_author`, `comments_to_editor`, `created_at`, `submitted_at`) VALUES
 (2, 4, 'accept', NULL, NULL, 'accepted if modify the minor reviews', NULL, '2026-03-10 16:30:17', '2026-03-10 16:30:17'),
-(3, 5, 'accept', NULL, NULL, 'The integration of RIS with hybrid precoding shows promising results...', NULL, '2026-03-28 03:40:45', '2026-03-28 03:40:45');
+(3, 5, 'accept', NULL, NULL, 'The integration of RIS with hybrid precoding shows promising results...', NULL, '2026-03-28 03:40:45', '2026-03-28 03:40:45'),
+(4, 8, 'accept', 8, 4, 'Paper accepted, possible to add latest references', '', '2026-04-10 16:43:10', '2026-04-10 16:43:10'),
+(5, 7, 'accept', 8, 5, '\"Paper accepted, possible to add latest references\"', '', '2026-04-10 16:44:06', '2026-04-10 16:44:06'),
+(6, 6, 'accept', 10, 4, '\"Paper accepted, possible to add latest references\"', '', '2026-04-10 16:44:57', '2026-04-10 16:44:57');
 
 -- --------------------------------------------------------
 
@@ -231,7 +231,10 @@ CREATE TABLE `review_assignments` (
 
 INSERT INTO `review_assignments` (`id`, `submission_id`, `reviewer_id`, `version_id`, `assigned_by`, `review_round`, `status`, `deadline`, `assigned_at`, `responded_at`) VALUES
 (4, 13, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 13, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-10 16:30:17', NULL),
-(5, 15, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 15, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-28 03:40:45', NULL);
+(5, 15, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 15, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-28 03:40:45', NULL),
+(6, 16, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 16, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:34:06', '2026-04-10 16:44:57'),
+(7, 18, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 18, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:37:41', '2026-04-10 16:44:06'),
+(8, 19, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 19, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:38:53', '2026-04-10 16:43:10');
 
 -- --------------------------------------------------------
 
@@ -293,9 +296,9 @@ CREATE TABLE `submissions` (
 INSERT INTO `submissions` (`id`, `paper_id`, `slug`, `status`, `final_decision`, `decision_at`, `decision_by`, `corresponding_author_id`, `issue_id`, `submitted_at`, `updated_at`, `deleted_at`) VALUES
 (13, 'IJITEST-2026-001', 'digital-revolution-informatics-industry', 'published', NULL, NULL, NULL, 'u13-gulshan-sri-babu-uuid-001', 1, '2026-03-03 13:44:42', '2026-03-30 17:33:17', NULL),
 (15, 'IJITEST-2026-002', 'optimization-ris-integrated-hybrid-precoding', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 15:53:00', '2026-03-30 09:06:12', NULL),
-(16, 'IJITEST-2026-003', 'quantum-enabled-security-framework-6g', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-30 15:28:11', '2026-04-01 15:23:29', NULL),
-(18, 'IJITEST-2026-004', 'energy-efficient-ternary-logic-cntfet', 'published', NULL, NULL, NULL, 'u18-subbarao-uuid-002', 1, '2026-04-01 15:44:51', '2026-04-01 15:56:06', NULL),
-(19, 'IJITEST-2026-005', 'rnn-cnn-em-gamp-sparse-channel', 'published', NULL, NULL, NULL, 'u19-mahendra-uuid-003', 1, '2026-04-01 16:01:53', '2026-04-01 16:10:46', NULL);
+(16, 'IJITEST-2026-003', 'quantum-enabled-security-framework-6g', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', NULL, '2026-03-30 15:28:11', '2026-04-10 16:49:31', NULL),
+(18, 'IJITEST-2026-004', 'energy-efficient-ternary-logic-cntfet', 'published', NULL, NULL, NULL, 'u18-subbarao-uuid-002', NULL, '2026-04-01 15:44:51', '2026-04-10 16:50:42', NULL),
+(19, 'IJITEST-2026-005', 'rnn-cnn-em-gamp-sparse-channel', 'published', NULL, NULL, NULL, 'u19-mahendra-uuid-003', NULL, '2026-04-01 16:01:53', '2026-04-10 16:51:42', NULL);
 
 -- --------------------------------------------------------
 
@@ -328,16 +331,7 @@ INSERT INTO `submission_authors` (`id`, `submission_id`, `name`, `email`, `is_co
 (8, 16, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNANAS INSTITUTE OF INFORMATION TECHNOLOGY'),
 (9, 16, 'thorlapati gulshan sribabu', 'gulshansribabu@gmail.com', 0, 1, NULL, NULL, 'vignan\'s institute of Information technology'),
 (10, 18, 'CH M V SUBBARAO', 'subbaraochappa@gmail.com', 1, 0, NULL, NULL, 'DEPARTMENT OF ECE ,JNTU GV'),
-(11, 19, 'Mahendra', 'narlamahendracai@gpcet.ac.in', 1, 0, NULL, NULL, 'Department of CAI, G. Pullaiah College of Engineering'),
-(12, 13, 'THORLAPATI GULSHAN SRI BABU', 'gulshansribabu@gmail.com', 1, 0, NULL, NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY'),
-(13, 13, 'Chekatla Swapna Priya', 'swapnachsp@gmail.com', 0, 1, NULL, NULL, 'Vignan\'s Institute of Information Technology (A)'),
-(14, 13, 'Suseela Kocho', 'jackbenison12@gmail.com', 0, 2, NULL, NULL, 'Department of school education, India'),
-(15, 15, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY(A)'),
-(16, 15, 'V.N.S.Vijay Kumar', 'vijaykumarlce@gmail.com', 0, 1, NULL, NULL, 'Vardhaman college of Engineering, Hyderabad'),
-(17, 16, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNANAS INSTITUTE OF INFORMATION TECHNOLOGY'),
-(18, 16, 'thorlapati gulshan sribabu', 'gulshansribabu@gmail.com', 0, 1, NULL, NULL, 'vignan\'s institute of Information technology'),
-(19, 18, 'CH M V SUBBARAO', 'subbaraochappa@gmail.com', 1, 0, NULL, NULL, 'DEPARTMENT OF ECE ,JNTU GV'),
-(20, 19, 'Mahendra', 'narlamahendracai@gpcet.ac.in', 1, 0, NULL, NULL, 'Department of CAI, G. Pullaiah College of Engineering');
+(11, 19, 'Mahendra', 'narlamahendracai@gpcet.ac.in', 1, 0, NULL, NULL, 'Department of CAI, G. Pullaiah College of Engineering');
 
 -- --------------------------------------------------------
 
@@ -379,13 +373,13 @@ INSERT INTO `submission_files` (`id`, `version_id`, `file_type`, `file_url`, `or
 (8, 16, 'pdf_version', '/uploads/submissions/secure-16-1774888411617.pdf', 'secure.pdf', NULL, '2026-04-08 14:24:12'),
 (9, 18, 'main_manuscript', '/uploads/submissions/1775058291152-4dzxo9.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
 (10, 19, 'main_manuscript', '/uploads/submissions/1775059313407-hpa05k.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
-(11, 13, 'main_manuscript', '/uploads/submissions/manuscript-13-1774891817005.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:25:58'),
-(12, 15, 'main_manuscript', '/uploads/submissions/1774540380450-x26s7q.docx', 'manuscript.docx', NULL, '2026-04-08 14:25:58'),
-(13, 15, 'pdf_version', '/uploads/submissions/secure-15-1774669245557.pdf', 'secure.pdf', NULL, '2026-04-08 14:25:58'),
-(14, 16, 'main_manuscript', '/uploads/submissions/1774884491840-wm8v5k.docx', 'manuscript.docx', NULL, '2026-04-08 14:25:58'),
-(15, 16, 'pdf_version', '/uploads/submissions/secure-16-1774888411617.pdf', 'secure.pdf', NULL, '2026-04-08 14:25:58'),
-(16, 18, 'main_manuscript', '/uploads/submissions/1775058291152-4dzxo9.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:25:58'),
-(17, 19, 'main_manuscript', '/uploads/submissions/1775059313407-hpa05k.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:25:58');
+(18, 16, 'pdf_version', '/uploads/submissions/reviewer_copy_16_1775838846945.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:34:06'),
+(19, 18, 'pdf_version', '/uploads/submissions/final_manuscript_18_v1_1775838991046.pdf', '5.pdf', 965909, '2026-04-10 16:36:31'),
+(20, 18, 'pdf_version', '/uploads/submissions/reviewer_copy_18_1775839061896.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:37:41'),
+(21, 19, 'pdf_version', '/uploads/submissions/reviewer_copy_19_1775839133428.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:38:53'),
+(22, 19, 'feedback', '/uploads/submissions/feedback_1775839390767_4.pdf', '4.pdf', 1488778, '2026-04-10 16:43:10'),
+(23, 18, 'feedback', '/uploads/submissions/feedback_1775839446286_5.pdf', '5.pdf', 965909, '2026-04-10 16:44:06'),
+(24, 16, 'feedback', '/uploads/submissions/feedback_1775839497557_3.pdf', '3.pdf', 1807280, '2026-04-10 16:44:57');
 
 -- --------------------------------------------------------
 
@@ -410,7 +404,7 @@ CREATE TABLE `submission_versions` (
 --
 
 INSERT INTO `submission_versions` (`id`, `submission_id`, `version_number`, `title`, `abstract`, `keywords`, `subject_area`, `changelog`, `created_at`) VALUES
-(13, 13, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm shift toward human-centric systems...', 'Industry 4.0, Industry 5.0, Informatics, Automation', NULL, NULL, '2026-04-08 14:24:12'),
+(13, 13, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm shift in industrial development, as cutting-edge devices—such as AI-enhanced robots—collaborate harmoniously with human labourers to maximize productivity. This phase emphasizes the significance of human engagement while emphasizing sustainability and resilience.  This development based on innovations has led to industry 4.0, the fourth industrial revolution has changed production and production techniques. Changes are motivated by the strong progress of automation, robots, Big data, Internet of Things, Machine learning, artificial intelligence and virtualization. In addition to the successful automation and technological integration of its predecessor, largely related to production and efficiency stimulation, industry 5.0 to create both sustainable innovations and focus on people. Looking for a long -term balance between technology development and environmental protection and the happiness of our society is the main goal. This requires intentional approach to innovation, ensuring that our progress increases the living standards of people while benefiting our natural systems to support us.\\r\\n\', \'Industry 4.0, Industry 5.0\', \'THORLAPATI GULSHAN SRI BABU \', \'gulshansribabu@gmail.com\', \'VIGNAN\\\'S INSTITUTE OF INFORMATION TECHNOLOGY ', 'Industry 4.0, Industry 5.0, Informatics, Automation', NULL, NULL, '2026-04-08 14:24:12'),
 (15, 15, 1, 'Optimization and Performance Evaluation of RIS-Integrated Hybrid Precoding', 'The evolution toward sixth-generation (6G) wireless systems requires high efficiency...', 'Reconfigurable Intelligent Surfaces, mmWave Massive MIMO, 6G Wireless', NULL, NULL, '2026-04-08 14:24:12'),
 (16, 16, 1, 'Quantum-Enabled Security Framework for 6G Communications', 'Ultra-high data rates and efficient use of the terahertz spectrum present security challenges...', '5G and 6G wireless communications, Quantum Key Distribution, Network Security', NULL, NULL, '2026-04-08 14:24:12'),
 (18, 18, 1, 'Energy-Efficient Ternary Logic Processor Using CNTFETs', 'The demand for energy-efficient computing has led to explorations beyond binary logic...', 'Ternary Logic Processor, CNTFET, Low-Power Computing', NULL, NULL, '2026-04-08 14:24:12'),
@@ -807,13 +801,13 @@ ALTER TABLE `publications`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `review_assignments`
 --
 ALTER TABLE `review_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `submissions`
@@ -831,7 +825,7 @@ ALTER TABLE `submission_authors`
 -- AUTO_INCREMENT for table `submission_files`
 --
 ALTER TABLE `submission_files`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `submission_versions`
