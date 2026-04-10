@@ -115,8 +115,7 @@ export default function RootLayout({
     "publisher": {
       "@type": "Organization",
       "name": "IJITEST Publishing"
-    },
-    "issn": ""
+    }
   };
 
   return (

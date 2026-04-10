@@ -123,8 +123,7 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
                     },
                     "isPartOf": {
                         "@type": "ScholarlyJournal",
-                        "name": settings.journal_name || "IJITEST",
-                        "issn": ""
+                        "name": settings.journal_name || "IJITEST"
                     },
                     "pageStart": paper.start_page?.toString(),
                     "pageEnd": paper.end_page?.toString(),

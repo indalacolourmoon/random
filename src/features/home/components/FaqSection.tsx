@@ -17,7 +17,11 @@ const FAQS = [
   },
   {
     question: "Is IJITEST indexed in major databases?",
-    answer: "Yes, IJITEST is being indexed in various international databases including Google Scholar, Crossref, and other leading academic repositories to ensure maximum visibility for your research."
+    answer: "As a new scholarly startup, IJITEST is currently in the process of being indexed with major databases like Google Scholar and Crossref. We are committed to ensuring maximum visibility for all published research as we grow."
+  },
+  {
+    question: "Does the journal have an ISSN number?",
+    answer: "We have initiated the application process for the International Standard Serial Number (ISSN). Authors will be updated as soon as the formal registration is completed, which will apply retrospectively to all published volumes."
   },
   {
     question: "What are the submission guidelines for authors?",
@@ -26,10 +30,6 @@ const FAQS = [
   {
     question: "Do you provide Open Access publication?",
     answer: "Yes, IJITEST is a Gold Open Access journal. All published articles are immediately available to the global research community without any subscription barriers."
-  },
-  {
-    question: "How can I join the Editorial Board or become a Reviewer?",
-    answer: "We welcome experts from various engineering and science disciplines. You can apply through our 'Join Us' page by submitting your CV and area of expertise."
   }
 ];
 

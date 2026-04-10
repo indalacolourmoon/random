@@ -115,7 +115,15 @@ export default async function Home() {
               "name": "Is IJITEST indexed in major databases?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, IJITEST is being indexed in various international databases including Google Scholar, Crossref, and other leading academic repositories to ensure maximum visibility for your research."
+                "text": "As a new scholarly startup, IJITEST is currently in the process of being indexed with major databases like Google Scholar and Crossref. We are committed to ensuring maximum visibility for all published research as we grow."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does the journal have an ISSN number?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We have initiated the application process for the International Standard Serial Number (ISSN). Authors will be updated as soon as the formal registration is completed, which will apply retrospectively to all published volumes."
               }
             },
             {
