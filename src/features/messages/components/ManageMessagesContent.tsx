@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
-import { toast } from "sonner"
 import { InboxFilters } from "./InboxFilters"
 import { MessageList } from "./MessageList"
 import { MessageDetail } from "./MessageDetail"

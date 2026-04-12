@@ -5,7 +5,7 @@ import { getPublishedPapers, getLatestIssuePapers, getArchivePapers } from '@/ac
 import { trackManuscript } from '@/actions/track';
 import { getLatestPublishedIssue } from '@/actions/publications';
 import { getEditorialBoard } from '@/actions/users';
-import { type PublishedPaperUI, type UserWithProfile } from '@/db/types';
+import { type PublishedPaperUI, type SafeUserWithProfile } from '@/db/types';
 
 export const publicKeys = {
     all: ['public'] as const,
@@ -17,7 +17,7 @@ export const publicKeys = {
     track: (paperId: string, email: string) => [...publicKeys.all, 'track', paperId, email] as const,
 };
 
-export function useEditorialBoard(initialData?: UserWithProfile[]) {
+export function useEditorialBoard(initialData?: SafeUserWithProfile[]) {
     return useQuery({
         queryKey: publicKeys.editorialBoard(),
         queryFn: () => getEditorialBoard(),

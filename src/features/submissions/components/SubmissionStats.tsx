@@ -4,8 +4,7 @@ import {
     FileText, 
     Clock, 
     CheckCircle2, 
-    AlertCircle,
-    TrendingUp
+    AlertCircle
 } from 'lucide-react';
 import { useMemo } from 'react';
 import {motion} from 'framer-motion'

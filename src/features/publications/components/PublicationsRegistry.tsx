@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { 
-    Plus, BookOpen, Clock, CheckCircle2, Trash2, Globe, Calendar, Layers, 
+    Plus, BookOpen, Clock, CheckCircle2, Layers, 
     CheckCircle, Save, ChevronDown as ChevronDownIcon, ChevronUp, FileText, Eye, Unlink 
 } from 'lucide-react';
 import {

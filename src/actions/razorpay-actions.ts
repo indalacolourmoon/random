@@ -4,9 +4,11 @@ import { razorpay } from "@/lib/razorpay";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { payments, submissions, settings, userProfiles, users, submissionVersions } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 type CreateOrderResponse =
     | { success: true; order: { id: string; amount: number; currency: string; key: string | undefined } }
@@ -14,6 +16,9 @@ type CreateOrderResponse =
 
 export async function createRazorpayOrder(submissionId: number, paperId: string): Promise<CreateOrderResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Authentication required" };
+
         // 1. Fetch APC amount from settings
         const settingsRows = await db.select()
             .from(settings)
@@ -82,6 +87,9 @@ export async function verifyRazorpayPayment(data: {
     submissionId: number;
 }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Authentication required" };
+
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, submissionId } = data;
 
         const secret = process.env.RAZORPAY_KEY_SECRET;
@@ -97,6 +105,19 @@ export async function verifyRazorpayPayment(data: {
 
         if (generated_signature !== razorpay_signature) {
             return { success: false, error: "Invalid payment signature" };
+        }
+
+        // 1.5 Verify that this order actually belongs to this submission
+        const existingPayment = await db.select()
+            .from(payments)
+            .where(and(
+                eq(payments.transactionId, razorpay_order_id),
+                eq(payments.submissionId, submissionId)
+            ))
+            .limit(1);
+
+        if (existingPayment.length === 0) {
+            return { success: false, error: "Payment record mismatch. Verification failed." };
         }
 
         // 2. Update Payment Status in DB

@@ -13,7 +13,7 @@ import {
     Publication
 } from "@/db/types";
 import { eq, and, sql, desc, count } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { getSettingsData } from "./settings";
 import { sendEmail, emailTemplates } from "@/lib/mail";
 import path from "path";
@@ -51,6 +51,7 @@ export async function createVolumeIssue(formData: FormData): Promise<ActionRespo
             status: 'open'
         });
         revalidatePath('/admin/publications');
+        revalidatePath('/', 'layout');
         return { success: true };
     } catch (error) {
         console.error("Create Publication Error:", error);
@@ -62,43 +63,55 @@ export async function createVolumeIssue(formData: FormData): Promise<ActionRespo
  * Fetch all volumes and issues with paper counts
  */
 export async function getVolumesIssues(): Promise<ActionResponse<(Issue & { paperCount: number })[]>> {
-    try {
-        const rows = await db.select({
-            vi: volumesIssues,
-            paperCount: count(submissions.id)
-        })
-        .from(volumesIssues)
-        .leftJoin(submissions, eq(submissions.issueId, volumesIssues.id))
-        .groupBy(volumesIssues.id)
-        .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber));
+    return unstable_cache(
+        async () => {
+            try {
+                const rows = await db.select({
+                    vi: volumesIssues,
+                    paperCount: count(submissions.id)
+                })
+                .from(volumesIssues)
+                .leftJoin(submissions, eq(submissions.issueId, volumesIssues.id))
+                .groupBy(volumesIssues.id)
+                .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber));
 
-        const data = rows.map(r => ({
-            ...r.vi,
-            paperCount: r.paperCount
-        }));
-        return { success: true, data };
-    } catch (error) {
-        console.error("Get Publications Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+                const data = rows.map(r => ({
+                    ...r.vi,
+                    paperCount: r.paperCount
+                }));
+                return { success: true, data };
+            } catch (error) {
+                console.error("Get Publications Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        },
+        ['volumes-issues-list'],
+        { tags: ['publications', 'public-data'], revalidate: 3600 }
+    )();
 }
 
 /**
  * Get the latest published issue
  */
 export async function getLatestPublishedIssue(): Promise<ActionResponse<Issue>> {
-    try {
-        const rows = await db.select()
-            .from(volumesIssues)
-            .where(eq(volumesIssues.status, 'published'))
-            .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
-            .limit(1);
-        if (!rows[0]) return { success: false, error: "No published issues found" };
-        return { success: true, data: rows[0] };
-    } catch (error) {
-        console.error("Get Latest Published Issue Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+    return unstable_cache(
+        async () => {
+            try {
+                const rows = await db.select()
+                    .from(volumesIssues)
+                    .where(eq(volumesIssues.status, 'published'))
+                    .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
+                    .limit(1);
+                if (!rows[0]) return { success: false, error: "No published issues found" };
+                return { success: true, data: rows[0] };
+            } catch (error) {
+                console.error("Get Latest Published Issue Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        },
+        ['latest-published-issue'],
+        { tags: ['publications', 'latest-issue', 'public-data'], revalidate: 3600 }
+    )();
 }
 
 /**
@@ -218,6 +231,10 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
         revalidatePath('/admin/submissions');
         revalidatePath('/admin/publications');
         revalidatePath('/archives');
+        revalidatePath('/admin/submissions');
+        revalidatePath('/admin/publications');
+        revalidatePath('/archives', 'page');
+        revalidatePath('/', 'layout');
         return { success: true };
     } catch (error) {
         console.error("Assign Paper Error:", error);
@@ -244,6 +261,9 @@ export async function publishIssue(id: number): Promise<ActionResponse> {
 
         revalidatePath('/admin/publications');
         revalidatePath('/archives');
+        revalidatePath('/admin/publications');
+        revalidatePath('/admin/submissions');
+        revalidatePath('/', 'layout');
         return { success: true };
     } catch (error) {
         console.error("Publish Issue Error:", error);
@@ -301,6 +321,9 @@ export async function unassignPaperFromIssue(submissionId: number): Promise<Acti
 
         revalidatePath('/admin/publications');
         revalidatePath('/admin/submissions');
+        revalidatePath('/admin/publications');
+        revalidatePath('/admin/submissions');
+        revalidatePath('/', 'layout');
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to unassign paper: " + (error instanceof Error ? error.message : String(error)) };

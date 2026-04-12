@@ -24,6 +24,11 @@ import { authOptions } from "@/lib/auth";
  */
 export async function getApplications(filters?: { role?: string, status?: string, interest?: string }): Promise<ActionResponse<Application[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         const whereClauses: SQL[] = [];
         
         if (filters?.role && filters.role !== 'all') {
@@ -83,8 +88,8 @@ export async function getApplications(filters?: { role?: string, status?: string
  */
 export async function approveApplication(id: number): Promise<ActionResponse> {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        return { success: false, error: "Unauthorized: Admin session required." };
+    if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+        return { success: false, error: "Unauthorized: Admin or Editor session required." };
     }
     const adminId = session.user.id;
 
@@ -188,8 +193,8 @@ export async function approveApplication(id: number): Promise<ActionResponse> {
  */
 export async function rejectApplication(id: number, reason: string): Promise<ActionResponse> {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        throw new Error("Unauthorized: Admin session required.");
+    if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+        return { success: false, error: "Unauthorized: Admin or Editor session required." };
     }
     const adminId = session.user.id;
 
@@ -251,6 +256,11 @@ export async function rejectApplication(id: number, reason: string): Promise<Act
  * Bulk approve applications
  */
 export async function bulkApproveApplications(ids: number[]): Promise<ActionResponse<{ successCount: number, failCount: number, errors: string[] }>> {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+        return { success: false, error: "Unauthorized" };
+    }
+
     const results = { successCount: 0, failCount: 0, errors: [] as string[] };
 
     for (const id of ids) {
@@ -273,6 +283,11 @@ export async function bulkApproveApplications(ids: number[]): Promise<ActionResp
  * Bulk reject applications
  */
 export async function bulkRejectApplications(ids: number[], reason: string): Promise<ActionResponse<{ successCount: number, failCount: number, errors: string[] }>> {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+        return { success: false, error: "Unauthorized" };
+    }
+
     if (!reason || reason.trim().length < 20) {
         return { success: false, error: "Rejection reason must be at least 20 characters long." };
     }

@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { 
     UserWithProfile, 
+    SafeUserWithProfile,
     ActionResponse,
 } from "@/db/types";
 import { eq, and, sql, inArray, isNotNull } from "drizzle-orm";
@@ -18,10 +19,21 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { safeDeleteFile } from "@/lib/fs-utils";
 
-export async function getEditorialBoard(): Promise<ActionResponse<UserWithProfile[]>> {
+export async function getEditorialBoard(): Promise<ActionResponse<SafeUserWithProfile[]>> {
     try {
         const rows = await db.select({
-            user: users,
+            user: {
+                id: users.id,
+                email: users.email,
+                role: users.role,
+                isActive: users.isActive,
+                isEmailVerified: users.isEmailVerified,
+                emailVerifiedAt: users.emailVerifiedAt,
+                hasSeenPromotion: users.hasSeenPromotion,
+                createdAt: users.createdAt,
+                updatedAt: users.updatedAt,
+                deletedAt: users.deletedAt,
+            },
             profile: userProfiles,
         })
         .from(users)
@@ -35,7 +47,7 @@ export async function getEditorialBoard(): Promise<ActionResponse<UserWithProfil
         )
         .orderBy(users.role, userProfiles.fullName);
 
-        const data = rows.map(r => ({
+        const data: SafeUserWithProfile[] = rows.map(r => ({
             ...r.user,
             profile: r.profile
         }));
@@ -47,10 +59,26 @@ export async function getEditorialBoard(): Promise<ActionResponse<UserWithProfil
     }
 }
 
-export async function getUsers(role?: "admin" | "editor" | "reviewer" | "author"): Promise<ActionResponse<UserWithProfile[]>> {
+export async function getUsers(role?: "admin" | "editor" | "reviewer" | "author"): Promise<ActionResponse<SafeUserWithProfile[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || session.user.role !== 'admin') {
+            return { success: false, error: "Unauthorized" };
+        }
+
         const query = db.select({
-            user: users,
+            user: {
+                id: users.id,
+                email: users.email,
+                role: users.role,
+                isActive: users.isActive,
+                isEmailVerified: users.isEmailVerified,
+                emailVerifiedAt: users.emailVerifiedAt,
+                hasSeenPromotion: users.hasSeenPromotion,
+                createdAt: users.createdAt,
+                updatedAt: users.updatedAt,
+                deletedAt: users.deletedAt,
+            },
             profile: userProfiles,
         })
         .from(users)
@@ -61,7 +89,7 @@ export async function getUsers(role?: "admin" | "editor" | "reviewer" | "author"
         }
 
         const rows = await query;
-        const data = rows.map(r => ({
+        const data: SafeUserWithProfile[] = rows.map(r => ({
             ...r.user,
             profile: r.profile
         }));
@@ -77,6 +105,11 @@ import crypto from 'crypto';
 import { sendEmail } from '@/lib/mail';
 
 export async function createUser(formData: FormData): Promise<ActionResponse> {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || session.user.role !== 'admin') {
+        return { success: false, error: "Unauthorized" };
+    }
+
     const email = formData.get('email') as string;
     const fullName = formData.get('fullName') as string;
     const role = formData.get('role') as "admin" | "editor" | "reviewer" | "author";

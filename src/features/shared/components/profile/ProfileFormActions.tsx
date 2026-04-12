@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Save, CheckCircle, AlertTriangle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 
 interface ProfileFormActionsProps {

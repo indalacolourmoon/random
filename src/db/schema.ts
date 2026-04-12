@@ -62,7 +62,7 @@ export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
 export const userInvitations = mysqlTable("user_invitations", {
     id: int("id").primaryKey().autoincrement().notNull(),
     email: varchar("email", { length: 255 }).notNull(),
-    role: mysqlEnum("role", ['editor', 'reviewer']).notNull(),
+    role: mysqlEnum("role", ['editor', 'reviewer', 'author']).notNull(),
     token: varchar("token", { length: 255 }).notNull().unique(),
     expiresAt: timestamp("expires_at").notNull(),
     invitedBy: varchar("invited_by", { length: 36 }).references(() => users.id),

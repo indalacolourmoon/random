@@ -11,7 +11,6 @@ import {
     Clock, 
     ExternalLink, 
     Camera,
-    ChevronDown,
     FileText,
     Search,
     Plus,

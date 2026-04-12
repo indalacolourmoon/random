@@ -2,10 +2,7 @@
 
 import {
     Download,
-    User,
     BookOpen,
-    Mail,
-    Building2,
     Hash,
     ArrowLeft,
     FileText,

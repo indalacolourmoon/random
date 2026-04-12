@@ -11,219 +11,244 @@ import {
 } from "@/db/schema";
 import { eq, desc, and, sql, ne, inArray } from "drizzle-orm";
 import { type PublishedPaperUI, type ActionResponse } from "@/db/types";
+import { unstable_cache } from "next/cache";
 
 /**
  * FETCH ALL PUBLISHED PAPERS
  * Used for the global archive list or sitemap
  */
 export async function getPublishedPapers(): Promise<ActionResponse<PublishedPaperUI[]>> {
-    try {
-        const rows = await db.select({
-            publication: publications,
-            submission: submissions,
-            issue: volumesIssues,
-        })
-        .from(publications)
-        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-        .orderBy(desc(publications.publishedAt));
+    return unstable_cache(
+        async () => {
+            try {
+                const rows = await db.select({
+                    publication: publications,
+                    submission: submissions,
+                    issue: volumesIssues,
+                })
+                .from(publications)
+                .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+                .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+                .orderBy(desc(publications.publishedAt));
 
-        if (!rows.length) return { success: true, data: [] };
+                if (!rows.length) return { success: true, data: [] };
 
-        const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
+                const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
 
-        // Fetch Authors and Versions separately to avoid complex joins and combinatorics
-        const authorsList = await db.select().from(submissionAuthors)
-            .where(inArray(submissionAuthors.submissionId, submissionIds))
-            .orderBy(submissionAuthors.orderIndex);
+                // Fetch Authors and Versions separately to avoid complex joins and combinatorics
+                const authorsList = await db.select().from(submissionAuthors)
+                    .where(inArray(submissionAuthors.submissionId, submissionIds))
+                    .orderBy(submissionAuthors.orderIndex);
 
-        const versionsList = await db.select().from(submissionVersions)
-            .where(inArray(submissionVersions.submissionId, submissionIds))
-            .orderBy(desc(submissionVersions.versionNumber));
+                const versionsList = await db.select().from(submissionVersions)
+                    .where(inArray(submissionVersions.submissionId, submissionIds))
+                    .orderBy(desc(submissionVersions.versionNumber));
 
-        const data = rows.map(row => {
-            const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
-            const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
-            
-            return mapPublicationToUI({
-                ...row.publication,
-                submission: {
-                    ...row.submission,
-                    versions: paperVersions,
-                    authors: paperAuthors
-                },
-                issue: row.issue
-            });
-        });
+                const data = rows.map(row => {
+                    const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
+                    const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
+                    
+                    return mapPublicationToUI({
+                        ...row.publication,
+                        submission: {
+                            ...row.submission,
+                            versions: paperVersions,
+                            authors: paperAuthors
+                        },
+                        issue: row.issue
+                    });
+                });
 
-        return { success: true, data };
-    } catch (error) {
-        console.error("Get Published Papers Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+                return { success: true, data };
+            } catch (error) {
+                console.error("Get Published Papers Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        },
+        ['published-papers-all'],
+        { tags: ['archives', 'public-data'], revalidate: 3600 }
+    )();
 }
 
 export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPaperUI[]>> {
-    try {
-        const issues = await db.select()
-            .from(volumesIssues)
-            .where(eq(volumesIssues.status, 'published'))
-            .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
-            .limit(1);
+    return unstable_cache(
+        async () => {
+            try {
+                const issues = await db.select()
+                    .from(volumesIssues)
+                    .where(eq(volumesIssues.status, 'published'))
+                    .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
+                    .limit(1);
 
-        if (!issues.length) return { success: true, data: [] };
-        const latestIssue = issues[0];
+                if (!issues.length) return { success: true, data: [] };
+                const latestIssue = issues[0];
 
-        const rows = await db.select({
-            publication: publications,
-            submission: submissions,
-            issue: volumesIssues,
-        })
-        .from(publications)
-        .where(eq(publications.issueId, latestIssue.id))
-        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id));
+                const rows = await db.select({
+                    publication: publications,
+                    submission: submissions,
+                    issue: volumesIssues,
+                })
+                .from(publications)
+                .where(eq(publications.issueId, latestIssue.id))
+                .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+                .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id));
 
-        if (!rows.length) return { success: true, data: [] };
+                if (!rows.length) return { success: true, data: [] };
 
-        const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
+                const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
 
-        const authorsList = await db.select().from(submissionAuthors)
-            .where(inArray(submissionAuthors.submissionId, submissionIds))
-            .orderBy(submissionAuthors.orderIndex);
+                const authorsList = await db.select().from(submissionAuthors)
+                    .where(inArray(submissionAuthors.submissionId, submissionIds))
+                    .orderBy(submissionAuthors.orderIndex);
 
-        const versionsList = await db.select().from(submissionVersions)
-            .where(inArray(submissionVersions.submissionId, submissionIds))
-            .orderBy(desc(submissionVersions.versionNumber));
+                const versionsList = await db.select().from(submissionVersions)
+                    .where(inArray(submissionVersions.submissionId, submissionIds))
+                    .orderBy(desc(submissionVersions.versionNumber));
 
-        const data = rows.map(row => {
-            const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
-            const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
-            
-            return mapPublicationToUI({
-                ...row.publication,
-                submission: {
-                    ...row.submission,
-                    versions: paperVersions,
-                    authors: paperAuthors
-                },
-                issue: row.issue
-            });
-        });
+                const data = rows.map(row => {
+                    const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
+                    const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
+                    
+                    return mapPublicationToUI({
+                        ...row.publication,
+                        submission: {
+                            ...row.submission,
+                            versions: paperVersions,
+                            authors: paperAuthors
+                        },
+                        issue: row.issue
+                    });
+                });
 
-        return { success: true, data };
-    } catch (error) {
-        console.error("Get Latest Issue Papers Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+                return { success: true, data };
+            } catch (error) {
+                console.error("Get Latest Issue Papers Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        },
+        ['latest-issue-papers'],
+        { tags: ['archives', 'latest-issue', 'public-data'], revalidate: 3600 }
+    )();
 }
 
 export async function getArchivePapers(limit = 50, offset = 0): Promise<ActionResponse<PublishedPaperUI[]>> {
-    try {
-        const issues = await db.select()
-            .from(volumesIssues)
-            .where(eq(volumesIssues.status, 'published'))
-            .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
-            .limit(1);
+    return unstable_cache(
+        async () => {
+            try {
+                const issues = await db.select()
+                    .from(volumesIssues)
+                    .where(eq(volumesIssues.status, 'published'))
+                    .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber))
+                    .limit(1);
 
-        const latestId = issues.length ? issues[0].id : -1;
+                const latestId = issues.length ? issues[0].id : -1;
 
-        const rows = await db.select({
-            publication: publications,
-            submission: submissions,
-            issue: volumesIssues,
-        })
-        .from(publications)
-        .where(ne(publications.issueId, latestId))
-        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-        .orderBy(desc(publications.publishedAt))
-        .limit(limit)
-        .offset(offset);
+                const rows = await db.select({
+                    publication: publications,
+                    submission: submissions,
+                    issue: volumesIssues,
+                })
+                .from(publications)
+                .where(ne(publications.issueId, latestId))
+                .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+                .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+                .orderBy(desc(publications.publishedAt))
+                .limit(limit)
+                .offset(offset);
 
-        if (!rows.length) return { success: true, data: [] };
+                if (!rows.length) return { success: true, data: [] };
 
-        const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
+                const submissionIds = rows.map(r => r.submission?.id).filter(Boolean) as number[];
 
-        const authorsList = await db.select().from(submissionAuthors)
-            .where(inArray(submissionAuthors.submissionId, submissionIds))
-            .orderBy(submissionAuthors.orderIndex);
+                const authorsList = await db.select().from(submissionAuthors)
+                    .where(inArray(submissionAuthors.submissionId, submissionIds))
+                    .orderBy(submissionAuthors.orderIndex);
 
-        const versionsList = await db.select().from(submissionVersions)
-            .where(inArray(submissionVersions.submissionId, submissionIds))
-            .orderBy(desc(submissionVersions.versionNumber));
+                const versionsList = await db.select().from(submissionVersions)
+                    .where(inArray(submissionVersions.submissionId, submissionIds))
+                    .orderBy(desc(submissionVersions.versionNumber));
 
-        const data = rows.map(row => {
-            const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
-            const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
-            
-            return mapPublicationToUI({
-                ...row.publication,
-                submission: {
-                    ...row.submission,
-                    versions: paperVersions,
-                    authors: paperAuthors
-                },
-                issue: row.issue
-            });
-        });
+                const data = rows.map(row => {
+                    const paperAuthors = authorsList.filter(a => a.submissionId === row.submission?.id);
+                    const paperVersions = versionsList.filter(v => v.submissionId === row.submission?.id);
+                    
+                    return mapPublicationToUI({
+                        ...row.publication,
+                        submission: {
+                            ...row.submission,
+                            versions: paperVersions,
+                            authors: paperAuthors
+                        },
+                        issue: row.issue
+                    });
+                });
 
-        return { success: true, data };
-    } catch (error) {
-        console.error("Get Archive Papers Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+                return { success: true, data };
+            } catch (error) {
+                console.error("Get Archive Papers Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        },
+        [`archive-papers-${limit}-${offset}`],
+        { tags: ['archives', 'public-data'], revalidate: 3600 }
+    )();
 }
 
 export async function getPaperById(id: string): Promise<ActionResponse<PublishedPaperUI>> {
-    try {
-        const numericId = Number(id);
-        const whereClause = isNaN(numericId)
-            ? eq(submissions.paperId, id)
-            : eq(publications.submissionId, numericId);
+    return unstable_cache(
+        async () => {
+            try {
+                const numericId = Number(id);
+                const whereClause = isNaN(numericId)
+                    ? eq(submissions.paperId, id)
+                    : eq(publications.submissionId, numericId);
 
-        const rows = await db.select({
-            publication: publications,
-            submission: submissions,
-            version: submissionVersions,
-            issue: volumesIssues,
-            authorProfile: userProfiles
-        })
-        .from(publications)
-        .where(whereClause)
-        .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
-        ))
-        .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-        .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
-        .limit(1);
+                const rows = await db.select({
+                    publication: publications,
+                    submission: submissions,
+                    version: submissionVersions,
+                    issue: volumesIssues,
+                    authorProfile: userProfiles
+                })
+                .from(publications)
+                .where(whereClause)
+                .leftJoin(submissions, eq(publications.submissionId, submissions.id))
+                .leftJoin(submissionVersions, and(
+                    eq(submissions.id, submissionVersions.submissionId),
+                    eq(submissionVersions.versionNumber, sql`(SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`)
+                ))
+                .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+                .leftJoin(userProfiles, eq(submissions.correspondingAuthorId, userProfiles.userId))
+                .limit(1);
 
-        const row = rows[0];
-        if (!row || !row.submission) return { success: false, error: "Paper data is incomplete" };
+                const row = rows[0];
+                if (!row || !row.submission) return { success: false, error: "Paper data is incomplete" };
 
-        // SECOND QUERY: Fetch all authors separately for the detail view
-        const authorsList = await db.select()
-            .from(submissionAuthors)
-            .where(eq(submissionAuthors.submissionId, row.submission.id))
-            .orderBy(submissionAuthors.orderIndex);
+                // SECOND QUERY: Fetch all authors separately for the detail view
+                const authorsList = await db.select()
+                    .from(submissionAuthors)
+                    .where(eq(submissionAuthors.submissionId, row.submission.id))
+                    .orderBy(submissionAuthors.orderIndex);
 
-        const data = mapPublicationToUI({
-            ...row.publication,
-            submission: {
-                ...row.submission,
-                versions: [row.version],
-                correspondingAuthor: { profile: row.authorProfile },
-                authors: authorsList
-            },
-            issue: row.issue
-        });
-        return { success: true, data };
-    } catch (error) {
-        console.error("Get Paper By ID Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+                const data = mapPublicationToUI({
+                    ...row.publication,
+                    submission: {
+                        ...row.submission,
+                        versions: [row.version],
+                        correspondingAuthor: { profile: row.authorProfile },
+                        authors: authorsList
+                    },
+                    issue: row.issue
+                });
+                return { success: true, data };
+            } catch (error) {
+                console.error("Get Paper By ID Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        },
+        [`paper-${id}`],
+        { tags: [`paper-${id}`, 'public-data'], revalidate: 3600 }
+    )();
 }
 
 /**

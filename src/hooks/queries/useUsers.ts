@@ -1,14 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUsers, createUser, deleteUser, updateUserRole } from '@/actions/users';
-import { UserWithProfile } from '@/db/types';
+import { SafeUserWithProfile } from '@/db/types';
 
 export function useUsers(role?: string) {
-    return useQuery<UserWithProfile[]>({
+    return useQuery<SafeUserWithProfile[]>({
         queryKey: ['users', role],
         queryFn: async () => {
             const res = await getUsers();
             if (!res.success) return [];
-            const data = res.data || [];
+            const data = (res.data || []) as SafeUserWithProfile[];
             if (role) return data.filter((u: { role: string }) => u.role === role);
             return data;
         },

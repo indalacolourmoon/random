@@ -1,4 +1,4 @@
-import { TrendingUp, FileStack, ShieldCheck, CreditCard, BookOpen, Activity, HardDrive, Shield, Users } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import * as schema from "@/db/schema";

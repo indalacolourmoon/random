@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,7 +7,7 @@ import { useState } from "react";
 import {
     Loader2, Upload, CheckCircle2, FileText, User, Mail,
     ChevronRight, BookOpen, Tag, Plus, Trash2, Phone, Briefcase,
-    School, Users, Shield, Check, ExternalLink, Download
+    School, Users, Shield, Check, Download
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { useSubmissionMutation } from "@/hooks/queries/usePublicMutations";
 import { useSettings } from "@/hooks/queries/useSettings";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -127,11 +126,29 @@ export default function SubmissionForm() {
     }, []);
 
     const handleManuscriptChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setManuscriptFile(e.target.files?.[0] || null);
+        const file = e.target.files?.[0] || null;
+        if (file && !file.name.toLowerCase().endsWith('.docx')) {
+            toast.error("Invalid File Type", {
+                description: "Only .docx files are accepted for manuscripts as per journal policy."
+            });
+            e.target.value = '';
+            setManuscriptFile(null);
+            return;
+        }
+        setManuscriptFile(file);
     }, []);
 
     const handleCopyrightChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setCopyrightFile(e.target.files?.[0] || null);
+        const file = e.target.files?.[0] || null;
+        if (file && !file.name.toLowerCase().endsWith('.docx')) {
+            toast.error("Invalid File Type", {
+                description: "The signed copyright agreement must be in .docx format."
+            });
+            e.target.value = '';
+            setCopyrightFile(null);
+            return;
+        }
+        setCopyrightFile(file);
     }, []);
 
     if (submissionMutation.isSuccess) {
@@ -514,7 +531,7 @@ export default function SubmissionForm() {
                                     onChange={handleManuscriptChange}
                                     className="hidden"
                                     id="manuscript-upload"
-                                    accept=".doc,.docx,.pdf"
+                                    accept=".docx"
                                 />
                                 <label
                                     htmlFor="manuscript-upload"
@@ -537,7 +554,7 @@ export default function SubmissionForm() {
                                                 <Upload className="w-5 h-5 text-[#000066]/40" />
                                             </div>
                                             <p className="text-xs font-semibold text-gray-900">Upload Research Paper</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">DOC, DOCX, or PDF</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">DOCX Only</p>
                                         </div>
                                     )}
                                 </label>
@@ -569,7 +586,7 @@ export default function SubmissionForm() {
                                     onChange={handleCopyrightChange}
                                     className="hidden"
                                     id="copyright-upload"
-                                    accept=".doc,.docx,.pdf"
+                                    accept=".docx"
                                 />
                                 <label
                                     htmlFor="copyright-upload"
@@ -592,7 +609,7 @@ export default function SubmissionForm() {
                                                 <Upload className="w-5 h-5 text-[#000066]/40" />
                                             </div>
                                             <p className="text-xs font-semibold text-gray-900">Upload Signed Form</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Signed Word or PDF</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Signed Word (DOCX)</p>
                                         </div>
                                     )}
                                 </label>

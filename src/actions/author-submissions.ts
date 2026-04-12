@@ -338,7 +338,7 @@ export async function getMySubmissions() {
 
         const userId = session.user.id;
 
-        const rows = await db.select({
+        const query = db.select({
             id: submissions.id,
             paperId: submissions.paperId,
             status: submissions.status,
@@ -348,10 +348,13 @@ export async function getMySubmissions() {
         .from(submissions)
         .leftJoin(submissionVersions, and(
             eq(submissions.id, submissionVersions.submissionId),
-            sql`${submissionVersions.versionNumber} = (SELECT MAX(version_number) FROM submission_versions WHERE submission_id = ${submissions.id})`
-        ))
-        .where(eq(submissions.correspondingAuthorId, userId))
-        .orderBy(desc(submissions.submittedAt));
+            sql`${submissionVersions.versionNumber} = (SELECT MAX(v.version_number) FROM submission_versions v WHERE v.submission_id = ${submissions.id})`
+        ));
+
+        // Authors only see their own. Admins/Editors see all? 
+        // Actually this specific function is typically for the "My Papers" tab.
+        const rows = await query.where(eq(submissions.correspondingAuthorId, userId))
+            .orderBy(desc(submissions.submittedAt));
 
         return rows.map(r => ({
             id: r.id,
@@ -374,7 +377,7 @@ export async function runCleanupInactiveAuthors(): Promise<ActionResponse<{ dele
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user || session.user.role !== 'admin') {
-            return { success: false, error: "Unauthorized" };
+            return { success: false, error: "Unauthorized: Admin privileges required." };
         }
 
         const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);

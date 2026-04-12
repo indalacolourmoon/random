@@ -4,7 +4,7 @@
 import {
     FileStack, Clock, CheckCircle, BookOpen, ArrowRight,
     AlertCircle, Upload, ExternalLink, CreditCard, Timer,
-    FileText, TrendingUp, Sparkles, LayoutDashboard
+    FileText, TrendingUp, Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';

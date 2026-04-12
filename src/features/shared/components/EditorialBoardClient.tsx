@@ -5,11 +5,11 @@ import { Mail, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useEditorialBoard } from '@/hooks/queries/usePublic';
 import { staticEditorialBoardMembers, BoardMember } from '../data/editorial-board';
-import { UserWithProfile } from '@/db/types';
+import { SafeUserWithProfile } from '@/db/types';
 
 interface EditorialBoardClientProps {
     settings: Record<string, string>;
-    initialMembers: UserWithProfile[];
+    initialMembers: SafeUserWithProfile[];
 }
 
 export default function EditorialBoardClient({ settings, initialMembers }: EditorialBoardClientProps) {

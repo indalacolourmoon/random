@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Download, User, BookOpen, Eye, Globe } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

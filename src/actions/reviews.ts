@@ -29,7 +29,9 @@ import { ActionResponse } from "@/db/types";
  */
 export async function assignReviewer(formData: FormData): Promise<ActionResponse> {
     const session = await getServerSession(authOptions);
-    if (!session?.user) return { success: false, error: "Authentication required." };
+    if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+        return { success: false, error: "Unauthorized: Admin or Editor access required." };
+    }
     
     const submissionId = parseInt(formData.get('submissionId') as string);
     const reviewerId = formData.get('reviewerId') as string;
@@ -216,6 +218,11 @@ export async function assignReviewer(formData: FormData): Promise<ActionResponse
  * Reviewer submits a completed review decision and comments.
  */
 export async function submitReview(assignmentId: number, formData: FormData): Promise<ActionResponse> {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || session.user.role !== 'reviewer') {
+        return { success: false, error: "Unauthorized: Reviewer access required." };
+    }
+
     const decision = formData.get('decision') as "accept" | "reject" | "minor_revision" | "major_revision";
     const commentsToAuthor = formData.get('commentsToAuthor') as string;
     const commentsToEditor = formData.get('commentsToEditor') as string;
@@ -244,7 +251,8 @@ export async function submitReview(assignmentId: number, formData: FormData): Pr
                 paperId: submissions.paperId,
                 title: submissionVersions.title,
                 authorEmail: users.email,
-                authorName: userProfiles.fullName
+                authorName: userProfiles.fullName,
+                reviewerId: reviewAssignments.reviewerId
             })
             .from(reviewAssignments)
             .innerJoin(submissions, eq(reviewAssignments.submissionId, submissions.id))
@@ -256,6 +264,11 @@ export async function submitReview(assignmentId: number, formData: FormData): Pr
 
             if (!rows.length) throw new Error("Review assignment not found.");
             const info = rows[0];
+
+            // Verify this reviewer owns the assignment
+            if (info.reviewerId !== session.user.id) {
+                throw new Error("Unauthorized: This assignment does not belong to you.");
+            }
 
             // 2. Insert/Update Review
             await tx.insert(reviews).values({
@@ -349,6 +362,13 @@ export async function submitReview(assignmentId: number, formData: FormData): Pr
  */
 export async function getActiveReviews(reviewerId?: string): Promise<ActionResponse<any[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Authentication required." };
+
+        // If a specific reviewer is requested, ensure requester is admin/editor OR the reviewer themselves
+        if (reviewerId && session.user.role !== 'admin' && session.user.role !== 'editor' && session.user.id !== reviewerId) {
+            return { success: false, error: "Unauthorized" };
+        }
         const query = db.select({
             id: reviewAssignments.id,
             status: reviewAssignments.status,
@@ -386,6 +406,11 @@ export async function getActiveReviews(reviewerId?: string): Promise<ActionRespo
  */
 export async function getUnassignedAcceptedPapers(): Promise<ActionResponse<any[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
        // Papers that are in stages that require review
        const rows = await db.select({
             id: submissions.id,

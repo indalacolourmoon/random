@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, UserPlus, Shield, Mail, Trash2, ShieldCheck, UserCog, Info, CheckCircle, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Users, UserPlus, Shield, Mail, Trash2, ShieldCheck, UserCog, CheckCircle, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useUsers, useCreateUser, useDeleteUser, useUpdateUserRole } from '@/hooks/queries/useUsers';
 import { useSession } from 'next-auth/react';
 import React, { useState, useTransition, useCallback, useMemo } from 'react';
@@ -27,7 +27,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Separator } from "@/components/ui/separator";
 
 const getRoleVariant = (role: string) => {
     switch (role) {

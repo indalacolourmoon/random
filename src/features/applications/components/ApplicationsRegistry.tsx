@@ -5,10 +5,8 @@ import NextImage from 'next/image';
 import { List } from 'react-window';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    Search, User, Building2, Mail, FileText, 
-    Briefcase, Filter, X, CheckCircle, 
-    RotateCcw, Download, Eye, AlertCircle,
-    CheckCircle2, XCircle
+    Search, User, Building2, FileText, 
+    Briefcase, Download, AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryStates, parseAsString } from 'nuqs';
@@ -17,18 +15,12 @@ import { Drawer } from 'vaul';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
+
+
 
 import { useApplications, useApproveApplication, useRejectApplication } from "@/hooks/queries/useApplications";
 

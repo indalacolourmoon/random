@@ -1,8 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun, Shield } from "lucide-react";
-import { motion } from "framer-motion";
+import { Monitor, Moon, Sun } from "lucide-react";
 import {
     Dialog,
     DialogContent,

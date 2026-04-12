@@ -4,8 +4,6 @@ import { FileText, ChevronRight, Search, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import PaperCard from '@/features/archives/components/PaperCard';
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import TrackManuscriptWidget from '@/features/shared/widgets/TrackManuscriptWidget';
 import { useLatestIssuePapers, useArchivePapers } from '@/hooks/queries/usePublic';

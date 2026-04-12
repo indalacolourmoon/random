@@ -1,4 +1,4 @@
-import { FileStack, Users, Activity, TrendingUp, UserPlus, CreditCard, Shield, Download, HardDrive } from 'lucide-react';
+import { TrendingUp, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import {
@@ -6,7 +6,6 @@ import {
     users,
     userProfiles,
     payments,
-    volumesIssues,
     applications,
     submissionVersions,
     reviews

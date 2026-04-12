@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { 
     ShieldAlert, User, FileUp, CheckCircle, Clock, Search, 
-    Plus, X, Download, FileText, FileCheck, Eye, RefreshCw, Loader2 
+    Plus, X, Download, FileText, Eye, RefreshCw, Loader2 
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -25,8 +25,6 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Separator } from '@/components/ui/separator';
 
 import { useActiveReviews, useUnassignedPapers, useAssignReviewer, useSubmitReview } from '@/hooks/queries/useReviews';
 import { useUsers } from '@/hooks/queries/useUsers';

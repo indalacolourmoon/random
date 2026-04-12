@@ -29,6 +29,12 @@ export type UserWithProfile = User & {
     profile: UserProfile | null;
 };
 
+// 🔒 Safe types (excluding password indices/hashes)
+export type SafeUser = Omit<User, 'passwordHash'>;
+export type SafeUserWithProfile = SafeUser & {
+    profile: UserProfile | null;
+};
+
 // 📄 Submissions
 export type ShortSubmission = InferSelectModel<typeof submissions>;
 export type NewSubmission = InferInsertModel<typeof submissions>;

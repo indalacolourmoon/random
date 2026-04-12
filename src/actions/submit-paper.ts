@@ -8,17 +8,17 @@ import {
     submissionAuthors,
     users,
     userProfiles,
-    settings
+    settings,
+    userInvitations
 } from "@/db/schema";
 import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { sendEmail, emailTemplates } from "@/lib/mail";
-import { count, eq, inArray, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import crypto from 'crypto';
 import { ActionResponse } from "@/db/types";
-import { isNull } from "drizzle-orm";
 
 const submissionSchema = z.object({
     author_name: z.string().min(2, "Author name is required").max(255, "Author name cannot exceed 255 characters"),
@@ -105,6 +105,13 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
                     institute: validated.data.affiliation,
                     phone: validated.data.author_phone,
                     designation: validated.data.author_designation,
+                });
+
+                await tx.insert(userInvitations).values({
+                    email: validated.data.author_email,
+                    role: "author",
+                    token: invitationToken,
+                    expiresAt: expires,
                 });
             } else {
                 userId = existingUsers[0].id;
@@ -225,6 +232,15 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
             
             // DB-cleanup for zombie submission
             await db.delete(submissions).where(eq(submissions.id, result.subId));
+
+            // Orphaned Account Cleanup (if user was newly created during this failed session)
+            if (invitationToken) {
+                const userRes = await db.select().from(users).where(eq(users.email, rawData.author_email)).limit(1);
+                if (userRes.length > 0 && !userRes[0].passwordHash) {
+                    await db.delete(users).where(eq(users.id, userRes[0].id));
+                    await db.delete(userInvitations).where(eq(userInvitations.email, rawData.author_email));
+                }
+            }
             throw new Error("File upload failed. Our servers might be busy. Please try again.");
         }
 

@@ -2,12 +2,12 @@
 
 import { db } from "@/lib/db";
 import { settings } from "@/db/schema";
-import { revalidatePath } from "next/cache";
-import fs from "fs/promises";
-import path from "path";
 import { ActionResponse } from "@/db/types";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import fs from "fs/promises";
+import path from "path";
 
 const ALLOWED_SETTING_KEYS = new Set([
     'journal_name', 'journal_short_name', 'issn_number', 'apc_inr', 'apc_usd',
@@ -34,22 +34,28 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 };
 
 export async function getSettings(): Promise<ActionResponse<Record<string, string>>> {
-    try {
-        const rows = await db.select().from(settings);
-        
-        const result: Record<string, string> = { ...DEFAULT_SETTINGS };
+    return unstable_cache(
+        async () => {
+            try {
+                const rows = await db.select().from(settings);
+                
+                const result: Record<string, string> = { ...DEFAULT_SETTINGS };
 
-        rows.forEach((row) => {
-            if (row.settingValue) {
-                result[row.settingKey] = row.settingValue;
+                rows.forEach((row) => {
+                    if (row.settingValue) {
+                        result[row.settingKey] = row.settingValue;
+                    }
+                });
+
+                return { success: true, data: result };
+            } catch (error) {
+                console.error("Get Settings Error:", error);
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
             }
-        });
-
-        return { success: true, data: result };
-    } catch (error) {
-        console.error("Get Settings Error:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
+        },
+        ['site-settings-global'],
+        { tags: ['settings', 'public-data'], revalidate: 3600 }
+    )();
 }
 
 /**
@@ -103,7 +109,7 @@ export async function updateSettings(formData: FormData): Promise<ActionResponse
         revalidatePath('/guidelines');
         revalidatePath('/contact');
         revalidatePath('/about');
-        
+        revalidatePath('/', 'layout');
         return { success: true };
     } catch (error) {
         console.error("Update Settings Error:", error);

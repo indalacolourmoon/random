@@ -37,6 +37,9 @@ import { authOptions } from "@/lib/auth";
  */
 export async function getSubmissionById(id: number): Promise<ActionResponse<SubmissionUI>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) return { success: false, error: "Authentication required" };
+
         // 1. Fetch Core Submission + Profile + Latest Version + Publication + Issue
         const submissionRows = await db.select({
             submission: submissions,
@@ -57,6 +60,21 @@ export async function getSubmissionById(id: number): Promise<ActionResponse<Subm
 
         const row = submissionRows[0];
         if (!row) return { success: false, error: "Submission not found" };
+
+        // RBAC: Verify user has permission to see this submission
+        if (session.user.role === 'author' && row.submission.correspondingAuthorId !== session.user.id) {
+            return { success: false, error: "Unauthorized access" };
+        }
+        if (session.user.role === 'reviewer') {
+            const [assignment] = await db.select()
+                .from(reviewAssignments)
+                .where(and(
+                    eq(reviewAssignments.submissionId, id),
+                    eq(reviewAssignments.reviewerId, session.user.id)
+                ))
+                .limit(1);
+            if (!assignment) return { success: false, error: "Unauthorized access: You are not assigned to this manuscript." };
+        }
 
         // 2. Fetch Latest Version
         const versionRows = await db.select()
@@ -151,6 +169,11 @@ export async function getSubmissionById(id: number): Promise<ActionResponse<Subm
  */
 export async function getAllSubmissions(filters?: { status?: string }): Promise<ActionResponse<SubmissionUI[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         let query = db.select({ id: submissions.id }).from(submissions).$dynamic();
         
         const conditions = [isNull(submissions.deletedAt)];
@@ -179,6 +202,11 @@ export async function getAllSubmissions(filters?: { status?: string }): Promise<
  */
 export async function decideSubmission(id: number, decision: 'accepted' | 'rejected'): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         const subRes = await getSubmissionById(id);
         if (!subRes.success || !subRes.data) return { success: false, error: subRes.error || "Submission not found" };
         const submission = subRes.data;
@@ -224,6 +252,11 @@ export async function decideSubmission(id: number, decision: 'accepted' | 'rejec
  */
 export async function updateSubmissionStatus(id: number, status: typeof submissions.$inferSelect.status): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         await db.update(submissions).set({ status }).where(eq(submissions.id, id));
 
         const subRes = await getSubmissionById(id);
@@ -259,6 +292,11 @@ export async function requestResubmissionWithComments(
     requestedBy: string
 ): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         const subRes = await getSubmissionById(submissionId);
         if (!subRes.success || !subRes.data) return { success: false, error: subRes.error || 'Submission not found' };
         const submission = subRes.data;
@@ -288,33 +326,57 @@ export async function requestResubmissionWithComments(
  */
 export async function deleteSubmission(id: number): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         const subRes = await getSubmissionById(id);
         if (!subRes.success || !subRes.data) return { success: false, error: subRes.error || "Submission not found" };
-        const submission = subRes.data;
+        // 1. Fetch ALL files for ALL versions of this submission
+        const allSubmissionFiles = await db.select({
+            fileUrl: submissionFiles.fileUrl
+        })
+        .from(submissionFiles)
+        .innerJoin(submissionVersions, eq(submissionFiles.versionId, submissionVersions.id))
+        .where(eq(submissionVersions.submissionId, id));
 
-        // 1. Database cleanup
+        // 2. Database cleanup
         await db.transaction(async (tx) => {
             // Delete reviews before assignments (FK constraint)
             const assignmentRows = await tx
                 .select({ id: reviewAssignments.id })
                 .from(reviewAssignments)
                 .where(eq(reviewAssignments.submissionId, id));
+            
             if (assignmentRows.length > 0) {
                 const aIds = assignmentRows.map(a => a.id);
                 await tx.delete(reviews).where(inArray(reviews.assignmentId, aIds));
             }
+
+            // Fetch version IDs to delete their files first
+            const versionRows = await tx.select({ id: submissionVersions.id })
+                .from(submissionVersions)
+                .where(eq(submissionVersions.submissionId, id));
+            const vIds = versionRows.map(v => v.id);
+
+            if (vIds.length > 0) {
+                await tx.delete(submissionFiles).where(inArray(submissionFiles.versionId, vIds));
+            }
+
             await tx.delete(submissionAuthors).where(eq(submissionAuthors.submissionId, id));
             await tx.delete(payments).where(eq(payments.submissionId, id));
             await tx.delete(reviewAssignments).where(eq(reviewAssignments.submissionId, id));
+            await tx.delete(submissionVersions).where(eq(submissionVersions.submissionId, id));
             await tx.delete(submissions).where(eq(submissions.id, id));
         });
 
-        // 2. File system cleanup
-        for (const file of submission.allFiles) {
+        // 3. File system cleanup (All versions)
+        for (const file of allSubmissionFiles) {
             try {
-                // Normalize file path to avoid double slashes
                 const normalizedPath = file.fileUrl.replace(/^\/+/, '');
-                await fs.unlink(path.join(process.cwd(), 'public', normalizedPath));
+                const fullPath = path.join(process.cwd(), 'public', normalizedPath);
+                await fs.unlink(fullPath);
             } catch (err) { 
                 console.error(`Failed to delete file ${file.fileUrl}:`, err);
             }
@@ -406,7 +468,9 @@ import { convertDocxToPdf } from "@/lib/ilovepdf";
 export async function autoSyncManuscriptToPdf(submissionId: number): Promise<ActionResponse> {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user) return { success: false, error: "Unauthorized" };
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
 
         // 1. Fetch Latest Version & Main Manuscript (.docx)
         const versionRows = await db.select()

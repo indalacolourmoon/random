@@ -25,6 +25,11 @@ export interface PaymentRow {
 
 export async function getPayments(): Promise<ActionResponse<PaymentRow[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         // Join only the latest version per submission to avoid duplicate rows
         const results = await db.select({
             id: payments.id,
@@ -86,7 +91,7 @@ export async function updatePaymentStatus(paymentId: number, status: 'pending' |
                 
                 if (payment) {
                     await tx.update(submissions)
-                        .set({ status: 'published' })
+                        .set({ status: 'accepted' })
                         .where(eq(submissions.id, payment.submissionId));
                 }
             }
@@ -103,6 +108,11 @@ export async function updatePaymentStatus(paymentId: number, status: 'pending' |
 
 export async function initializePayment(submissionId: number, amount: number, currency: string = 'INR'): Promise<ActionResponse> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         await db.insert(payments).values({
             submissionId,
             amount: amount.toString(),
@@ -127,6 +137,11 @@ export interface UnpaidPaperRow {
 
 export async function getAcceptedUnpaidPapers(): Promise<ActionResponse<UnpaidPaperRow[]>> {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user || !['admin', 'editor'].includes(session.user.role)) {
+            return { success: false, error: "Unauthorized" };
+        }
+
         // Find submissions that are 'accepted' but have no entry in 'payments'
         // Subquery for payments
         const paidSubmissions = db.select({ id: payments.submissionId }).from(payments);
@@ -166,9 +181,9 @@ export async function waivePayment(submissionId: number): Promise<ActionResponse
                 .set({ status: 'waived', paidAt: new Date() })
                 .where(eq(payments.submissionId, submissionId));
             
-            // Waived payment — submission is cleared to proceed to publication
+            // Waived payment — submission is cleared to proceed
             await tx.update(submissions)
-                .set({ status: 'published' })
+                .set({ status: 'accepted' })
                 .where(eq(submissions.id, submissionId));
         });
 

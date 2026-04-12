@@ -1,5 +1,4 @@
 import { memo } from "react"
-import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import dayjs from "@/lib/dayjs"
