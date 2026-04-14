@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 01, 2026 at 05:57 PM
+-- Generation Time: Apr 12, 2026 at 05:14 PM
 -- Server version: 12.3.1-MariaDB-log
 -- PHP Version: 7.2.34
 
@@ -24,24 +24,39 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` int(11) NOT NULL,
+  `entity_type` varchar(50) NOT NULL,
+  `entity_id` varchar(255) NOT NULL,
+  `action` varchar(100) NOT NULL,
+  `performed_by` varchar(36) DEFAULT NULL,
+  `metadata` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `applications`
 --
 
 CREATE TABLE `applications` (
   `id` int(11) NOT NULL,
-  `application_type` enum('reviewer','editor') NOT NULL DEFAULT 'reviewer',
+  `type` enum('reviewer','editor') NOT NULL,
   `full_name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `designation` varchar(255) NOT NULL,
   `institute` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `cv_url` varchar(500) NOT NULL,
-  `photo_url` varchar(500) NOT NULL,
-  `status` enum('pending','approved','rejected') DEFAULT 'pending',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `nationality` varchar(100) DEFAULT 'India',
-  `rejection_reason` text DEFAULT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `reviewed_by` varchar(36) DEFAULT NULL,
   `reviewed_at` timestamp NULL DEFAULT NULL,
-  `reviewed_by` int(11) DEFAULT NULL
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `cv_url` varchar(500) DEFAULT NULL,
+  `photo_url` varchar(500) DEFAULT NULL,
+  `nationality` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -53,7 +68,7 @@ CREATE TABLE `applications` (
 CREATE TABLE `application_interests` (
   `id` int(11) NOT NULL,
   `application_id` int(11) NOT NULL,
-  `interest` varchar(255) NOT NULL
+  `interest_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -68,12 +83,44 @@ CREATE TABLE `contact_messages` (
   `email` varchar(255) NOT NULL,
   `subject` varchar(255) DEFAULT NULL,
   `message` text NOT NULL,
-  `reply_text` text DEFAULT NULL,
-  `replied_at` timestamp NULL DEFAULT NULL,
   `status` enum('pending','resolved','archived') NOT NULL DEFAULT 'pending',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `resolved_at` timestamp NULL DEFAULT NULL,
-  `resolved_by` int(11) DEFAULT NULL
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `contact_messages`
+--
+
+INSERT INTO `contact_messages` (`id`, `name`, `email`, `subject`, `message`, `status`, `created_at`) VALUES
+(1, 'moahn', 'indalamohankumar@gmail.com', 'test subject dsfdsf df', 'sdfdsf,mn,msd', 'pending', '2026-04-07 14:46:15'),
+(2, 'maohan', 'indalamohankumar@gmail.com', 'test  for contact', 'a  test for message submission ', 'pending', '2026-04-07 15:15:50');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `master_interests`
+--
+
+CREATE TABLE `master_interests` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `message` text NOT NULL,
+  `action_link` varchar(255) DEFAULT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -86,8 +133,9 @@ CREATE TABLE `payments` (
   `id` int(11) NOT NULL,
   `submission_id` int(11) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `currency` varchar(10) DEFAULT 'INR',
-  `status` enum('unpaid','paid','verified') DEFAULT 'unpaid',
+  `currency` varchar(10) NOT NULL DEFAULT 'INR',
+  `status` enum('pending','paid','verified','failed','waived') NOT NULL DEFAULT 'pending',
+  `provider` varchar(50) DEFAULT NULL,
   `transaction_id` varchar(255) DEFAULT NULL,
   `paid_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp()
@@ -97,12 +145,40 @@ CREATE TABLE `payments` (
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`id`, `submission_id`, `amount`, `currency`, `status`, `transaction_id`, `paid_at`, `created_at`) VALUES
-(13, 13, 2000.00, 'INR', '', 'order_SPaqo2m3n7KLO4', '2026-03-14 07:58:23', '2026-03-10 16:42:52'),
-(14, 15, 0.00, 'INR', '', NULL, '2026-03-30 09:06:12', '2026-03-30 09:05:40'),
-(15, 16, 0.00, 'INR', '', NULL, '2026-04-01 15:23:29', '2026-04-01 15:22:56'),
-(16, 18, 0.00, 'INR', '', NULL, '2026-04-01 15:56:06', '2026-04-01 15:55:46'),
-(17, 19, 0.00, 'INR', '', NULL, '2026-04-01 16:10:46', '2026-04-01 16:10:41');
+INSERT INTO `payments` (`id`, `submission_id`, `amount`, `currency`, `status`, `provider`, `transaction_id`, `paid_at`, `created_at`) VALUES
+(1, 13, 2000.00, 'INR', 'verified', NULL, 'order_SPaqo2m3n7KLO4', '2026-04-11 03:26:58', '2026-03-10 16:42:52'),
+(2, 15, 0.00, 'INR', 'waived', NULL, NULL, '2026-03-30 09:06:12', '2026-03-30 09:05:40'),
+(3, 16, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:49:31', '2026-04-01 15:22:56'),
+(4, 18, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:50:42', '2026-04-01 15:55:46'),
+(5, 19, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:51:42', '2026-04-01 16:10:41');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `publications`
+--
+
+CREATE TABLE `publications` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `issue_id` int(11) NOT NULL,
+  `final_pdf_url` varchar(500) NOT NULL,
+  `start_page` int(11) DEFAULT NULL,
+  `end_page` int(11) DEFAULT NULL,
+  `doi` varchar(100) DEFAULT NULL,
+  `published_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `publications`
+--
+
+INSERT INTO `publications` (`id`, `submission_id`, `issue_id`, `final_pdf_url`, `start_page`, `end_page`, `doi`, `published_at`) VALUES
+(1, 13, 1, '/uploads/published/IJITEST-2026-001-published.pdf', 1, 7, NULL, '2026-03-15 22:49:44'),
+(2, 15, 1, '/uploads/published/IJITEST-2026-002-published.pdf', 8, 12, NULL, '2026-03-30 09:06:12'),
+(11, 16, 1, '/uploads/published/IJITEST-2026-003-published.pdf', 13, 20, NULL, '2026-04-10 17:59:56'),
+(12, 18, 1, '/uploads/published/IJITEST-2026-004-published.pdf', 21, 26, NULL, '2026-04-10 17:59:56'),
+(13, 19, 1, '/uploads/published/IJITEST-2026-005-published.pdf', 27, 32, NULL, '2026-04-10 17:59:56');
 
 -- --------------------------------------------------------
 
@@ -112,26 +188,56 @@ INSERT INTO `payments` (`id`, `submission_id`, `amount`, `currency`, `status`, `
 
 CREATE TABLE `reviews` (
   `id` int(11) NOT NULL,
-  `submission_id` int(11) NOT NULL,
-  `reviewer_id` int(11) NOT NULL,
-  `status` enum('pending','in_progress','completed') DEFAULT 'pending',
-  `deadline` date DEFAULT NULL,
-  `feedback` text DEFAULT NULL,
-  `feedback_file_path` varchar(500) DEFAULT NULL,
-  `assigned_at` timestamp NULL DEFAULT current_timestamp(),
-  `completed_at` timestamp NULL DEFAULT NULL
+  `assignment_id` int(11) NOT NULL,
+  `decision` enum('accept','minor_revision','major_revision','reject') NOT NULL,
+  `score` int(11) DEFAULT NULL,
+  `confidence` int(11) DEFAULT NULL,
+  `comments_to_author` text DEFAULT NULL,
+  `comments_to_editor` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `submitted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `reviews`
 --
 
-INSERT INTO `reviews` (`id`, `submission_id`, `reviewer_id`, `status`, `deadline`, `feedback`, `feedback_file_path`, `assigned_at`, `completed_at`) VALUES
-(4, 13, 4, 'completed', '2026-03-13', 'accepted if modify the minor reviews', NULL, '2026-03-10 16:30:17', NULL),
-(5, 15, 6, 'completed', '2026-03-30', 'The results demonstrate that integrating Reconfigurable Intelligent Surfaces (RIS) with hybrid analog–digital precoding significantly enhances mmWave massive MIMO system performance. Increasing the number of RIS elements improves energy efficiency and coverage due to better signal reflection and beamforming gain. The proposed RIS-assisted hybrid scheme consistently outperforms fully digital precoding in terms of energy efficiency while maintaining comparable or improved spectral efficiency.\r\n\r\nAdditionally, performance improves with higher SNR, where the hybrid approach achieves lower bit error rates (BER) and higher throughput. The architecture also reduces hardware complexity by minimizing the number of required RF chains. Overall, the proposed system provides an effective trade-off between performance, energy consumption, and implementation cost, making it a strong candidate for future 6G wireless networks.', NULL, '2026-03-28 03:40:45', NULL),
-(6, 16, 7, 'completed', '2026-04-01', 'The manuscript titled \"Quantum-Enabled Security Framework for 6G\r\nCommunications Based on QKD-OFDM Integration\" should have the following changes before it is accepted.\r\n1. The Index terms should be a minimum of 4 as per the template, and suggested to include additional terms.\r\n2. There are uneven spaces throughout the manuscript, suggesting that uneven spaces should be removed.\r\n3. Citations should be properly included in the text as per the journal format.\r\n4. Suggested to include citations/references in Table 1.\r\n5. The quality of Figure 1 should be improved.\r\n6. Suggested to include quantitative analysis based on the obtained simulation results.\r\n', NULL, '2026-03-30 16:33:31', NULL),
-(7, 18, 4, 'completed', '2026-04-03', 'The manuscript Energy-Efficient Ternary Logic Processor Using CNTFETs for Advanced Nanotechnology applications, paper is accepted when minor corrections corrected.\r\n1. Add Recent publications in biblography.\r\n2. Give any block diagram if required.  ', NULL, '2026-04-01 15:47:50', NULL),
-(8, 19, 4, 'completed', '2026-04-03', 'Add recent references \r\nBetter to give more numarical part for simulation graphs\r\n\r\nThe paper is accepted if minor changes corrected.', NULL, '2026-04-01 16:06:06', NULL);
+INSERT INTO `reviews` (`id`, `assignment_id`, `decision`, `score`, `confidence`, `comments_to_author`, `comments_to_editor`, `created_at`, `submitted_at`) VALUES
+(2, 4, 'accept', NULL, NULL, 'accepted if modify the minor reviews', NULL, '2026-03-10 16:30:17', '2026-03-10 16:30:17'),
+(3, 5, 'accept', NULL, NULL, 'The integration of RIS with hybrid precoding shows promising results...', NULL, '2026-03-28 03:40:45', '2026-03-28 03:40:45'),
+(4, 8, 'accept', 8, 4, 'Paper accepted, possible to add latest references', '', '2026-04-10 16:43:10', '2026-04-10 16:43:10'),
+(5, 7, 'accept', 8, 5, '\"Paper accepted, possible to add latest references\"', '', '2026-04-10 16:44:06', '2026-04-10 16:44:06'),
+(6, 6, 'accept', 10, 4, '\"Paper accepted, possible to add latest references\"', '', '2026-04-10 16:44:57', '2026-04-10 16:44:57');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `review_assignments`
+--
+
+CREATE TABLE `review_assignments` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `reviewer_id` varchar(36) NOT NULL,
+  `version_id` int(11) NOT NULL,
+  `assigned_by` varchar(36) NOT NULL,
+  `review_round` int(11) NOT NULL DEFAULT 1,
+  `status` enum('assigned','accepted','declined','completed') NOT NULL DEFAULT 'assigned',
+  `deadline` date DEFAULT NULL,
+  `assigned_at` timestamp NULL DEFAULT current_timestamp(),
+  `responded_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `review_assignments`
+--
+
+INSERT INTO `review_assignments` (`id`, `submission_id`, `reviewer_id`, `version_id`, `assigned_by`, `review_round`, `status`, `deadline`, `assigned_at`, `responded_at`) VALUES
+(4, 13, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 13, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-10 16:30:17', NULL),
+(5, 15, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 15, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-28 03:40:45', NULL),
+(6, 16, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 16, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:34:06', '2026-04-10 16:44:57'),
+(7, 18, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 18, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:37:41', '2026-04-10 16:44:06'),
+(8, 19, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 19, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:38:53', '2026-04-10 16:43:10');
 
 -- --------------------------------------------------------
 
@@ -150,19 +256,20 @@ CREATE TABLE `settings` (
 --
 
 INSERT INTO `settings` (`setting_key`, `setting_value`, `updated_at`) VALUES
-('apc_description', 'APC covers DOI assignment, long-term hosting, indexing maintenance, and editorial handling. There are no submission or processing charges before acceptance.', '2026-02-09 17:21:31'),
-('apc_inr', '0', '2026-03-10 17:32:54'),
-('apc_usd', '0', '2026-03-10 17:32:54'),
-('copyright_url', '/docs/copyright-form.docx', '2026-02-09 17:21:31'),
-('is_promotion_active', 'true', '2026-03-10 15:29:45'),
-('issn_number', 'XXXX-XXXX', '2026-02-09 17:13:37'),
-('journal_name', 'International Journal of Innovative Trends in Engineering Science and Technology', '2026-02-06 12:13:34'),
-('journal_short_name', 'IJITEST', '2026-02-09 17:21:31'),
-('office_address', 'Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India', '2026-02-08 17:09:15'),
-('publisher_name', 'Felix Academic Publications', '2026-02-09 17:21:31'),
-('support_email', 'support@ijitest.org', '2026-02-22 16:42:23'),
-('support_phone', '+91 8919643590', '2026-02-08 17:09:15'),
-('template_url', '/docs/template-url.docx', '2026-03-10 16:55:19');
+('apc_description', 'APC covers DOI assignment, long-term hosting, indexing maintenance, and editorial handling. There are no submission or processing charges before acceptance.', '2026-04-01 19:17:58'),
+('apc_inr', '0', '2026-04-01 19:17:58'),
+('apc_usd', '0', '2026-04-01 19:17:58'),
+('copyright_url', '/docs/copyright-form.docx', '2026-04-01 19:17:58'),
+('is_promotion_active', 'true', '2026-04-01 19:17:58'),
+('issn_number', 'XXXX-XXXX', '2026-04-01 19:17:58'),
+('journal_name', 'International Journal of Innovative Trends in Engineering Science and Technology', '2026-04-01 19:17:58'),
+('journal_short_name', 'IJITEST', '2026-04-01 19:17:58'),
+('office_address', 'Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India', '2026-04-01 19:17:59'),
+('publisher_name', 'Felix Academic Publications', '2026-04-01 19:17:59'),
+('submission_sequence_2026', '1', '2026-04-07 13:38:29'),
+('support_email', 'support@ijitest.org', '2026-04-01 19:17:59'),
+('support_phone', '+91 8919643590', '2026-04-01 19:17:59'),
+('template_url', '/docs/template-url.docx', '2026-04-01 19:17:59');
 
 -- --------------------------------------------------------
 
@@ -172,38 +279,143 @@ INSERT INTO `settings` (`setting_key`, `setting_value`, `updated_at`) VALUES
 
 CREATE TABLE `submissions` (
   `id` int(11) NOT NULL,
-  `paper_id` varchar(50) NOT NULL,
-  `title` text NOT NULL,
-  `abstract` text DEFAULT NULL,
-  `keywords` text DEFAULT NULL,
-  `author_name` varchar(255) NOT NULL,
-  `author_email` varchar(255) NOT NULL,
-  `affiliation` varchar(500) DEFAULT NULL,
-  `status` enum('submitted','under_review','accepted','rejected','published','paid','retracted') DEFAULT 'submitted',
-  `file_path` varchar(500) DEFAULT NULL,
-  `pdf_url` varchar(500) DEFAULT NULL,
+  `paper_id` varchar(100) NOT NULL,
+  `slug` varchar(255) DEFAULT NULL,
+  `status` enum('submitted','editor_assigned','under_review','revision_requested','accepted','rejected','payment_pending','published') NOT NULL DEFAULT 'submitted',
+  `final_decision` enum('accept','reject','withdrawn') DEFAULT NULL,
+  `decision_at` timestamp NULL DEFAULT NULL,
+  `decision_by` varchar(36) DEFAULT NULL,
+  `corresponding_author_id` varchar(36) NOT NULL,
+  `issue_id` int(11) DEFAULT NULL,
   `submitted_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `issue_id` int(11) DEFAULT NULL,
-  `is_free_publish` tinyint(1) DEFAULT 0,
-  `co_authors` text DEFAULT NULL,
-  `published_at` timestamp NULL DEFAULT NULL,
-  `start_page` int(11) DEFAULT NULL,
-  `end_page` int(11) DEFAULT NULL,
-  `submission_mode` enum('current','archive') DEFAULT 'archive',
-  `retraction_notice_url` varchar(500) DEFAULT NULL
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `submissions`
 --
 
-INSERT INTO `submissions` (`id`, `paper_id`, `title`, `abstract`, `keywords`, `author_name`, `author_email`, `affiliation`, `status`, `file_path`, `pdf_url`, `submitted_at`, `updated_at`, `issue_id`, `is_free_publish`, `co_authors`, `published_at`, `start_page`, `end_page`, `submission_mode`, `retraction_notice_url`) VALUES
-(13, 'IJITEST-2026-001', 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm shift in industrial development, as cutting-edge devices—such as AI-enhanced robots—collaborate harmoniously with human labourers to maximize productivity. This phase emphasizes the significance of human engagement while emphasizing sustainability and resilience.  This development based on innovations has led to industry 4.0, the fourth industrial revolution has changed production and production techniques. Changes are motivated by the strong progress of automation, robots, Big data, Internet of Things, Machine learning, artificial intelligence and virtualization. In addition to the successful automation and technological integration of its predecessor, largely related to production and efficiency stimulation, industry 5.0 to create both sustainable innovations and focus on people. Looking for a long -term balance between technology development and environmental protection and the happiness of our society is the main goal. This requires intentional approach to innovation, ensuring that our progress increases the living standards of people while benefiting our natural systems to support us.\r\n', 'Industry 4.0, Industry 5.0', 'THORLAPATI GULSHAN SRI BABU ', 'gulshansribabu@gmail.com', 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY ', 'paid', '/uploads/published/IJITEST-2026-001-published.pdf', '/uploads/submissions/manuscript-13-1774891817005.pdf', '2026-03-03 13:44:42', '2026-03-30 17:33:17', NULL, 0, '[\n  {\n    \"name\": \"Chekatla Swapna Priya\",\n    \"email\": \"swapnachsp@gmail.com\",\n    \"phone\": \"0000000000\",\n    \"designation\": \"Assistant Professor, CSE\",\n    \"institution\": \"Vignan\'s Institute of Information Technology (A), Visakhapatnam, India\"\n  },\n  {\n    \"name\": \"Suseela Kocho\",\n    \"email\": \"jackbenison12@gmail.com\",\n    \"phone\": \"0000000000\",\n    \"designation\": \"SGT\",\n    \"institution\": \"Department of school education, India (Orcid ID: 0000-0002-1567-7896)\"\n  }\n]\n', '2026-03-15 22:49:44', 1, 7, 'archive', NULL),
-(15, 'IJITEST-2026-002', 'Optimization and Performance Evaluation of  RIS-Integrated Hybrid Precoding in Millimeter Wave Massive MIMO', 'The evolution toward sixth-generation (6G) wireless systems requires extremely high data rates, massive device connectivity, very low latency, and improved energy efficiency. Millimeter-wave (mmWave) communication is considered a key enabler due to its large available bandwidth and ability to support multi-gigabit transmission. Nevertheless, mmWave signals experience high path loss, vulnerability to blockage, and increased implementation complexity caused by large antenna arrays and multiple RF chains. To overcome these limitations, this thesis explores the integration of Reconfigurable Intelligent Surfaces (RIS) with hybrid analog–digital precoding in mmWave Massive MIMO systems. RIS enables intelligent control of signal propagation by adjusting the phase of reflected waves, while hybrid precoding reduces hardware cost and power consumption without significantly degrading performance. A detailed system model, mathematical analysis, and optimization strategies for precoders and RIS phase shifts are presented. Performance evaluation based on spectral efficiency, energy efficiency, and hardware complexity demonstrates that RIS-assisted hybrid architectures provide notable improvements in coverage, achievable rate, and power utilization. ', 'Reconfigurable Intelligent Surfaces, mmWave Massive MIMO systems, Precoders and RIS phase shifters', 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY(A)', 'paid', '/uploads/submissions/1774540380450-x26s7q.docx', '/uploads/submissions/secure-15-1774669245557.pdf', '2026-03-26 15:53:00', '2026-03-30 09:06:12', NULL, 0, '[{\"name\":\"V.N.S.Vijay Kumar \",\"email\":\"vijaykumarlce@gmail.com\",\"phone\":\"94412 37013\",\"designation\":\"Assistant Professor\",\"institution\":\"Vardhaman college of Engineering, Hyderabad Telangana, INDIA\"}]', NULL, NULL, NULL, 'archive', NULL),
-(16, 'IJITEST-2026-003', 'Quantum-Enabled Security Framework for 6G Communications Based on QKD-OFDM Integration', '– Ultra-high data rates, efficient use of the terahertz spectrum, and significant connectivity are anticipated as Sixth Generation (6G) wireless communication emerges. However, traditional cryptographic algorithms like RSA and Elliptic Curve Cryptography, which are currently employed in wireless networks, are seriously threatened by the quick development of quantum computing. Future 6G systems must incorporate quantum-safe security measures to allay this worry. The incorporation of Quantum Key Distribution (QKD) into the physical layer of 6G communication networks is investigated in this paper. To facilitate secure key exchange and identify eavesdropping, QKD makes use of quantum concepts like superposition, entanglement, and the no-cloning theorem. Realistic wireless channel conditions are used to analyze the BB84 and E91 protocols. A proposed 6G channel model incorporates Nakagami-m fading, additive white Gaussian noise, and path loss. Detector noise and channel disturbances are taken into account when modeling the Quantum Bit Error Rate (QBER). In an OFDM framework, MATLAB simulations evaluate the secure key rate performance with respect to signal-to-noise ratio, transmission distance, and noise probability. The findings highlight the potential of QKD for secure 6G communications by showing that secure key generation is possible when the QBER stays below the theoretical threshold.\r\n', '5G and 6G wireless communications, Quantum Key Distribution, Fading Channels', 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 'VIGNANAS INSTITUTE OF INFORMATION TECHNOLOGY', 'paid', '/uploads/submissions/1774884491840-wm8v5k.docx', '/uploads/submissions/secure-16-1774888411617.pdf', '2026-03-30 15:28:11', '2026-04-01 15:23:29', NULL, 0, '[{\"name\":\"thorlapati gulshan sribabu\",\"email\":\"gulshansribabu@gmail.com\",\"phone\":\"09505175015\",\"designation\":\"student\",\"institution\":\"vignan\'s institute of Information technology\"}]', NULL, NULL, NULL, 'archive', NULL),
-(18, 'IJITEST-2026-004', 'Energy-Efficient Ternary Logic Processor Using CNTFETs for Advanced Nanotechnology Applications', 'The increasing demand for energy-efficient computing has driven research into novel logic architectures beyond traditional binary logic. This paper presents the design and implementation of an energy-efficient ternary logic processor using Carbon Nanotube Field-Effect Transistors (CNTFETs) for advanced nanotechnology applications. Ternary logic, which operates with three discrete states (0, 1, 2), offers higher computational density, reduced transistor count, and lower power consumption compared to conventional binary architectures. CNTFETs, with their superior electrical properties such as high carrier mobility, low sub-threshold swing, and excellent scalability, serve as an ideal candidate for implementing ternary logic circuits. The proposed ternary processor integrates ternary logic gates, arithmetic units, multiplexers, memory units, and control circuits, all optimized for low-power operation. Simulation results demonstrate significant improvements in energy efficiency, area reduction, and computational throughput compared to conventional CMOS-based binary processors. Additionally, the processor\'s architecture is tailored for emerging applications in artificial intelligence, cryptography, and IoT devices, where power efficiency and performance are critical. The findings of this study highlight the potential of CNTFET-based ternary computing as a promising alternative for next-generation low-power processors in nanotechnology-driven applications.', 'Ternary Logic Processor, CNTFET, Low-Power Computing, Nanotechnology, Energy-Efficient Architecture.', 'CH M V SUBBARAO', 'subbaraochappa@gmail.com', 'DEPARTMENT OF ECE ,JNTU GV ', 'paid', '/uploads/submissions/1775058291152-4dzxo9.pdf', '/uploads/submissions/secure-18-1775058470749.pdf', '2026-04-01 15:44:51', '2026-04-01 15:56:06', NULL, 0, '[]', NULL, NULL, NULL, 'archive', NULL),
-(19, 'IJITEST-2026-005', 'RNN and CNN–Enhanced EM-GAMP for Sparse  Channel Estimation via Quantum Compressed  Sensing in Massive MIMO-OFDM ', 'Quantum Compressed Sensing (QCS) is an efficient \r\nframework that exploits signal sparsity to reconstruct quantum \r\nstates and quantum-inspired communication signals using fewer \r\nmeasurements than conventional approaches. It combines \r\ncompressed sensing theory with quantum information processing \r\nto reduce sampling complexity and computational cost in high\r\ndimensional systems. Advanced estimation techniques such as \r\nOMP-based methods, deep learning-assisted recovery, and \r\nquantum-inspired neural models improve reconstruction \r\naccuracy under noisy conditions. These approaches utilize \r\nsparsity in quantum states, wireless channels, and system \r\nparameters while lowering the burden of quantum \r\nmeasurements. QCS is particularly useful in emerging \r\napplications like next-generation wireless networks, quantum \r\nsensing, and optical communication where measurement \r\nresources are limited. Compared to classical compressed sensing, \r\nQCS methods offer better scalability and stronger resilience to \r\nestimation errors. They also enable modeling of quantum \r\nfeatures such as superposition and correlated system behavior. \r\nPerformance evaluation is typically carried out using metrics \r\nlike BER versus SNR, MMSE, and recovery accuracy. Overall, \r\nQCS supports efficient signal acquisition and reliable estimation \r\nin large-scale quantum-aware systems. ', 'Quantum Compressed Sensing, OMP-based  methods, sparse recovery techniques, compressed sensing', 'Mahendra', 'narlamahendracai@gpcet.ac.in', 'Department of CAI, G. Pullaiah College of Engineering and Technology', 'paid', '/uploads/submissions/1775059313407-hpa05k.pdf', '/uploads/submissions/secure-19-1775059566911.pdf', '2026-04-01 16:01:53', '2026-04-01 16:10:46', NULL, 0, '[]', NULL, NULL, NULL, 'archive', NULL);
+INSERT INTO `submissions` (`id`, `paper_id`, `slug`, `status`, `final_decision`, `decision_at`, `decision_by`, `corresponding_author_id`, `issue_id`, `submitted_at`, `updated_at`, `deleted_at`) VALUES
+(13, 'IJITEST-2026-001', 'digital-revolution-informatics-industry', 'published', NULL, NULL, NULL, 'u13-gulshan-sri-babu-uuid-001', 1, '2026-03-03 13:44:42', '2026-03-30 17:33:17', NULL),
+(15, 'IJITEST-2026-002', 'optimization-ris-integrated-hybrid-precoding', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 15:53:00', '2026-03-30 09:06:12', NULL),
+(16, 'IJITEST-2026-003', 'quantum-enabled-security-framework-6g', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-30 15:28:11', '2026-04-12 04:54:13', NULL),
+(18, 'IJITEST-2026-004', 'energy-efficient-ternary-logic-cntfet', 'published', NULL, NULL, NULL, 'u18-subbarao-uuid-002', 1, '2026-04-01 15:44:51', '2026-04-10 17:59:56', NULL),
+(19, 'IJITEST-2026-005', 'rnn-cnn-em-gamp-sparse-channel', 'published', NULL, NULL, NULL, 'u19-mahendra-uuid-003', 1, '2026-04-01 16:01:53', '2026-04-10 17:59:56', NULL),
+(20, 'IJITEST-2026-0001', NULL, 'submitted', NULL, NULL, NULL, '4052ef3b-ff34-4852-909c-990306e04bc9', NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_authors`
+--
+
+CREATE TABLE `submission_authors` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `is_corresponding` tinyint(1) NOT NULL DEFAULT 0,
+  `order_index` int(11) NOT NULL DEFAULT 0,
+  `phone` varchar(20) DEFAULT NULL,
+  `designation` varchar(255) DEFAULT NULL,
+  `institution` varchar(500) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `submission_authors`
+--
+
+INSERT INTO `submission_authors` (`id`, `submission_id`, `name`, `email`, `is_corresponding`, `order_index`, `phone`, `designation`, `institution`) VALUES
+(3, 13, 'THORLAPATI GULSHAN SRI BABU', 'gulshansribabu@gmail.com', 1, 0, NULL, NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY'),
+(4, 13, 'Chekatla Swapna Priya', 'swapnachsp@gmail.com', 0, 1, NULL, NULL, 'Vignan\'s Institute of Information Technology (A)'),
+(5, 13, 'Suseela Kocho', 'jackbenison12@gmail.com', 0, 2, NULL, NULL, 'Department of school education, India'),
+(6, 15, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY(A)'),
+(7, 15, 'V.N.S.Vijay Kumar', 'vijaykumarlce@gmail.com', 0, 1, NULL, NULL, 'Vardhaman college of Engineering, Hyderabad'),
+(8, 16, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNANAS INSTITUTE OF INFORMATION TECHNOLOGY'),
+(9, 16, 'thorlapati gulshan sribabu', 'gulshansribabu@gmail.com', 0, 1, NULL, NULL, 'vignan\'s institute of Information technology'),
+(10, 18, 'CH M V SUBBARAO', 'subbaraochappa@gmail.com', 1, 0, NULL, NULL, 'DEPARTMENT OF ECE ,JNTU GV'),
+(11, 19, 'Mahendra', 'narlamahendracai@gpcet.ac.in', 1, 0, NULL, NULL, 'Department of CAI, G. Pullaiah College of Engineering'),
+(21, 20, 'A. Venkateswara Rao', 'vallu@miracleeducationalsociety.com', 1, 0, '9494586985', 'Associate Professor', 'Dept of ECE');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_editors`
+--
+
+CREATE TABLE `submission_editors` (
+  `submission_id` int(11) NOT NULL,
+  `editor_id` varchar(36) NOT NULL,
+  `assigned_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_files`
+--
+
+CREATE TABLE `submission_files` (
+  `id` int(11) NOT NULL,
+  `version_id` int(11) NOT NULL,
+  `file_type` enum('main_manuscript','pdf_version','copyright_form','supplementary','feedback','payment_proof') NOT NULL,
+  `file_url` varchar(500) NOT NULL,
+  `original_name` varchar(255) DEFAULT NULL,
+  `file_size` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `submission_files`
+--
+
+INSERT INTO `submission_files` (`id`, `version_id`, `file_type`, `file_url`, `original_name`, `file_size`, `created_at`) VALUES
+(4, 13, 'main_manuscript', '/uploads/submissions/manuscript-13-1774891817005.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
+(5, 15, 'main_manuscript', '/uploads/submissions/1774540380450-x26s7q.docx', 'manuscript.docx', NULL, '2026-04-08 14:24:12'),
+(6, 15, 'pdf_version', '/uploads/submissions/secure-15-1774669245557.pdf', 'secure.pdf', NULL, '2026-04-08 14:24:12'),
+(7, 16, 'main_manuscript', '/uploads/submissions/1774884491840-wm8v5k.docx', 'manuscript.docx', NULL, '2026-04-08 14:24:12'),
+(9, 18, 'main_manuscript', '/uploads/submissions/1775058291152-4dzxo9.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
+(10, 19, 'main_manuscript', '/uploads/submissions/1775059313407-hpa05k.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
+(19, 18, 'pdf_version', '/uploads/submissions/final_manuscript_18_v1_1775838991046.pdf', '5.pdf', 965909, '2026-04-10 16:36:31'),
+(20, 18, 'pdf_version', '/uploads/submissions/reviewer_copy_18_1775839061896.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:37:41'),
+(21, 19, 'pdf_version', '/uploads/submissions/reviewer_copy_19_1775839133428.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:38:53'),
+(22, 19, 'feedback', '/uploads/submissions/feedback_1775839390767_4.pdf', '4.pdf', 1488778, '2026-04-10 16:43:10'),
+(23, 18, 'feedback', '/uploads/submissions/feedback_1775839446286_5.pdf', '5.pdf', 965909, '2026-04-10 16:44:06'),
+(24, 16, 'feedback', '/uploads/submissions/feedback_1775839497557_3.pdf', '3.pdf', 1807280, '2026-04-10 16:44:57'),
+(25, 20, 'main_manuscript', '/uploads/submissions/manuscript_20_1775880164573.docx', 'IJITEST-2026-006.docx', 358162, '2026-04-11 04:02:44'),
+(26, 20, 'copyright_form', '/uploads/submissions/copyright_20_1775880164573.docx', 'copyright form.docx', 17275, '2026-04-11 04:02:44'),
+(27, 16, 'pdf_version', '/uploads/submissions/auto_final_v1_1775969653918.pdf', 'auto_final_v1_1775969653918.pdf', 1545416, '2026-04-12 04:54:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_versions`
+--
+
+CREATE TABLE `submission_versions` (
+  `id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `version_number` int(11) NOT NULL DEFAULT 1,
+  `title` text NOT NULL,
+  `abstract` text DEFAULT NULL,
+  `keywords` text DEFAULT NULL,
+  `subject_area` varchar(255) DEFAULT NULL,
+  `changelog` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `submission_versions`
+--
+
+INSERT INTO `submission_versions` (`id`, `submission_id`, `version_number`, `title`, `abstract`, `keywords`, `subject_area`, `changelog`, `created_at`) VALUES
+(13, 13, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm shift in industrial development, as cutting-edge devices—such as AI-enhanced robots—collaborate harmoniously with human labourers to maximize productivity. This phase emphasizes the significance of human engagement while emphasizing sustainability and resilience.  This development based on innovations has led to industry 4.0, the fourth industrial revolution has changed production and production techniques. Changes are motivated by the strong progress of automation, robots, Big data, Internet of Things, Machine learning, artificial intelligence and virtualization. In addition to the successful automation and technological integration of its predecessor, largely related to production and efficiency stimulation, industry 5.0 to create both sustainable innovations and focus on people. Looking for a long -term balance between technology development and environmental protection and the happiness of our society is the main goal. This requires intentional approach to innovation, ensuring that our progress increases the living standards of people while benefiting our natural systems to support us.', 'Industry 4.0, Industry 5.0, Informatics, Automation', NULL, NULL, '2026-04-08 14:24:12'),
+(15, 15, 1, 'Optimization and Performance Evaluation of RIS-Integrated Hybrid Precoding', 'The evolution toward sixth-generation (6G) wireless systems requires extremely high data rates, massive device connectivity, very low latency, and improved energy efficiency. Millimeter-wave (mmWave) communication is considered a key enabler due to its large available bandwidth and ability to support multi-gigabit transmission. Nevertheless, mmWave signals experience high path loss, vulnerability to blockage, and increased implementation complexity caused by large antenna arrays and multiple RF chains. To overcome these limitations, this thesis explores the integration of Reconfigurable Intelligent Surfaces (RIS) with hybrid analog–digital precoding in mmWave Massive MIMO systems. RIS enables intelligent control of signal propagation by adjusting the phase of reflected waves, while hybrid precoding reduces hardware cost and power consumption without significantly degrading performance. A detailed system model, mathematical analysis, and optimization strategies for precoders and RIS phase shifts are presented. Performance evaluation based on spectral efficiency, energy efficiency, and hardware complexity demonstrates that RIS-assisted hybrid architectures provide notable improvements in coverage, achievable rate, and power utilization.', 'Reconfigurable Intelligent Surfaces, mmWave Massive MIMO, 6G Wireless', NULL, NULL, '2026-04-08 14:24:12'),
+(16, 16, 1, 'Quantum-Enabled Security Framework for 6G Communications', '– Ultra-high data rates, efficient use of the terahertz spectrum, and significant connectivity are anticipated as Sixth Generation (6G) wireless communication emerges. However, traditional cryptographic algorithms like RSA and Elliptic Curve Cryptography, which are currently employed in wireless networks, are seriously threatened by the quick development of quantum computing. Future 6G systems must incorporate quantum-safe security measures to allay this worry. The incorporation of Quantum Key Distribution (QKD) into the physical layer of 6G communication networks is investigated in this paper. To facilitate secure key exchange and identify eavesdropping, QKD makes use of quantum concepts like superposition, entanglement, and the no-cloning theorem. Realistic wireless channel conditions are used to analyze the BB84 and E91 protocols. A proposed 6G channel model incorporates Nakagami-m fading, additive white Gaussian noise, and path loss. Detector noise and channel disturbances are taken into account when modeling the Quantum Bit Error Rate (QBER). In an OFDM framework, MATLAB simulations evaluate the secure key rate performance with respect to signal-to-noise ratio, transmission distance, and noise probability. The findings highlight the potential of QKD for secure 6G communications by showing that secure key generation is possible when the QBER stays below the theoretical threshold.', '5G and 6G wireless communications, Quantum Key Distribution, Network Security', NULL, NULL, '2026-04-08 14:24:12'),
+(18, 18, 1, 'Energy-Efficient Ternary Logic Processor Using CNTFETs', 'The increasing demand for energy-efficient computing has driven research into novel logic architectures beyond traditional binary logic. This paper presents the design and implementation of an energy-efficient ternary logic processor using Carbon Nanotube Field-Effect Transistors (CNTFETs) for advanced nanotechnology applications. Ternary logic, which operates with three discrete states (0, 1, 2), offers higher computational density, reduced transistor count, and lower power consumption compared to conventional binary architectures. CNTFETs, with their superior electrical properties such as high carrier mobility, low sub-threshold swing, and excellent scalability, serve as an ideal candidate for implementing ternary logic circuits. The proposed ternary processor integrates ternary logic gates, arithmetic units, multiplexers, memory units, and control circuits, all optimized for low-power operation. Simulation results demonstrate significant improvements in energy efficiency, area reduction, and computational throughput compared to conventional CMOS-based binary processors. Additionally, the processor\'s architecture is tailored for emerging applications in artificial intelligence, cryptography, and IoT devices, where power efficiency and performance are critical. The findings of this study highlight the potential of CNTFET-based ternary computing as a promising alternative for next-generation low-power processors in nanotechnology-driven applications.', 'Ternary Logic Processor, CNTFET, Low-Power Computing', NULL, NULL, '2026-04-08 14:24:12'),
+(19, 19, 1, 'RNN and CNN–Enhanced EM-GAMP for Sparse Channel Estimation', 'Quantum Compressed Sensing (QCS) is an efficient framework that exploits signal sparsity to reconstruct quantum states and quantum-inspired communication signals using fewer measurements than conventional approaches. It combines compressed sensing theory with quantum information processing to reduce sampling complexity and computational cost in high dimensional systems. Advanced estimation techniques such as OMP-based methods, deep learning-assisted recovery, and quantum-inspired neural models improve reconstruction accuracy under noisy conditions. These approaches utilize sparsity in quantum states, wireless channels, and system parameters while lowering the burden of quantum measurements. QCS is particularly useful in emerging applications like next-generation wireless networks, quantum sensing, and optical communication where measurement resources are limited. Compared to classical compressed sensing, QCS methods offer better scalability and stronger resilience to estimation errors. They also enable modeling of quantum features such as superposition and correlated system behavior. Performance evaluation is typically carried out using metrics like BER versus SNR, MMSE, and recovery accuracy. Overall, QCS supports efficient signal acquisition and reliable estimation in large-scale quantum-aware systems.', 'Quantum Compressed Sensing, OMP-based methods, Signal Processing', NULL, NULL, '2026-04-08 14:24:12'),
+(20, 20, 1, 'Quantum Communication for 5G-6G Qubit-Driven Massive MIMO-OFDM Performance Analysis', 'Communication frameworks that are extremely effective, intelligent, and secure are required due to the rapid shift from 5G to 6G networks. Through a performance analysis of qubit-driven Massive MIMO-OFDM, this paper investigates the integration of quantum communication concepts into conventional wireless systems. It provides a detailed comparison of quantum bit (qubit) representations and traditional binary bit processing. The study evaluates key performance measures across different channel models, such as Rayleigh and Nakagami-m fading, including Bit Error Rate (BER), spectral efficiency, Peak-to-Average Power Ratio (PAPR), and computational complexity. We demonstrate the potential for better robustness, reduced BER, and increased reliability in difficult wireless situations by incorporating qubit-based modulation, quantum channel estimation, and quantum error correction techniques into the OFDM and Massive MIMO framework. MATLAB simulation results show that qubit-based systems outperform classical binary systems, particularly in scenarios with high user density and mobility, making them a viable choice for upcoming 6G applications. Important information about the benefits and trade-offs of switching from classical to quantum-enhanced wireless communication systems is provided by the comparative study', 'Quantum Communication, Qubits and Binary Bits, Massive MIMO-OFDM, 5G and 6G Networks, Bit Error Rate, Channel Estimation.', NULL, NULL, '2026-04-11 04:02:44');
 
 -- --------------------------------------------------------
 
@@ -212,43 +424,116 @@ INSERT INTO `submissions` (`id`, `paper_id`, `title`, `abstract`, `keywords`, `a
 --
 
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
+  `id` varchar(36) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) DEFAULT NULL,
-  `full_name` varchar(255) DEFAULT NULL,
-  `designation` varchar(255) DEFAULT NULL,
-  `institute` varchar(255) DEFAULT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `bio` text DEFAULT NULL,
-  `photo_url` varchar(500) DEFAULT NULL,
-  `role` enum('admin','editor','reviewer') DEFAULT 'admin',
+  `role` enum('admin','editor','reviewer','author') NOT NULL DEFAULT 'author',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `is_email_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `invitation_token` varchar(255) DEFAULT NULL,
-  `invitation_expires` timestamp NULL DEFAULT NULL,
-  `nationality` varchar(100) DEFAULT 'India',
-  `has_seen_promotion` tinyint(4) DEFAULT 0,
-  `orcid_id` varchar(50) DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `has_seen_promotion` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password_hash`, `full_name`, `designation`, `institute`, `phone`, `bio`, `photo_url`, `role`, `created_at`, `invitation_token`, `invitation_expires`, `nationality`, `has_seen_promotion`, `orcid_id`) VALUES
-(1, 'editor@ijitest.org', '$2b$10$HpElpKNYCXaqdUpivIxWA.CLDniLlVW/GIb7VyiDv4Syl3WsKsdqy', 'Dr. Ravi Babu T', 'Associate Professor', 'MES Group of Institution', '+91 8919643590', '', '', 'admin', '2026-02-04 12:30:42', NULL, NULL, 'India', 0, NULL),
-(2, 'indalamohankumar@gmail.com', '$2b$10$2nF2wRdIXIfGGFeFYJHYtOhuyufINNFC/pvZr/bAftSh6l4mql3H2', 'Mohan Kumar Indala', '', 'vignan', '7780123277', '', '', 'reviewer', '2026-02-06 14:08:13', NULL, NULL, 'India', 0, NULL),
-(3, 'indalamohankumar21@gmail.com', '$2b$10$m6iHhngwesUoMWr/iPAuaepnWyTSiWv7ubOwAnVl0jwdzHdiICDAa', 'Indala Mohankumar', NULL, NULL, NULL, NULL, NULL, 'editor', '2026-02-06 14:24:33', NULL, NULL, 'India', 0, NULL),
-(4, 'razh1976@gmail.com', '$2b$10$82mvRvTC4qGrcZWaIxe37eAvSGyfLNu45aKuiogg29q1NRLGZgMRa', 'T R babu', 'Associate Professor', 'Miracle Educational Society Group of Institutions', NULL, NULL, '/uploads/reviewer-apps/1771082901394-IMG20230527071713.jpg', 'reviewer', '2026-02-14 15:49:00', NULL, NULL, 'India', 0, NULL),
-(5, 'somasekhar.ece@anits.edu.in', '$2b$10$p83k/rGRp24YN44Uao3xFeLoYFHfEZna9pY8sg5qdq2jShzvXRK/W', 'Dr.B.Somasekhar', 'Professor', 'Anil Neerukonda Institute of Technology & Sciences', NULL, NULL, '/uploads/reviewer-apps/1771156198892-Dr._Borugadda_Soma_Sekhar_100443_Professor__ECE_Department.png', 'editor', '2026-02-15 12:22:35', NULL, NULL, 'India', 0, NULL),
-(6, 'manohar@gvpcdpgc.edu.in', '$2b$10$AD6WPbFIDVEoOoPZUCZAfeHqZ4YoQjexBjQOO6.3bDReU30H20AFK', 'Dr Ch Manohar Kumar', 'Associate Professor', 'gayatri Vidya Parishad College for Degree and PG Courses(A)', NULL, NULL, '/uploads/reviewer-apps/1771489588377-Mr.-Ch.-Manohar-Kumar.jpg', 'reviewer', '2026-02-19 16:12:14', NULL, NULL, 'India', 0, NULL),
-(7, 'venkatesh15793@gmail.com', '$2b$10$vCuOl9r0XinmX3pezxSBqOLGzBD3P5UgMh/D1XZWyDdtnisNaDmtK', 'Dr Appalabathula Venkatesh', 'Assistant Professor', 'Anil Neerukonda Institute of Technology and Sciences', '', 'APPALABATHULA VENKATESH (Professional Member, IEEE) received a Bachelor\'s in Engineering in Electrical and Electronics Engineering from Lendi Institute of Technology and Sciences in 2014 and a Master\'s in Engineering in Control Systems in 2018, from Anil Neerukonda Institute of Technology and Sciences, Andhra Pradesh, India, and a Ph.D. in the Area of Hybrid Electric Vehicles from the National Institute of Engineering, Mysuru, Karnataka, India, in 2023. \r\nHe has over five years of teaching experience and is currently an Assistant Professor in the Department of Electrical and Electronics Engineering at Anil Neerukonda Institute of Technology and Sciences, India. He also served as a Post-Doctoral Research Intern in the Department of Electrical and Electronics Engineering, School of Engineering and Sciences, SRM University, Amaravati, India.\r\nHe has published His research interests include electric and hybrid electric vehicles, fuel cell-based vehicle systems, intelligent control design for power electronic converters, heuristic optimization, bidirectional DC–DC converters, grid-integrated hybrid renewable systems, and AI/ML-based control strategies. \r\nHe currently serves as an IEEE VTS Young Professionals (YP) Ambassador and Lead Entrepreneurship Ambassador of the IEEE Vizag Bay Section (2024–2025). He is also a member of the IEEE Region 10 Adhoc Committee on Entrepreneurship and Innovation (ACEI), Innovation Ambassador.', '/uploads/profiles/undefined-1774919094662-Screenshot-2026-02-19-124056.jpg', 'reviewer', '2026-02-19 16:12:20', NULL, NULL, 'India', 0, NULL),
-(12, 'swapnachsp@gmail.com', '$2b$10$S3VJhjb7uats5M8.eKctHeoiu2fIDsZfvimEDmMTOY8UFMoiFh12m', 'Dr. CH. Swapna Priya ', NULL, 'Dept of Computer Science Engineering, Vigyan Institute of Technology, India', NULL, NULL, NULL, 'editor', '2026-03-03 14:06:00', NULL, NULL, 'India', 0, NULL),
-(13, 'skaredla@gitam.edu', NULL, 'Dr. K. Srinivas', NULL, 'Dept of Management, MES Group of Institutions, India', NULL, NULL, NULL, 'editor', '2026-03-03 14:08:13', '09de0294e967aeb6a30abfeda5a51c62340e2d9aeb8a20b4e1143bdd46f95c3d', '2026-03-04 14:08:13', 'India', 0, NULL),
-(17, 'jackbenison12@gmail.com', NULL, 'Dr. T.  babu', NULL, NULL, NULL, NULL, NULL, 'editor', '2026-03-03 14:09:25', 'c606a2bab40b8cdae84258591cbd5da5e7fd771750d5ee06337519e2abb54438', '2026-03-04 14:09:25', 'India', 0, NULL),
-(22, 'norsuzila@salam.uitm.edu.my', '$2b$10$SoJp3xko/HImNINIVY2RjO9Vk17ERTTcijrIXECZ.f1/2EtiEwZfm', 'Prof.Ir.Gs.Ts. Dr. Norsuzila Ya\'acob', '', 'Faculty of Electrical Engineering University of Teknologi MARA,Shah Alam, Malaysia', '', '', '', 'editor', '2026-03-03 14:29:56', NULL, NULL, 'Malaysia', 0, NULL),
-(23, 'razh1977@gmail.com', NULL, 'T R', NULL, NULL, NULL, NULL, NULL, 'editor', '2026-03-03 15:34:37', 'a52772afc7c330f652056cdb27b926b8a7de3476dbb421a69981f3d2cc2d28b2', '2026-03-31 08:51:10', 'India', 0, NULL),
-(24, 'trinadhphd33@gmail.com', NULL, 'Dr.Trinadha Rao challa', 'Associate Professor', 'Jntugv University ', NULL, NULL, '/uploads/reviewer-apps/1772620698103-Trinadh-Rao-Challa.jpg', 'editor', '2026-03-05 15:56:46', '46a219ab8c1a6157080a9886c7342c574ce6595408da12cdbcdb637f4cf53088', '2026-03-06 15:56:46', 'India', 0, NULL),
-(25, 'mr.challa33@gmail.com', NULL, 'Dr.Trinadha Rao challa', 'Associate Professor', 'Jntugv University ', NULL, NULL, '/uploads/reviewer-apps/1772620431806-Trinadh-Rao-Challa-(1).jpg', 'reviewer', '2026-03-05 15:56:53', '2f0d0f6f1068bb271034e7e22878c5660fa2e090e756ff31d6d898c5f73b8b52', '2026-03-06 15:56:53', 'India', 0, NULL);
+INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `is_active`, `is_email_verified`, `email_verified_at`, `created_at`, `updated_at`, `deleted_at`, `has_seen_promotion`) VALUES
+('4052ef3b-ff34-4852-909c-990306e04bc9', 'vallu@miracleeducationalsociety.com', NULL, 'author', 1, 0, NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44', NULL, 0),
+('79daefad-31c1-11f1-ad3e-c05465fbbdc2', 'editor@ijitest.org', '$2b$10$HpElpKNYCXaqdUpivIxWA.CLDniLlVW/GIb7VyiDv4Syl3WsKsdqy', 'admin', 1, 0, NULL, '2026-02-04 12:30:42', '2026-04-06 18:44:07', NULL, 1),
+('79db5a7a-31c1-11f1-ad3e-c05465fbbdc2', 'indalamohankumar@gmail.com', '$2b$10$2nF2wRdIXIfGGFeFYJHYtOhuyufINNFC/pvZr/bAftSh6l4mql3H2', 'reviewer', 1, 0, NULL, '2026-02-06 14:08:13', '2026-04-07 17:29:28', NULL, 0),
+('79dbcba4-31c1-11f1-ad3e-c05465fbbdc2', 'indalamohankumar21@gmail.com', '$2b$10$m6iHhngwesUoMWr/iPAuaepnWyTSiWv7ubOwAnVl0jwdzHdiICDAa', 'editor', 1, 0, NULL, '2026-02-06 14:24:33', '2026-04-06 14:04:06', NULL, 0),
+('79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 'razh1976@gmail.com', '$2b$10$82mvRvTC4qGrcZWaIxe37eAvSGyfLNu45aKuiogg29q1NRLGZgMRa', 'reviewer', 1, 0, NULL, '2026-02-14 15:49:00', '2026-04-06 14:04:06', NULL, 0),
+('79dc7b1c-31c1-11f1-ad3e-c05465fbbdc2', 'somasekhar.ece@anits.edu.in', '$2b$10$p83k/rGRp24YN44Uao3xFeLoYFHfEZna9pY8sg5qdq2jShzvXRK/W', 'reviewer', 1, 0, NULL, '2026-02-15 12:22:35', '2026-04-11 03:23:44', NULL, 0),
+('79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 'manohar@gvpcdpgc.edu.in', '$2b$10$AD6WPbFIDVEoOoPZUCZAfeHqZ4YoQjexBjQOO6.3bDReU30H20AFK', 'reviewer', 1, 0, NULL, '2026-02-19 16:12:14', '2026-04-06 14:04:06', NULL, 0),
+('79dcf791-31c1-11f1-ad3e-c05465fbbdc2', 'venkatesh15793@gmail.com', '$2b$10$vCuOl9r0XinmX3pezxSBqOLGzBD3P5UgMh/D1XZWyDdtnisNaDmtK', 'reviewer', 1, 0, NULL, '2026-02-19 16:12:20', '2026-04-06 14:04:06', NULL, 0),
+('79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 'swapnachsp@gmail.com', '$2b$10$S3VJhjb7uats5M8.eKctHeoiu2fIDsZfvimEDmMTOY8UFMoiFh12m', 'editor', 1, 0, NULL, '2026-03-03 14:06:00', '2026-04-06 14:04:06', NULL, 0),
+('79dd80d7-31c1-11f1-ad3e-c05465fbbdc2', 'skaredla@gitam.edu', NULL, 'reviewer', 1, 0, NULL, '2026-03-03 14:08:13', '2026-04-11 03:23:59', NULL, 0),
+('79ddcf7f-31c1-11f1-ad3e-c05465fbbdc2', 'jackbenison12@gmail.com', NULL, 'reviewer', 1, 0, NULL, '2026-03-03 14:09:25', '2026-04-11 03:24:19', NULL, 0),
+('79de0a1f-31c1-11f1-ad3e-c05465fbbdc2', 'norsuzila@salam.uitm.edu.my', '$2b$10$SoJp3xko/HImNINIVY2RjO9Vk17ERTTcijrIXECZ.f1/2EtiEwZfm', 'editor', 1, 0, NULL, '2026-03-03 14:29:56', '2026-04-06 14:04:06', NULL, 0),
+('79de63c3-31c1-11f1-ad3e-c05465fbbdc2', 'razh1977@gmail.com', NULL, 'editor', 1, 0, NULL, '2026-03-03 15:34:37', '2026-04-06 14:04:06', NULL, 0),
+('79df667a-31c1-11f1-ad3e-c05465fbbdc2', 'trinadhphd33@gmail.com', NULL, 'editor', 1, 0, NULL, '2026-03-05 15:56:46', '2026-04-06 14:04:06', NULL, 0),
+('79dfcee0-31c1-11f1-ad3e-c05465fbbdc2', 'mr.challa33@gmail.com', NULL, 'reviewer', 1, 0, NULL, '2026-03-05 15:56:53', '2026-04-06 14:04:06', NULL, 0),
+('a6692808-5464-4ac5-af21-e27dc56a5a8f', 'mohan@colourmoon.com', NULL, 'author', 1, 0, NULL, '2026-04-07 13:38:29', '2026-04-07 13:38:29', NULL, 0),
+('u13-gulshan-sri-babu-uuid-001', 'gulshansribabu@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'author', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12', NULL, 0),
+('u18-subbarao-uuid-002', 'subbaraochappa@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'reviewer', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-11 03:25:36', NULL, 0),
+('u19-mahendra-uuid-003', 'narlamahendracai@gpcet.ac.in', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'editor', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-11 03:25:47', NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_invitations`
+--
+
+CREATE TABLE `user_invitations` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `role` enum('editor','reviewer') NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` timestamp NOT NULL,
+  `invited_by` varchar(36) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_invitations`
+--
+
+INSERT INTO `user_invitations` (`id`, `email`, `role`, `token`, `expires_at`, `invited_by`, `created_at`) VALUES
+(1, 'skaredla@gitam.edu', 'editor', '09de0294e967aeb6a30abfeda5a51c62340e2d9aeb8a20b4e1143bdd46f95c3d', '2026-03-04 14:08:13', NULL, '2026-03-03 14:08:13'),
+(2, 'jackbenison12@gmail.com', 'editor', 'c606a2bab40b8cdae84258591cbd5da5e7fd771750d5ee06337519e2abb54438', '2026-03-04 14:09:25', NULL, '2026-03-03 14:09:25'),
+(3, 'razh1977@gmail.com', 'editor', 'a52772afc7c330f652056cdb27b926b8a7de3476dbb421a69981f3d2cc2d28b2', '2026-03-31 08:51:10', NULL, '2026-03-03 15:34:37'),
+(4, 'trinadhphd33@gmail.com', 'editor', '46a219ab8c1a6157080a9886c7342c574ce6595408da12cdbcdb637f4cf53088', '2026-03-06 15:56:46', NULL, '2026-03-05 15:56:46'),
+(5, 'mr.challa33@gmail.com', 'reviewer', '2f0d0f6f1068bb271034e7e22878c5660fa2e090e756ff31d6d898c5f73b8b52', '2026-03-06 15:56:53', NULL, '2026-03-05 15:56:53');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_profiles`
+--
+
+CREATE TABLE `user_profiles` (
+  `id` int(11) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `full_name` varchar(255) NOT NULL,
+  `designation` varchar(255) DEFAULT NULL,
+  `institute` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `orcid_id` varchar(50) DEFAULT NULL,
+  `nationality` varchar(100) DEFAULT 'India',
+  `bio` text DEFAULT NULL,
+  `photo_url` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_profiles`
+--
+
+INSERT INTO `user_profiles` (`id`, `user_id`, `full_name`, `designation`, `institute`, `phone`, `orcid_id`, `nationality`, `bio`, `photo_url`, `created_at`, `updated_at`) VALUES
+(1, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. Ravi Babu T', 'Associate Professor', 'MES Group of Institution', '+91 8919643590', NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(2, '79db5a7a-31c1-11f1-ad3e-c05465fbbdc2', 'Mohan Kumar Indala', 'professor', 'vignan', '7780123277', NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-07 13:07:37'),
+(3, '79dbcba4-31c1-11f1-ad3e-c05465fbbdc2', 'Indala Mohankumar', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(4, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 'T R babu', 'Associate Professor', 'Miracle Educational Society Group of Institutions', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1771082901394-IMG20230527071713.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(5, '79dc7b1c-31c1-11f1-ad3e-c05465fbbdc2', 'Dr.B.Somasekhar', 'Professor', 'Anil Neerukonda Institute of Technology & Sciences', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1771156198892-Dr._Borugadda_Soma_Sekhar_100443_Professor__ECE_Department.png', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(6, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 'Dr Ch Manohar Kumar', 'Associate Professor', 'gayatri Vidya Parishad College for Degree and PG Courses(A)', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1771489588377-Mr.-Ch.-Manohar-Kumar.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(7, '79dcf791-31c1-11f1-ad3e-c05465fbbdc2', 'Dr Appalabathula Venkatesh', 'Assistant Professor', 'Anil Neerukonda Institute of Technology and Sciences', NULL, NULL, 'India', 'APPALABATHULA VENKATESH (Professional Member, IEEE) received a Bachelor\'s in Engineering in Electrical and Electronics Engineering from Lendi Institute of Technology and Sciences in 2014 and a Master\'s in Engineering in Control Systems in 2018, from Anil Neerukonda Institute of Technology and Sciences, Andhra Pradesh, India, and a Ph.D. in the Area of Hybrid Electric Vehicles from the National Institute of Engineering, Mysuru, Karnataka, India, in 2023. \r\n\r\nHe has over five years of teaching experience and is currently an Assistant Professor in the Department of Electrical and Electronics Engineering at Anil Neerukonda Institute of Technology and Sciences, India. He also served as a Post-Doctoral Research Intern in the Department of Electrical and Electronics Engineering, School of Engineering and Sciences, SRM University, Amaravati, India.\r\n\r\nHe has published His research interests include electric and hybrid electric vehicles, fuel cell-based vehicle systems, intelligent control design for power electronic converters, heuristic optimization, bidirectional DC–DC converters, grid-integrated hybrid renewable systems, and AI/ML-based control strategies. \r\n\r\nHe currently serves as an IEEE VTS Young Professionals (YP) Ambassador and Lead Entrepreneurship Ambassador of the IEEE Vizag Bay Section (2024–2025). He is also a member of the IEEE Region 10 Adhoc Committee on Entrepreneurship and Innovation (ACEI), Innovation Ambassador.', '/uploads/profiles/undefined-1774919094662-Screenshot-2026-02-19-124056.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(8, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. CH. Swapna Priya ', NULL, 'Dept of Computer Science Engineering, Vigyan Institute of Technology, India', NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(9, '79dd80d7-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. K. Srinivas', NULL, 'Dept of Management, MES Group of Institutions, India', NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(10, '79ddcf7f-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. T.  babu', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(11, '79de0a1f-31c1-11f1-ad3e-c05465fbbdc2', 'Prof.Ir.Gs.Ts. Dr. Norsuzila Ya\'acob', NULL, 'Faculty of Electrical Engineering University of Teknologi MARA,Shah Alam, Malaysia', NULL, NULL, 'Malaysia', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(12, '79de63c3-31c1-11f1-ad3e-c05465fbbdc2', 'T R', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(13, '79df667a-31c1-11f1-ad3e-c05465fbbdc2', 'Dr.Trinadha Rao challa', 'Associate Professor', 'Jntugv University ', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1772620698103-Trinadh-Rao-Challa.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(14, '79dfcee0-31c1-11f1-ad3e-c05465fbbdc2', 'Dr.Trinadha Rao challa', 'Associate Professor', 'Jntugv University ', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1772620431806-Trinadh-Rao-Challa-(1).jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
+(15, 'a6692808-5464-4ac5-af21-e27dc56a5a8f', 'mohan', 'B-tech UG', 'Vignan  Institute of Information Technology', '7780123277', NULL, 'India', NULL, NULL, '2026-04-07 13:38:29', '2026-04-07 13:38:29'),
+(16, 'u13-gulshan-sri-babu-uuid-001', 'THORLAPATI GULSHAN SRI BABU', NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
+(17, 'u18-subbarao-uuid-002', 'CH M V SUBBARAO', NULL, 'DEPARTMENT OF ECE, JNTU GV', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
+(18, 'u19-mahendra-uuid-003', 'Mahendra', NULL, 'Department of CAI, G. Pullaiah College of Engineering and Technology', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
+(22, '4052ef3b-ff34-4852-909c-990306e04bc9', 'A. Venkateswara Rao', 'Associate Professor', 'Dept of ECE', '9494586985', NULL, 'India', NULL, NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44');
 
 -- --------------------------------------------------------
 
@@ -262,7 +547,7 @@ CREATE TABLE `volumes_issues` (
   `issue_number` int(11) NOT NULL,
   `year` int(11) NOT NULL,
   `month_range` varchar(100) DEFAULT NULL,
-  `status` enum('open','published') DEFAULT 'open',
+  `status` enum('open','published') NOT NULL DEFAULT 'open',
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -271,73 +556,120 @@ CREATE TABLE `volumes_issues` (
 --
 
 INSERT INTO `volumes_issues` (`id`, `volume_number`, `issue_number`, `year`, `month_range`, `status`, `created_at`) VALUES
-(5, 1, 1, 2026, 'March', 'open', '2026-03-14 08:01:13');
+(1, 1, 1, 2026, 'March', 'published', '2026-04-08 14:24:12');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `__drizzle_migrations`
+-- Table structure for table `_user_id_mapping`
 --
 
-CREATE TABLE `__drizzle_migrations` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `hash` text NOT NULL,
-  `created_at` bigint(20) DEFAULT NULL
+CREATE TABLE `_user_id_mapping` (
+  `old_id` int(11) NOT NULL,
+  `new_uuid` varchar(36) NOT NULL,
+  `email` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `__drizzle_migrations`
+-- Dumping data for table `_user_id_mapping`
 --
 
-INSERT INTO `__drizzle_migrations` (`id`, `hash`, `created_at`) VALUES
-(1, 'b0bc9b167e5f85dff13044c8274017bb85f61b72e1654986b8ab17f2e8824298', 1772554520069),
-(2, '1150a2db732200dbc7e8cad82e57280b908f3002e125caaca673f5dc04f6854b', 1772555249974),
-(3, '986e50815ddbdcedb491d2902a6609d278d98e387c8964bb402677f27645555d', 1772726659943);
+INSERT INTO `_user_id_mapping` (`old_id`, `new_uuid`, `email`) VALUES
+(1, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 'editor@ijitest.org'),
+(2, '79db5a7a-31c1-11f1-ad3e-c05465fbbdc2', 'indalamohankumar@gmail.com'),
+(3, '79dbcba4-31c1-11f1-ad3e-c05465fbbdc2', 'indalamohankumar21@gmail.com'),
+(4, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 'razh1976@gmail.com'),
+(5, '79dc7b1c-31c1-11f1-ad3e-c05465fbbdc2', 'somasekhar.ece@anits.edu.in'),
+(6, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 'manohar@gvpcdpgc.edu.in'),
+(7, '79dcf791-31c1-11f1-ad3e-c05465fbbdc2', 'venkatesh15793@gmail.com'),
+(12, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 'swapnachsp@gmail.com'),
+(13, '79dd80d7-31c1-11f1-ad3e-c05465fbbdc2', 'skaredla@gitam.edu'),
+(17, '79ddcf7f-31c1-11f1-ad3e-c05465fbbdc2', 'jackbenison12@gmail.com'),
+(22, '79de0a1f-31c1-11f1-ad3e-c05465fbbdc2', 'norsuzila@salam.uitm.edu.my'),
+(23, '79de63c3-31c1-11f1-ad3e-c05465fbbdc2', 'razh1977@gmail.com'),
+(24, '79df667a-31c1-11f1-ad3e-c05465fbbdc2', 'trinadhphd33@gmail.com'),
+(25, '79dfcee0-31c1-11f1-ad3e-c05465fbbdc2', 'mr.challa33@gmail.com');
 
 --
 -- Indexes for dumped tables
 --
 
 --
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `activity_logs_performed_by_users_id_fk` (`performed_by`);
+
+--
 -- Indexes for table `applications`
 --
 ALTER TABLE `applications`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `app_status_idx` (`status`),
-  ADD KEY `app_type_idx` (`application_type`),
-  ADD KEY `reviewed_by_idx` (`reviewed_by`);
+  ADD UNIQUE KEY `app_email_type_unique` (`email`,`type`),
+  ADD KEY `applications_reviewed_by_users_id_fk` (`reviewed_by`);
 
 --
 -- Indexes for table `application_interests`
 --
 ALTER TABLE `application_interests`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `app_interest_idx` (`application_id`),
-  ADD KEY `interest_val_idx` (`interest`);
+  ADD KEY `application_interests_application_id_applications_id_fk` (`application_id`),
+  ADD KEY `application_interests_interest_id_master_interests_id_fk` (`interest_id`);
 
 --
 -- Indexes for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `master_interests`
+--
+ALTER TABLE `master_interests`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `msg_status_idx` (`status`),
-  ADD KEY `resolved_by_msg_idx` (`resolved_by`);
+  ADD UNIQUE KEY `master_interests_name_unique` (`name`);
+
+--
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `notif_user_idx` (`user_id`,`is_read`);
 
 --
 -- Indexes for table `payments`
 --
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `submission_id` (`submission_id`);
+  ADD UNIQUE KEY `payments_submission_id_unique` (`submission_id`),
+  ADD UNIQUE KEY `payments_transaction_id_unique` (`transaction_id`);
+
+--
+-- Indexes for table `publications`
+--
+ALTER TABLE `publications`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `publications_submission_id_unique` (`submission_id`),
+  ADD UNIQUE KEY `publications_doi_unique` (`doi`),
+  ADD KEY `publications_issue_id_volumes_issues_id_fk` (`issue_id`);
 
 --
 -- Indexes for table `reviews`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `submission_id` (`submission_id`),
-  ADD KEY `reviewer_id` (`reviewer_id`);
+  ADD UNIQUE KEY `reviews_assignment_id_unique` (`assignment_id`);
+
+--
+-- Indexes for table `review_assignments`
+--
+ALTER TABLE `review_assignments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_assignment` (`submission_id`,`reviewer_id`,`version_id`,`review_round`),
+  ADD KEY `review_assignments_reviewer_id_users_id_fk` (`reviewer_id`),
+  ADD KEY `review_assignments_version_id_submission_versions_id_fk` (`version_id`),
+  ADD KEY `review_assignments_assigned_by_users_id_fk` (`assigned_by`);
 
 --
 -- Indexes for table `settings`
@@ -350,41 +682,93 @@ ALTER TABLE `settings`
 --
 ALTER TABLE `submissions`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `paper_id` (`paper_id`),
-  ADD KEY `issue_id` (`issue_id`),
-  ADD KEY `author_email_idx` (`author_email`),
-  ADD KEY `status_idx` (`status`);
+  ADD UNIQUE KEY `submissions_paper_id_unique` (`paper_id`),
+  ADD UNIQUE KEY `submissions_slug_unique` (`slug`),
+  ADD KEY `submissions_decision_by_users_id_fk` (`decision_by`),
+  ADD KEY `submissions_issue_id_volumes_issues_id_fk` (`issue_id`),
+  ADD KEY `status_idx` (`status`),
+  ADD KEY `author_idx` (`corresponding_author_id`);
+
+--
+-- Indexes for table `submission_authors`
+--
+ALTER TABLE `submission_authors`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sub_author_idx` (`submission_id`),
+  ADD KEY `author_order_idx` (`submission_id`,`order_index`);
+
+--
+-- Indexes for table `submission_editors`
+--
+ALTER TABLE `submission_editors`
+  ADD PRIMARY KEY (`submission_id`,`editor_id`),
+  ADD KEY `submission_editors_editor_id_users_id_fk` (`editor_id`);
+
+--
+-- Indexes for table `submission_files`
+--
+ALTER TABLE `submission_files`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `file_version_idx` (`version_id`);
+
+--
+-- Indexes for table `submission_versions`
+--
+ALTER TABLE `submission_versions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `submission_version_unique` (`submission_id`,`version_number`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `invitation_token` (`invitation_token`),
+  ADD UNIQUE KEY `users_email_unique` (`email`),
   ADD KEY `role_idx` (`role`);
+
+--
+-- Indexes for table `user_invitations`
+--
+ALTER TABLE `user_invitations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_invitations_token_unique` (`token`),
+  ADD KEY `user_invitations_invited_by_users_id_fk` (`invited_by`);
+
+--
+-- Indexes for table `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_profiles_user_id_unique` (`user_id`);
 
 --
 -- Indexes for table `volumes_issues`
 --
 ALTER TABLE `volumes_issues`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `vol_issue_year` (`volume_number`,`issue_number`,`year`);
 
 --
--- Indexes for table `__drizzle_migrations`
+-- Indexes for table `_user_id_mapping`
 --
-ALTER TABLE `__drizzle_migrations`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `_user_id_mapping`
+  ADD PRIMARY KEY (`old_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
+-- AUTO_INCREMENT for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `application_interests`
@@ -396,47 +780,95 @@ ALTER TABLE `application_interests`
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `master_interests`
+--
+ALTER TABLE `master_interests`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `publications`
+--
+ALTER TABLE `publications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `review_assignments`
+--
+ALTER TABLE `review_assignments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT for table `submission_authors`
 --
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+ALTER TABLE `submission_authors`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT for table `submission_files`
+--
+ALTER TABLE `submission_files`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+
+--
+-- AUTO_INCREMENT for table `submission_versions`
+--
+ALTER TABLE `submission_versions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `user_invitations`
+--
+ALTER TABLE `user_invitations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `volumes_issues`
 --
 ALTER TABLE `volumes_issues`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `__drizzle_migrations`
---
-ALTER TABLE `__drizzle_migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD CONSTRAINT `activity_logs_performed_by_users_id_fk` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `applications`
@@ -448,36 +880,87 @@ ALTER TABLE `applications`
 -- Constraints for table `application_interests`
 --
 ALTER TABLE `application_interests`
-  ADD CONSTRAINT `application_interests_application_id_applications_id_fk` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+  ADD CONSTRAINT `application_interests_application_id_applications_id_fk` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  ADD CONSTRAINT `application_interests_interest_id_master_interests_id_fk` FOREIGN KEY (`interest_id`) REFERENCES `master_interests` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 --
--- Constraints for table `contact_messages`
+-- Constraints for table `notifications`
 --
-ALTER TABLE `contact_messages`
-  ADD CONSTRAINT `contact_messages_resolved_by_users_id_fk` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `notifications_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `payments`
 --
 ALTER TABLE `payments`
-  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`),
-  ADD CONSTRAINT `payments_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `payments_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `publications`
+--
+ALTER TABLE `publications`
+  ADD CONSTRAINT `publications_issue_id_volumes_issues_id_fk` FOREIGN KEY (`issue_id`) REFERENCES `volumes_issues` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `publications_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `reviews`
 --
 ALTER TABLE `reviews`
-  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`),
-  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `reviews_reviewer_id_users_id_fk` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `reviews_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `reviews_assignment_id_review_assignments_id_fk` FOREIGN KEY (`assignment_id`) REFERENCES `review_assignments` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `review_assignments`
+--
+ALTER TABLE `review_assignments`
+  ADD CONSTRAINT `review_assignments_assigned_by_users_id_fk` FOREIGN KEY (`assigned_by`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `review_assignments_reviewer_id_users_id_fk` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `review_assignments_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  ADD CONSTRAINT `review_assignments_version_id_submission_versions_id_fk` FOREIGN KEY (`version_id`) REFERENCES `submission_versions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `submissions`
 --
 ALTER TABLE `submissions`
-  ADD CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`issue_id`) REFERENCES `volumes_issues` (`id`),
-  ADD CONSTRAINT `submissions_issue_id_volumes_issues_id_fk` FOREIGN KEY (`issue_id`) REFERENCES `volumes_issues` (`id`);
+  ADD CONSTRAINT `submissions_corresponding_author_id_users_id_fk` FOREIGN KEY (`corresponding_author_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `submissions_decision_by_users_id_fk` FOREIGN KEY (`decision_by`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `submissions_issue_id_volumes_issues_id_fk` FOREIGN KEY (`issue_id`) REFERENCES `volumes_issues` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `submission_authors`
+--
+ALTER TABLE `submission_authors`
+  ADD CONSTRAINT `submission_authors_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `submission_editors`
+--
+ALTER TABLE `submission_editors`
+  ADD CONSTRAINT `submission_editors_editor_id_users_id_fk` FOREIGN KEY (`editor_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `submission_editors_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `submission_files`
+--
+ALTER TABLE `submission_files`
+  ADD CONSTRAINT `submission_files_version_id_submission_versions_id_fk` FOREIGN KEY (`version_id`) REFERENCES `submission_versions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `submission_versions`
+--
+ALTER TABLE `submission_versions`
+  ADD CONSTRAINT `submission_versions_submission_id_submissions_id_fk` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `user_invitations`
+--
+ALTER TABLE `user_invitations`
+  ADD CONSTRAINT `user_invitations_invited_by_users_id_fk` FOREIGN KEY (`invited_by`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `user_profiles`
+--
+ALTER TABLE `user_profiles`
+  ADD CONSTRAINT `user_profiles_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
