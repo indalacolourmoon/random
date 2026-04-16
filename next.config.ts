@@ -8,9 +8,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "20mb"
     },
   },
-  turbopack: {
-    root: path.resolve("."),
-  },
+  
   images: {
     qualities: [75, 90, 100],
     remotePatterns: [

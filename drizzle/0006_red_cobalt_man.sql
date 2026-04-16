@@ -1,0 +1,1 @@
+ALTER TABLE `user_invitations` MODIFY COLUMN `role` enum('editor','reviewer','author') NOT NULL;
