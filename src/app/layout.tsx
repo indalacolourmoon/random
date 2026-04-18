@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.org'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.ijitest.org'),
   title: {
     default: "IJITEST | International Journal of Innovative Trends in Engineering Science and Technology",
     template: "%s | IJITEST"
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "IJITEST | International Journal of Innovative Trends in Engineering Science and Technology",
     description: "Global platform for breakthrough research in engineering and technology.",
-    url: 'https://ijitest.org',
+    url: 'https://www.ijitest.org',
     siteName: 'IJITEST',
     images: [
       {
@@ -87,8 +87,8 @@ export default function RootLayout({
   const settings = {
     journal_name: "IJITEST | International Journal of Innovative Trends in Engineering Science and Technology",
     journal_short_name: "IJITEST",
-    url: "https://ijitest.org",
-    logo: "https://ijitest.org/favicon_io/apple-touch-icon.png"
+    url: "https://www.ijitest.org",
+    logo: "https://www.ijitest.org/favicon_io/apple-touch-icon.png"
   };
 
   const organizationSchema = {

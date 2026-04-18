@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     
     if (!paper) return { title: 'Article Not Found | IJITEST' };
 
-    const baseUrl = settings.journal_website || 'https://ijitest.org';
+    const baseUrl = settings.journal_website || 'https://www.ijitest.org';
     const mainAuthor = paper.author_name;
     const coAuthors = paper.co_authors ? paper.co_authors.split(',').map((s: string) => s.trim()) : [];
     const allAuthors = [mainAuthor, ...coAuthors].filter(Boolean);
@@ -66,7 +66,7 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
 
     if (!paper) notFound();
 
-    const baseUrl = settings.journal_website || 'https://ijitest.org';
+    const baseUrl = settings.journal_website || 'https://www.ijitest.org';
     const mainAuthor = paper.author_name;
     const coAuthors = paper.co_authors ? paper.co_authors.split(',').map((s: string) => s.trim()) : [];
     const allAuthors = [mainAuthor, ...coAuthors].filter(Boolean);

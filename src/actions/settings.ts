@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
     support_phone: '+91 8919643590',
     office_address: 'Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India',
     publisher_name: 'Felix Academic Publications',
-    journal_website: 'https://ijitest.org',
+    journal_website: 'https://www.ijitest.org',
     apc_description: 'APC covers SJIF impact evaluation, long-term hosting, indexing maintenance, and editorial handling. There are no submission or processing charges before acceptance.',
     template_url: '/docs/template.docx',
     copyright_url: '/docs/copyright-form.docx',
@@ -38,7 +38,7 @@ export async function getSettings(): Promise<ActionResponse<Record<string, strin
         async () => {
             try {
                 const rows = await db.select().from(settings);
-                
+
                 const result: Record<string, string> = { ...DEFAULT_SETTINGS };
 
                 rows.forEach((row) => {

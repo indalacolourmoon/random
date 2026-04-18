@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 12, 2026 at 05:14 PM
+-- Generation Time: Apr 17, 2026 at 02:19 PM
 -- Server version: 12.3.1-MariaDB-log
 -- PHP Version: 7.2.34
 
@@ -87,14 +87,6 @@ CREATE TABLE `contact_messages` (
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `contact_messages`
---
-
-INSERT INTO `contact_messages` (`id`, `name`, `email`, `subject`, `message`, `status`, `created_at`) VALUES
-(1, 'moahn', 'indalamohankumar@gmail.com', 'test subject dsfdsf df', 'sdfdsf,mn,msd', 'pending', '2026-04-07 14:46:15'),
-(2, 'maohan', 'indalamohankumar@gmail.com', 'test  for contact', 'a  test for message submission ', 'pending', '2026-04-07 15:15:50');
-
 -- --------------------------------------------------------
 
 --
@@ -174,11 +166,16 @@ CREATE TABLE `publications` (
 --
 
 INSERT INTO `publications` (`id`, `submission_id`, `issue_id`, `final_pdf_url`, `start_page`, `end_page`, `doi`, `published_at`) VALUES
-(1, 13, 1, '/uploads/published/IJITEST-2026-001-published.pdf', 1, 7, NULL, '2026-03-15 22:49:44'),
-(2, 15, 1, '/uploads/published/IJITEST-2026-002-published.pdf', 8, 12, NULL, '2026-03-30 09:06:12'),
-(11, 16, 1, '/uploads/published/IJITEST-2026-003-published.pdf', 13, 20, NULL, '2026-04-10 17:59:56'),
-(12, 18, 1, '/uploads/published/IJITEST-2026-004-published.pdf', 21, 26, NULL, '2026-04-10 17:59:56'),
-(13, 19, 1, '/uploads/published/IJITEST-2026-005-published.pdf', 27, 32, NULL, '2026-04-10 17:59:56');
+(1, 13, 1, '/uploads/published/IJITEST-2026-001-published.pdf', 1, 7, NULL, '2026-03-15 09:00:00'),
+(2, 15, 1, '/uploads/published/IJITEST-2026-002-published.pdf', 8, 12, NULL, '2026-03-29 09:00:00'),
+(11, 16, 1, '/uploads/published/IJITEST-2026-003-published.pdf', 13, 20, NULL, '2026-03-29 09:20:00'),
+(12, 18, 1, '/uploads/published/IJITEST-2026-004-published.pdf', 21, 26, NULL, '2026-03-30 09:00:00'),
+(13, 19, 1, '/uploads/published/IJITEST-2026-005-published.pdf', 27, 32, NULL, '2026-03-31 09:00:00'),
+(17, 21, 1, '/uploads/published/IJITEST-2026-007-published.pdf', 38, 41, NULL, '2026-03-31 09:40:00'),
+(18, 22, 1, '/uploads/published/IJITEST-2026-008-published.pdf', 42, 45, NULL, '2026-03-31 10:00:00'),
+(19, 23, 1, '/uploads/published/IJITEST-2026-009-published.pdf', 46, 49, NULL, '2026-03-31 10:20:00'),
+(20, 24, 1, '/uploads/published/IJITEST-2026-010-published.pdf', 50, 53, NULL, '2026-03-31 10:40:00'),
+(21, 20, 1, '/uploads/published/IJITEST-2026-006-published.pdf', 33, 37, NULL, '2026-03-31 09:20:00');
 
 -- --------------------------------------------------------
 
@@ -266,7 +263,7 @@ INSERT INTO `settings` (`setting_key`, `setting_value`, `updated_at`) VALUES
 ('journal_short_name', 'IJITEST', '2026-04-01 19:17:58'),
 ('office_address', 'Felix Academic Publications, Madhurawada, Visakhapatnam, AP, India', '2026-04-01 19:17:59'),
 ('publisher_name', 'Felix Academic Publications', '2026-04-01 19:17:59'),
-('submission_sequence_2026', '1', '2026-04-07 13:38:29'),
+('submission_sequence_2026', '10', '2026-04-16 18:35:18'),
 ('support_email', 'support@ijitest.org', '2026-04-01 19:17:59'),
 ('support_phone', '+91 8919643590', '2026-04-01 19:17:59'),
 ('template_url', '/docs/template-url.docx', '2026-04-01 19:17:59');
@@ -297,12 +294,16 @@ CREATE TABLE `submissions` (
 --
 
 INSERT INTO `submissions` (`id`, `paper_id`, `slug`, `status`, `final_decision`, `decision_at`, `decision_by`, `corresponding_author_id`, `issue_id`, `submitted_at`, `updated_at`, `deleted_at`) VALUES
-(13, 'IJITEST-2026-001', 'digital-revolution-informatics-industry', 'published', NULL, NULL, NULL, 'u13-gulshan-sri-babu-uuid-001', 1, '2026-03-03 13:44:42', '2026-03-30 17:33:17', NULL),
-(15, 'IJITEST-2026-002', 'optimization-ris-integrated-hybrid-precoding', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 15:53:00', '2026-03-30 09:06:12', NULL),
-(16, 'IJITEST-2026-003', 'quantum-enabled-security-framework-6g', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-30 15:28:11', '2026-04-12 04:54:13', NULL),
-(18, 'IJITEST-2026-004', 'energy-efficient-ternary-logic-cntfet', 'published', NULL, NULL, NULL, 'u18-subbarao-uuid-002', 1, '2026-04-01 15:44:51', '2026-04-10 17:59:56', NULL),
-(19, 'IJITEST-2026-005', 'rnn-cnn-em-gamp-sparse-channel', 'published', NULL, NULL, NULL, 'u19-mahendra-uuid-003', 1, '2026-04-01 16:01:53', '2026-04-10 17:59:56', NULL),
-(20, 'IJITEST-2026-0001', NULL, 'submitted', NULL, NULL, NULL, '4052ef3b-ff34-4852-909c-990306e04bc9', NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44', NULL);
+(13, 'IJITEST-2026-001', 'digital-revolution-informatics-industry', 'published', NULL, NULL, NULL, 'u13-gulshan-sri-babu-uuid-001', 1, '2026-03-12 09:00:00', '2026-03-12 09:00:00', NULL),
+(15, 'IJITEST-2026-002', 'optimization-ris-integrated-hybrid-precoding', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 09:00:00', '2026-03-26 09:00:00', NULL),
+(16, 'IJITEST-2026-003', 'quantum-enabled-security-framework-6g', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 09:20:00', '2026-03-26 09:20:00', NULL),
+(18, 'IJITEST-2026-004', 'energy-efficient-ternary-logic-cntfet', 'published', NULL, NULL, NULL, 'u18-subbarao-uuid-002', 1, '2026-03-27 09:00:00', '2026-03-27 09:00:00', NULL),
+(19, 'IJITEST-2026-005', 'rnn-cnn-em-gamp-sparse-channel', 'published', NULL, NULL, NULL, 'u19-mahendra-uuid-003', 1, '2026-03-28 09:00:00', '2026-03-28 09:00:00', NULL),
+(20, 'IJITEST-2026-006', NULL, 'published', NULL, NULL, NULL, '4052ef3b-ff34-4852-909c-990306e04bc9', 1, '2026-03-28 09:20:00', '2026-03-28 09:20:00', NULL),
+(21, 'IJITEST-2026-007', NULL, 'published', NULL, NULL, NULL, 'ccaf1a1c-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 09:40:00', '2026-03-28 09:40:00', NULL),
+(22, 'IJITEST-2026-008', NULL, 'published', NULL, NULL, NULL, 'ccb4bbd1-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 10:00:00', '2026-03-28 10:00:00', NULL),
+(23, 'IJITEST-2026-009', NULL, 'published', NULL, NULL, NULL, 'ccba78e7-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 10:20:00', '2026-03-28 10:20:00', NULL),
+(24, 'IJITEST-2026-010', NULL, 'published', NULL, NULL, NULL, 'ccc02680-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 10:40:00', '2026-03-28 10:40:00', NULL);
 
 -- --------------------------------------------------------
 
@@ -336,7 +337,57 @@ INSERT INTO `submission_authors` (`id`, `submission_id`, `name`, `email`, `is_co
 (9, 16, 'thorlapati gulshan sribabu', 'gulshansribabu@gmail.com', 0, 1, NULL, NULL, 'vignan\'s institute of Information technology'),
 (10, 18, 'CH M V SUBBARAO', 'subbaraochappa@gmail.com', 1, 0, NULL, NULL, 'DEPARTMENT OF ECE ,JNTU GV'),
 (11, 19, 'Mahendra', 'narlamahendracai@gpcet.ac.in', 1, 0, NULL, NULL, 'Department of CAI, G. Pullaiah College of Engineering'),
-(21, 20, 'A. Venkateswara Rao', 'vallu@miracleeducationalsociety.com', 1, 0, '9494586985', 'Associate Professor', 'Dept of ECE');
+(22, 16, 'S Naga Mallik Raj', 'mallikraj@ijitest.org', 0, 2, NULL, NULL, 'Vignan\'s Institute of Information Technology (A)'),
+(23, 21, 'S. Sai Durga Jagan Mohan', 'jaganmohan@ijitest.org', 1, 0, NULL, NULL, NULL),
+(24, 21, 'P. Dinesh', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
+(25, 21, 'P. Rama Krishna', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
+(26, 21, 'N. Lakshmi Vara Prasad', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
+(27, 21, 'G. Sagar', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
+(28, 22, 'N. Umesh Chandra', 'umeshchandra15623@gmail.com', 1, 0, NULL, NULL, NULL),
+(29, 22, 'S.HarshaVardhan', 'harshavardhansingani@gmail.com', 0, 1, NULL, NULL, NULL),
+(30, 22, 'K.Naveen', 'kongarapunaveen866@gmail.com', 0, 2, NULL, NULL, NULL),
+(31, 22, 'V.Jayakrishna', 'jayakrishnavantakula@gmail.com', 0, 3, NULL, NULL, NULL),
+(32, 22, 'N.Abhiram', 'neelapuabhiram007@gmail.com', 0, 4, NULL, NULL, NULL),
+(33, 22, 'V.Pradeep Kumar', 'pradeepvommi@gmail.com', 0, 5, NULL, NULL, NULL),
+(34, 23, 'S D. Jagadeesh', 'jagadishdunna2005@gmail.com', 1, 0, NULL, NULL, NULL),
+(35, 23, 'K. Jeevan Kumar', 'jeevankumarkella@gmail.com', 0, 1, NULL, NULL, NULL),
+(36, 23, 'P. Venkata Jagadeesh', 'pallavenkat11@gmail.com', 0, 2, NULL, NULL, NULL),
+(37, 23, 'B. Sai Kumar', 'saikumarbolla31@gmail.com', 0, 3, NULL, NULL, NULL),
+(38, 23, 'T. Karthik', 'telukarthik9@gmail.com', 0, 4, NULL, NULL, NULL),
+(39, 23, 'K.K.R. Parimala', 'radhikaparimala325@gmail.com', 0, 5, NULL, NULL, NULL),
+(40, 24, 'Laharadithya', 'laharadithya@ijitest.org', 1, 0, NULL, NULL, NULL),
+(41, 24, 'K. Chandu', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
+(42, 24, 'Y. Chanikya', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
+(43, 24, 'B. Chaitanya', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
+(44, 24, 'P. Venkataramana', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
+(45, 24, 'K. Deepthi', 'author@ijitest.org', 0, 5, NULL, NULL, NULL),
+(46, 20, 'A. Venkateswara Rao', 'vallu@miracleeducationalsociety.com', 1, 0, NULL, NULL, NULL),
+(47, 20, 'U. Surna', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
+(48, 20, 'T. Suresh', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
+(49, 20, 'P. L. Vamsi', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
+(50, 21, 'S. Sai Durga Jagan Mohan', 'jaganmohan@ijitest.org', 1, 0, NULL, NULL, NULL),
+(51, 21, 'P. Dinesh', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
+(52, 21, 'P. Rama Krishna', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
+(53, 21, 'N. Lakshmi Vara Prasad', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
+(54, 21, 'G. Sagar', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
+(55, 22, 'N. Umesh Chandra', 'umeshchandra15623@gmail.com', 1, 0, NULL, NULL, NULL),
+(56, 22, 'S.HarshaVardhan', 'harshavardhansingani@gmail.com', 0, 1, NULL, NULL, NULL),
+(57, 22, 'K.Naveen', 'kongarapunaveen866@gmail.com', 0, 2, NULL, NULL, NULL),
+(58, 22, 'V.Jayakrishna', 'jayakrishnavantakula@gmail.com', 0, 3, NULL, NULL, NULL),
+(59, 22, 'N.Abhiram', 'neelapuabhiram007@gmail.com', 0, 4, NULL, NULL, NULL),
+(60, 22, 'V.Pradeep Kumar', 'pradeepvommi@gmail.com', 0, 5, NULL, NULL, NULL),
+(61, 23, 'S D. Jagadeesh', 'jagadishdunna2005@gmail.com', 1, 0, NULL, NULL, NULL),
+(62, 23, 'K. Jeevan Kumar', 'jeevankumarkella@gmail.com', 0, 1, NULL, NULL, NULL),
+(63, 23, 'P. Venkata Jagadeesh', 'pallavenkat11@gmail.com', 0, 2, NULL, NULL, NULL),
+(64, 23, 'B. Sai Kumar', 'saikumarbolla31@gmail.com', 0, 3, NULL, NULL, NULL),
+(65, 23, 'T. Karthik', 'telukarthik9@gmail.com', 0, 4, NULL, NULL, NULL),
+(66, 23, 'K.K.R. Parimala', 'radhikaparimala325@gmail.com', 0, 5, NULL, NULL, NULL),
+(67, 24, 'Laharadithya', 'laharadithya@ijitest.org', 1, 0, NULL, NULL, NULL),
+(68, 24, 'K. Chandu', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
+(69, 24, 'Y. Chanikya', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
+(70, 24, 'B. Chaitanya', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
+(71, 24, 'P. Venkataramana', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
+(72, 24, 'K. Deepthi', 'author@ijitest.org', 0, 5, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -377,15 +428,13 @@ INSERT INTO `submission_files` (`id`, `version_id`, `file_type`, `file_url`, `or
 (7, 16, 'main_manuscript', '/uploads/submissions/1774884491840-wm8v5k.docx', 'manuscript.docx', NULL, '2026-04-08 14:24:12'),
 (9, 18, 'main_manuscript', '/uploads/submissions/1775058291152-4dzxo9.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
 (10, 19, 'main_manuscript', '/uploads/submissions/1775059313407-hpa05k.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
-(19, 18, 'pdf_version', '/uploads/submissions/final_manuscript_18_v1_1775838991046.pdf', '5.pdf', 965909, '2026-04-10 16:36:31'),
 (20, 18, 'pdf_version', '/uploads/submissions/reviewer_copy_18_1775839061896.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:37:41'),
-(21, 19, 'pdf_version', '/uploads/submissions/reviewer_copy_19_1775839133428.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:38:53'),
 (22, 19, 'feedback', '/uploads/submissions/feedback_1775839390767_4.pdf', '4.pdf', 1488778, '2026-04-10 16:43:10'),
 (23, 18, 'feedback', '/uploads/submissions/feedback_1775839446286_5.pdf', '5.pdf', 965909, '2026-04-10 16:44:06'),
 (24, 16, 'feedback', '/uploads/submissions/feedback_1775839497557_3.pdf', '3.pdf', 1807280, '2026-04-10 16:44:57'),
-(25, 20, 'main_manuscript', '/uploads/submissions/manuscript_20_1775880164573.docx', 'IJITEST-2026-006.docx', 358162, '2026-04-11 04:02:44'),
-(26, 20, 'copyright_form', '/uploads/submissions/copyright_20_1775880164573.docx', 'copyright form.docx', 17275, '2026-04-11 04:02:44'),
-(27, 16, 'pdf_version', '/uploads/submissions/auto_final_v1_1775969653918.pdf', 'auto_final_v1_1775969653918.pdf', 1545416, '2026-04-12 04:54:13');
+(27, 16, 'pdf_version', '/uploads/submissions/auto_final_v1_1775969653918.pdf', 'auto_final_v1_1775969653918.pdf', 1545416, '2026-04-12 04:54:13'),
+(28, 19, 'pdf_version', '/uploads/submissions/final_manuscript_19_v1_1776181148452.pdf', '4.pdf', 1488778, '2026-04-14 15:39:08'),
+(29, 18, 'pdf_version', '/uploads/submissions/final_manuscript_18_v1_1776181402067.pdf', '5.pdf', 965909, '2026-04-14 15:43:22');
 
 -- --------------------------------------------------------
 
@@ -410,12 +459,16 @@ CREATE TABLE `submission_versions` (
 --
 
 INSERT INTO `submission_versions` (`id`, `submission_id`, `version_number`, `title`, `abstract`, `keywords`, `subject_area`, `changelog`, `created_at`) VALUES
-(13, 13, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm shift in industrial development, as cutting-edge devices—such as AI-enhanced robots—collaborate harmoniously with human labourers to maximize productivity. This phase emphasizes the significance of human engagement while emphasizing sustainability and resilience.  This development based on innovations has led to industry 4.0, the fourth industrial revolution has changed production and production techniques. Changes are motivated by the strong progress of automation, robots, Big data, Internet of Things, Machine learning, artificial intelligence and virtualization. In addition to the successful automation and technological integration of its predecessor, largely related to production and efficiency stimulation, industry 5.0 to create both sustainable innovations and focus on people. Looking for a long -term balance between technology development and environmental protection and the happiness of our society is the main goal. This requires intentional approach to innovation, ensuring that our progress increases the living standards of people while benefiting our natural systems to support us.', 'Industry 4.0, Industry 5.0, Informatics, Automation', NULL, NULL, '2026-04-08 14:24:12'),
-(15, 15, 1, 'Optimization and Performance Evaluation of RIS-Integrated Hybrid Precoding', 'The evolution toward sixth-generation (6G) wireless systems requires extremely high data rates, massive device connectivity, very low latency, and improved energy efficiency. Millimeter-wave (mmWave) communication is considered a key enabler due to its large available bandwidth and ability to support multi-gigabit transmission. Nevertheless, mmWave signals experience high path loss, vulnerability to blockage, and increased implementation complexity caused by large antenna arrays and multiple RF chains. To overcome these limitations, this thesis explores the integration of Reconfigurable Intelligent Surfaces (RIS) with hybrid analog–digital precoding in mmWave Massive MIMO systems. RIS enables intelligent control of signal propagation by adjusting the phase of reflected waves, while hybrid precoding reduces hardware cost and power consumption without significantly degrading performance. A detailed system model, mathematical analysis, and optimization strategies for precoders and RIS phase shifts are presented. Performance evaluation based on spectral efficiency, energy efficiency, and hardware complexity demonstrates that RIS-assisted hybrid architectures provide notable improvements in coverage, achievable rate, and power utilization.', 'Reconfigurable Intelligent Surfaces, mmWave Massive MIMO, 6G Wireless', NULL, NULL, '2026-04-08 14:24:12'),
-(16, 16, 1, 'Quantum-Enabled Security Framework for 6G Communications', '– Ultra-high data rates, efficient use of the terahertz spectrum, and significant connectivity are anticipated as Sixth Generation (6G) wireless communication emerges. However, traditional cryptographic algorithms like RSA and Elliptic Curve Cryptography, which are currently employed in wireless networks, are seriously threatened by the quick development of quantum computing. Future 6G systems must incorporate quantum-safe security measures to allay this worry. The incorporation of Quantum Key Distribution (QKD) into the physical layer of 6G communication networks is investigated in this paper. To facilitate secure key exchange and identify eavesdropping, QKD makes use of quantum concepts like superposition, entanglement, and the no-cloning theorem. Realistic wireless channel conditions are used to analyze the BB84 and E91 protocols. A proposed 6G channel model incorporates Nakagami-m fading, additive white Gaussian noise, and path loss. Detector noise and channel disturbances are taken into account when modeling the Quantum Bit Error Rate (QBER). In an OFDM framework, MATLAB simulations evaluate the secure key rate performance with respect to signal-to-noise ratio, transmission distance, and noise probability. The findings highlight the potential of QKD for secure 6G communications by showing that secure key generation is possible when the QBER stays below the theoretical threshold.', '5G and 6G wireless communications, Quantum Key Distribution, Network Security', NULL, NULL, '2026-04-08 14:24:12'),
-(18, 18, 1, 'Energy-Efficient Ternary Logic Processor Using CNTFETs', 'The increasing demand for energy-efficient computing has driven research into novel logic architectures beyond traditional binary logic. This paper presents the design and implementation of an energy-efficient ternary logic processor using Carbon Nanotube Field-Effect Transistors (CNTFETs) for advanced nanotechnology applications. Ternary logic, which operates with three discrete states (0, 1, 2), offers higher computational density, reduced transistor count, and lower power consumption compared to conventional binary architectures. CNTFETs, with their superior electrical properties such as high carrier mobility, low sub-threshold swing, and excellent scalability, serve as an ideal candidate for implementing ternary logic circuits. The proposed ternary processor integrates ternary logic gates, arithmetic units, multiplexers, memory units, and control circuits, all optimized for low-power operation. Simulation results demonstrate significant improvements in energy efficiency, area reduction, and computational throughput compared to conventional CMOS-based binary processors. Additionally, the processor\'s architecture is tailored for emerging applications in artificial intelligence, cryptography, and IoT devices, where power efficiency and performance are critical. The findings of this study highlight the potential of CNTFET-based ternary computing as a promising alternative for next-generation low-power processors in nanotechnology-driven applications.', 'Ternary Logic Processor, CNTFET, Low-Power Computing', NULL, NULL, '2026-04-08 14:24:12'),
-(19, 19, 1, 'RNN and CNN–Enhanced EM-GAMP for Sparse Channel Estimation', 'Quantum Compressed Sensing (QCS) is an efficient framework that exploits signal sparsity to reconstruct quantum states and quantum-inspired communication signals using fewer measurements than conventional approaches. It combines compressed sensing theory with quantum information processing to reduce sampling complexity and computational cost in high dimensional systems. Advanced estimation techniques such as OMP-based methods, deep learning-assisted recovery, and quantum-inspired neural models improve reconstruction accuracy under noisy conditions. These approaches utilize sparsity in quantum states, wireless channels, and system parameters while lowering the burden of quantum measurements. QCS is particularly useful in emerging applications like next-generation wireless networks, quantum sensing, and optical communication where measurement resources are limited. Compared to classical compressed sensing, QCS methods offer better scalability and stronger resilience to estimation errors. They also enable modeling of quantum features such as superposition and correlated system behavior. Performance evaluation is typically carried out using metrics like BER versus SNR, MMSE, and recovery accuracy. Overall, QCS supports efficient signal acquisition and reliable estimation in large-scale quantum-aware systems.', 'Quantum Compressed Sensing, OMP-based methods, Signal Processing', NULL, NULL, '2026-04-08 14:24:12'),
-(20, 20, 1, 'Quantum Communication for 5G-6G Qubit-Driven Massive MIMO-OFDM Performance Analysis', 'Communication frameworks that are extremely effective, intelligent, and secure are required due to the rapid shift from 5G to 6G networks. Through a performance analysis of qubit-driven Massive MIMO-OFDM, this paper investigates the integration of quantum communication concepts into conventional wireless systems. It provides a detailed comparison of quantum bit (qubit) representations and traditional binary bit processing. The study evaluates key performance measures across different channel models, such as Rayleigh and Nakagami-m fading, including Bit Error Rate (BER), spectral efficiency, Peak-to-Average Power Ratio (PAPR), and computational complexity. We demonstrate the potential for better robustness, reduced BER, and increased reliability in difficult wireless situations by incorporating qubit-based modulation, quantum channel estimation, and quantum error correction techniques into the OFDM and Massive MIMO framework. MATLAB simulation results show that qubit-based systems outperform classical binary systems, particularly in scenarios with high user density and mobility, making them a viable choice for upcoming 6G applications. Important information about the benefits and trade-offs of switching from classical to quantum-enhanced wireless communication systems is provided by the comparative study', 'Quantum Communication, Qubits and Binary Bits, Massive MIMO-OFDM, 5G and 6G Networks, Bit Error Rate, Channel Estimation.', NULL, NULL, '2026-04-11 04:02:44');
+(13, 13, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm\nshift in industrial development, as cutting-edge devices—such as\nAI-enhanced robots—collaborate harmoniously with human\nlabourers to maximize productivity. This phase emphasizes the\nsignificance of human engagement while emphasizing\nsustainability and resilience. This development based on\ninnovations has led to industry 4.0, the fourth industrial\nrevolution has changed production and production techniques.\nChanges are motivated by the strong progress of automation,\nrobots, Big data, Internet of Things, Machine learning, artificial\nintelligence and virtualization. In addition to the successful\nautomation and technological integration of its predecessor,\nlargely related to production and efficiency stimulation, industry\n5.0 to create both sustainable innovations and focus on people.\nLooking for a long -term balance between technology\ndevelopment and environmental protection and the happiness of\nour society is the main goal. This requires intentional approach\nto innovation, ensuring that our progress increases the living\nstandards of people while benefiting our natural systems to\nsupport us.', 'Industry 4.0, Industry 5.0, Informatics, Automation', NULL, NULL, '2026-04-08 14:24:12'),
+(15, 15, 1, 'Optimization and Performance Evaluation of\nRIS-Integrated Hybrid Precoding in Millimeter Wave\nMassive MIMO', 'The evolution toward sixth-generation (6G) wireless\nsystems requires extremely high data rates, massive device\nconnectivity, very low latency, and improved energy efficiency.\nMillimeter-wave (mmWave) communication is considered a key\nenabler due to its large available bandwidth and ability to\nsupport multi-gigabit transmission. Nevertheless, mmWave\nsignals experience high path loss, vulnerability to blockage, and\nincreased implementation complexity caused by large antenna\narrays and multiple RF chains.To overcome these limitations,\nthis thesis explores the integration of Reconfigurable Intelligent\nSurfaces (RIS) with hybrid analog–digital precoding in\nmmWave Massive MIMO systems. RIS enables intelligent\ncontrol of signal propagation by adjusting the phase of reflected\nwaves, while hybrid precoding reduces hardware cost and power\nconsumption without significantly degrading performance. A\ndetailed system model, mathematical analysis, and optimization\nstrategies for precoders and RIS phase shifts are presented.\nPerformance evaluation based on spectral efficiency, energy\nefficiency, and hardware complexity demonstrates that RIS-\nassisted hybrid architectures provide notable improvements in\ncoverage, achievable rate, and power utilization.', 'Reconfigurable Intelligent Surfaces, mmWave Massive MIMO systems, Precoders and RIS phase shifters', NULL, NULL, '2026-04-08 14:24:12'),
+(16, 16, 1, 'Quantum-Enabled Security Framework for 6G\nCommunications Based on QKD-OFDM Integration', 'Ultra-high data rates, efficient use of the terahertz\nspectrum, and significant connectivity are anticipated as Sixth\nGeneration (6G) wireless communication emerges. However,\ntraditional cryptographic algorithms like RSA and Elliptic\nCurve Cryptography, which are currently employed in wireless\nnetworks, are seriously threatened by the quick development of\nquantum computing. Future 6G systems must incorporate\nquantum-safe security measures to allay this worry. The\nincorporation of Quantum Key Distribution (QKD) into the\nphysical layer of 6G communication networks is investigated in\nthis paper. To facilitate secure key exchange and identify\neavesdropping, QKD makes use of quantum concepts like\nsuperposition, entanglement, and the no-cloning theorem.\nRealistic wireless channel conditions are used to analyze the\nBB84 and E91 protocols. A proposed 6G channel model\nincorporates Nakagami-m fading, additive white Gaussian noise,\nand path loss. Detector noise and channel disturbances are taken\ninto account when modeling the Quantum Bit Error Rate\n(QBER). In an OFDM framework, MATLAB simulations\nevaluate the secure key rate performance with respect to signal-\nto-noise ratio, transmission distance, and noise probability. The\nfindings highlight the potential of QKD for secure 6G\ncommunications by showing that secure key generation is\npossible when the QBER stays below the theoretical threshold.\nIndex Terms –5G and 6G wireless communications, Quantum\nKey Distribution, Fading Channels.', '5G and 6G wireless communications, Quantum Key Distribution, Network Security', NULL, NULL, '2026-04-08 14:24:12'),
+(18, 18, 1, 'Energy-Efficient Ternary Logic Processor Using\nCNTFETs for Advanced Nanotechnology\nApplications', 'The increasing demand for energy-efficient computing has driven research into novel logic architectures beyond traditional binary logic. This paper presents the design and implementation of an energy-efficient ternary logic processor using Carbon Nanotube Field-Effect Transistors (CNTFETs). The findings highlight the potential of CNTFET-based ternary computing as a promising alternative for next-generation low-power processors.', 'Ternary Logic Processor, CNTFET, Low-Power Computing', NULL, NULL, '2026-04-08 14:24:12'),
+(19, 19, 1, 'RNN and CNN–Enhanced EM-GAMP for Sparse Channel Estimation', 'Quantum Compressed Sensing (QCS) is an efficient framework that exploits signal sparsity to reconstruct quantum states and quantum-inspired communication signals. This paper introduces an RNN and CNN-enhanced EM-GAMP algorithm for sparse channel estimation in 6G wireless systems, demonstrating significant performance improvements over conventional methods.', 'Quantum Compressed Sensing, OMP-based methods, Signal Processing', NULL, NULL, '2026-04-08 14:24:12'),
+(22, 21, 1, 'Fabrication of Multipurpose Agriculture Machine', 'Agriculture plays a vital role in economic development, and modern technology integration is essential for improving productivity. This paper presents the fabrication of a multipurpose solar-powered agricultural machine capable of performing three essential farming operations: spraying, seeding, and plowing.', 'Agriculture Machine, Solar Power, Multipurpose, Spraying, Seeding, Plowing, DC Motor, Renewable Energy', NULL, NULL, '2026-04-16 18:26:35'),
+(23, 22, 1, 'Fabrication of Automatic Tire Inflating System', 'Proper tire pressure is essential for vehicle safety, fuel efficiency, and tire longevity. This paper presents the fabrication of an Automatic Tire Inflating System that maintains optimal pressure in vehicle tires without manual intervention.', 'Automatic Tire Inflation, Pressure Sensor, DC Motor, Vehicle Safety', NULL, NULL, '2026-04-16 18:26:35'),
+(24, 23, 1, 'Fabrication of Solar Grass Cutter with Bluetooth Control', 'This paper presents the fabrication of a solar-powered grass cutter with Bluetooth-based remote control. The system utilizes solar energy to power a DC motor for cutting grass, reducing reliance on fossil fuels and providing a cost-effective solution for lawn maintenance.', 'Solar Energy, Grass Cutter, Bluetooth Control, DC Motor', NULL, NULL, '2026-04-16 18:26:35'),
+(25, 24, 1, 'Fabrication of 90 Degree Steering System', 'Conventional steering systems are limited by their large turning radius. This paper presents the fabrication of a 90 Degree Steering System that allows all four wheels to rotate up to 90 degrees, enabling lateral (sideways) movement and zero-radius turning.', '90 Degree Steering, Lateral Movement, Zero-Radius Turning, Bevel Gears', NULL, NULL, '2026-04-16 18:26:35'),
+(26, 20, 1, 'Quantum Communication for 5G-6G Qubit-Driven Massive MIMO-OFDM Performance Analysis', 'Communication frameworks that are extremely effective, intelligent, and secure are required due to the rapid shift from 5G to 6G networks. Through a performance analysis of qubit-driven Massive MIMO-OFDM, this paper investigates the integration of quantum communication concepts into conventional wireless systems.', 'Quantum Communication, Qubits and Binary Bits, Massive MIMO-OFDM, 5G and 6G Networks, Bit Error Rate, Channel Estimation', NULL, NULL, '2026-04-16 18:35:18');
 
 -- --------------------------------------------------------
 
@@ -458,6 +511,10 @@ INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `is_active`, `is_em
 ('79df667a-31c1-11f1-ad3e-c05465fbbdc2', 'trinadhphd33@gmail.com', NULL, 'editor', 1, 0, NULL, '2026-03-05 15:56:46', '2026-04-06 14:04:06', NULL, 0),
 ('79dfcee0-31c1-11f1-ad3e-c05465fbbdc2', 'mr.challa33@gmail.com', NULL, 'reviewer', 1, 0, NULL, '2026-03-05 15:56:53', '2026-04-06 14:04:06', NULL, 0),
 ('a6692808-5464-4ac5-af21-e27dc56a5a8f', 'mohan@colourmoon.com', NULL, 'author', 1, 0, NULL, '2026-04-07 13:38:29', '2026-04-07 13:38:29', NULL, 0),
+('ccaf1a1c-39c1-11f1-ad3e-c05465fbbdc2', 'jaganmohan@ijitest.org', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
+('ccb4bbd1-39c1-11f1-ad3e-c05465fbbdc2', 'umeshchandra15623@gmail.com', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
+('ccba78e7-39c1-11f1-ad3e-c05465fbbdc2', 'jagadishdunna2005@gmail.com', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
+('ccc02680-39c1-11f1-ad3e-c05465fbbdc2', 'laharadithya@ijitest.org', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
 ('u13-gulshan-sri-babu-uuid-001', 'gulshansribabu@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'author', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12', NULL, 0),
 ('u18-subbarao-uuid-002', 'subbaraochappa@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'reviewer', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-11 03:25:36', NULL, 0),
 ('u19-mahendra-uuid-003', 'narlamahendracai@gpcet.ac.in', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'editor', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-11 03:25:47', NULL, 0);
@@ -471,7 +528,7 @@ INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `is_active`, `is_em
 CREATE TABLE `user_invitations` (
   `id` int(11) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `role` enum('editor','reviewer') NOT NULL,
+  `role` enum('editor','reviewer','author') NOT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` timestamp NOT NULL,
   `invited_by` varchar(36) DEFAULT NULL,
@@ -533,7 +590,11 @@ INSERT INTO `user_profiles` (`id`, `user_id`, `full_name`, `designation`, `insti
 (16, 'u13-gulshan-sri-babu-uuid-001', 'THORLAPATI GULSHAN SRI BABU', NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
 (17, 'u18-subbarao-uuid-002', 'CH M V SUBBARAO', NULL, 'DEPARTMENT OF ECE, JNTU GV', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
 (18, 'u19-mahendra-uuid-003', 'Mahendra', NULL, 'Department of CAI, G. Pullaiah College of Engineering and Technology', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
-(22, '4052ef3b-ff34-4852-909c-990306e04bc9', 'A. Venkateswara Rao', 'Associate Professor', 'Dept of ECE', '9494586985', NULL, 'India', NULL, NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44');
+(22, '4052ef3b-ff34-4852-909c-990306e04bc9', 'A. Venkateswara Rao', 'Associate Professor', 'Dept of ECE', '9494586985', NULL, 'India', NULL, NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44'),
+(23, 'ccaf1a1c-39c1-11f1-ad3e-c05465fbbdc2', 'S. Sai Durga Jagan Mohan', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35'),
+(24, 'ccb4bbd1-39c1-11f1-ad3e-c05465fbbdc2', 'N. Umesh Chandra', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35'),
+(25, 'ccba78e7-39c1-11f1-ad3e-c05465fbbdc2', 'S D. Jagadeesh', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35'),
+(26, 'ccc02680-39c1-11f1-ad3e-c05465fbbdc2', 'Laharadithya', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35');
 
 -- --------------------------------------------------------
 
@@ -556,7 +617,8 @@ CREATE TABLE `volumes_issues` (
 --
 
 INSERT INTO `volumes_issues` (`id`, `volume_number`, `issue_number`, `year`, `month_range`, `status`, `created_at`) VALUES
-(1, 1, 1, 2026, 'March', 'published', '2026-04-08 14:24:12');
+(1, 1, 1, 2026, 'March', 'published', '2026-04-08 14:24:12'),
+(2, 1, 2, 2026, 'April', 'published', '2026-04-14 17:36:48');
 
 -- --------------------------------------------------------
 
@@ -804,7 +866,7 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `publications`
 --
 ALTER TABLE `publications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `reviews`
@@ -816,31 +878,31 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT for table `review_assignments`
 --
 ALTER TABLE `review_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `submission_files`
 --
 ALTER TABLE `submission_files`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `submission_versions`
 --
 ALTER TABLE `submission_versions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `user_invitations`
@@ -852,13 +914,13 @@ ALTER TABLE `user_invitations`
 -- AUTO_INCREMENT for table `user_profiles`
 --
 ALTER TABLE `user_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `volumes_issues`
 --
 ALTER TABLE `volumes_issues`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables

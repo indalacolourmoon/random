@@ -121,6 +121,7 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
                     </div>
 
                     {/* PDF Viewer Section */}
+                    {/* 
                     <div className="space-y-6">
                         <div className="flex items-center justify-between px-6">
                             <h2 className=" font-serif font-black text-gray-900">Manuscript Viewer</h2>
@@ -145,11 +146,26 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
                                 title="Manuscript Viewer"
                             />
                         </div>
-                    </div>
+                    </div> 
+                    */}
                 </div>
 
                 {/* Sidebar Utilities */}
                 <div className="space-y-8">
+                    {/* Download Button */}
+                    <div className="flex flex-col gap-4 px-4">
+                        <a
+                            href={paper.file_path}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center justify-center gap-3 bg-primary text-white py-5 rounded-2xl font-black text-[10px] sm:text-xs tracking-[0.2em] shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-1 z-10"
+                        >
+                            <Download className="w-4 h-4" /> DOWNLOAD FULL PAPER
+                        </a>
+                    </div>
+
+                    {/*
                     <div className="flex flex-col gap-4 px-4 ">
                         <a
                             href={paper.file_path}
@@ -159,6 +175,7 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
                             <Eye className="w-4 h-4" /> Full Screen View
                         </a>
                     </div>
+                    */}
                     
                     {/* Citation Widget (Client Component) */}
                     <CitationSection paper={paper} />

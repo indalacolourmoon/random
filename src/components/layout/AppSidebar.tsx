@@ -28,13 +28,13 @@ import { cn } from "@/lib/utils";
 
 export function AppSidebar({ settings }: { settings?: Record<string, string> }) {
     const pathname = usePathname();
-    const { setOpenMobile } = useSidebar();
+    const { setOpenMobile, isMobile } = useSidebar();
     const journalShortName = settings?.journal_short_name || "IJITEST";
 
     return (
-        <Sidebar collapsible="icon" className="border-r border-primary/5 bg-white/50 backdrop-blur-xl 2xl:w-[320px]">
+        <Sidebar collapsible="icon" className={cn("border-r border-primary/5 backdrop-blur-xl 2xl:w-[320px]", isMobile ? "bg-white" : "bg-white/50")}>
             <SidebarHeader className="h-20 flex items-center justify-center border-b border-primary/5">
-                <Link href="/" className="flex items-center gap-3 group px-4 cursor-pointer">
+                <Link href="/" className="flex items-center gap-3 group px-4 cursor-pointer" onClick={() => setOpenMobile(false)}>
                     <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                         {journalShortName[0]}
                     </div>
@@ -113,6 +113,7 @@ export function AppSidebar({ settings }: { settings?: Record<string, string> }) 
                 <Link
                     href="/submit"
                     className="flex items-center justify-center gap-3 w-full h-12 bg-primary text-white rounded-xl font-black  tracking-widest text-[10px] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all group overflow-hidden relative"
+                    onClick={() => setOpenMobile(false)}
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-secondary to-secondary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <SendHorizonal className="w-4 h-4 relative z-10" />

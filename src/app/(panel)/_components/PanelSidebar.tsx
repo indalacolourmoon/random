@@ -37,7 +37,7 @@ export function PanelSidebar({
     const isCollapsed = state === "collapsed";
 
     return (
-        <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/30 backdrop-blur-xl transition-all duration-300">
+        <Sidebar collapsible="icon" className={cn("border-r border-border/50 backdrop-blur-xl transition-all duration-300", isMobile ? "bg-card" : "bg-card/30")}>
             {/* Custom Toggle Button in the middle-right */}
             {!isMobile && (
                 <Tooltip>
@@ -62,7 +62,7 @@ export function PanelSidebar({
             )}
 
             <SidebarHeader className="h-16 flex flex-row items-center justify-between px-6 border-b border-border/20 overflow-hidden">
-                <Link href="/" className="flex items-center gap-3 group cursor-pointer shrink-0">
+                <Link href="/" className="flex items-center gap-3 group cursor-pointer shrink-0" onClick={() => setOpenMobile(false)}>
                     <div className="bg-primary size-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-transform shrink-0">
                         <Layers className="size-5 text-white stroke-[2]" />
                     </div>
@@ -77,7 +77,7 @@ export function PanelSidebar({
                 {/* Mobile Close Button */}
                 {isMobile && (
                     <Button
-                        variant="ghost" 
+                        variant="ghost"
                         size="icon"
                         className="size-10 text-muted-foreground hover:text-foreground cursor-pointer"
                         onClick={() => setOpenMobile(false)}
@@ -104,7 +104,7 @@ export function PanelSidebar({
                                         isCollapsed && "px-0 justify-center h-16"
                                     )}
                                 >
-                                    <Link href={item.fullHref} className="flex items-center gap-4 w-full">
+                                    <Link href={item.fullHref} className="flex items-center gap-4 w-full" onClick={() => setOpenMobile(false)}>
                                         <div className={cn(
                                             "size-9 2xl:size-12 rounded-lg flex items-center justify-center transition-all shrink-0",
                                             isActive ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-muted/50 text-muted-foreground group-hover:bg-muted"

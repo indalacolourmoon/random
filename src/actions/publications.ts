@@ -1,14 +1,14 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { 
-    submissions, 
+import {
+    submissions,
     volumesIssues,
     publications,
     submissionVersions
 } from "@/db/schema";
 import {
-    ActionResponse, 
+    ActionResponse,
     Issue,
     Publication
 } from "@/db/types";
@@ -70,10 +70,10 @@ export async function getVolumesIssues(): Promise<ActionResponse<(Issue & { pape
                     vi: volumesIssues,
                     paperCount: count(submissions.id)
                 })
-                .from(volumesIssues)
-                .leftJoin(submissions, eq(submissions.issueId, volumesIssues.id))
-                .groupBy(volumesIssues.id)
-                .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber));
+                    .from(volumesIssues)
+                    .leftJoin(submissions, eq(submissions.issueId, volumesIssues.id))
+                    .groupBy(volumesIssues.id)
+                    .orderBy(desc(volumesIssues.year), desc(volumesIssues.volumeNumber), desc(volumesIssues.issueNumber));
 
                 const data = rows.map(r => ({
                     ...r.vi,
@@ -186,7 +186,7 @@ export async function assignPaperToIssue(submissionId: number, issueId: number, 
             year: issue.year,
             monthRange: issue.monthRange || "",
             issn: settings.issn_number || "XXXX-XXXX",
-            website: settings.journal_website || "https://ijitest.org",
+            website: settings.journal_website || "https://www.ijitest.org",
             paperId: submission.paperId,
             startPage: confirmedStartPage,
             endPage: confirmedEndPage
@@ -284,13 +284,13 @@ export async function getPapersByIssueId(issueId: number): Promise<ActionRespons
             publication: publications,
             latestVersion: submissionVersions
         })
-        .from(submissions)
-        .where(eq(submissions.issueId, issueId))
-        .leftJoin(publications, eq(submissions.id, publications.submissionId))
-        .leftJoin(submissionVersions, and(
-            eq(submissions.id, submissionVersions.submissionId),
-            sql`${submissionVersions.versionNumber} = (SELECT MAX(v2.version_number) FROM submission_versions v2 WHERE v2.submission_id = ${submissions.id})`
-        ));
+            .from(submissions)
+            .where(eq(submissions.issueId, issueId))
+            .leftJoin(publications, eq(submissions.id, publications.submissionId))
+            .leftJoin(submissionVersions, and(
+                eq(submissions.id, submissionVersions.submissionId),
+                sql`${submissionVersions.versionNumber} = (SELECT MAX(v2.version_number) FROM submission_versions v2 WHERE v2.submission_id = ${submissions.id})`
+            ));
 
         const data = rows.map(r => ({
             id: r.id,
@@ -299,7 +299,7 @@ export async function getPapersByIssueId(issueId: number): Promise<ActionRespons
             status: r.status,
             publication: r.publication
         }));
-        
+
         return { success: true, data };
     } catch (error) {
         console.error("Get Papers By Issue Error:", error);
@@ -348,7 +348,7 @@ export async function updateVolumeIssue(id: number, formData: FormData): Promise
                 monthRange: monthRange
             })
             .where(eq(volumesIssues.id, id));
-            
+
         revalidatePath('/admin/publications');
         return { success: true };
     } catch (error) {

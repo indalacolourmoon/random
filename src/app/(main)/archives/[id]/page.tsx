@@ -12,7 +12,7 @@ export async function generateStaticParams() {
     try {
         const res = await getPublishedPapers();
         if (!res.success || !res.data) return [];
-        
+
         return res.data.map((paper: any) => ({
             id: paper.id.toString(),
         }));
@@ -28,12 +28,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         getPaperById(id),
         getSettingsData()
     ]);
-    
+
     const paper = paperRes.success ? paperRes.data : null;
-    
+
     if (!paper) return { title: 'Article Not Found | IJITEST' };
 
-    const baseUrl = settings.journal_website || 'https://ijitest.org';
+    const baseUrl = settings.journal_website || 'https://www.ijitest.org';
     const mainAuthor = paper.author_name;
     const coAuthors = paper.co_authors ? paper.co_authors.split(',').map((s: string) => s.trim()) : [];
     const allAuthors = [mainAuthor, ...coAuthors].filter(Boolean);
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             'citation_firstpage': paper.start_page?.toString() || '',
             'citation_lastpage': paper.end_page?.toString() || '',
             'citation_pdf_url': paper.pdf_url ? (paper.pdf_url.startsWith('http') ? paper.pdf_url : `${baseUrl}${paper.pdf_url}`) : '',
-            
+
             // Dublin Core
             'dc.title': paper.title || '',
             'dc.creator': allAuthors,
@@ -77,12 +77,12 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
         getPaperById(id),
         getSettingsData()
     ]);
-    
+
     const paper = paperRes.success ? paperRes.data : null;
 
     if (!paper) notFound();
 
-    const baseUrl = settings.journal_website || 'https://ijitest.org';
+    const baseUrl = settings.journal_website || 'https://www.ijitest.org';
     const mainAuthor = paper.author_name;
     const coAuthors = paper.co_authors ? paper.co_authors.split(',').map((s: string) => s.trim()) : [];
     const allAuthors = [mainAuthor, ...coAuthors].filter(Boolean);
@@ -100,8 +100,8 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
                 ]}
             />
             <PaperDetailClient paper={paper} id={id} />
-            
-            <JsonLd 
+
+            <JsonLd
                 id="scholarly-article"
                 data={{
                     "@context": "https://schema.org",

@@ -27,15 +27,8 @@ export const navigation = [
     },
     { name: 'Editorial Board', href: '/editorial-board', icon: Users },
     { name: 'Author Guidelines', href: '/guidelines', icon: FileText },
-    {
-        name: 'Publication',
-        href: '#',
-        icon: BookOpen,
-        children: [
-            { name: 'Current Issue', href: '/current-issue', icon: Layout },
-            { name: 'Archive', href: '/archives', icon: Archive },
-        ]
-    },
+    { name: 'Current Issue', href: '/current-issue', icon: Layout },
+    { name: 'Archive', href: '/archives', icon: Archive },
     //{ name: 'Indexing', href: '/indexing', icon: Hash },
     { name: 'Contact Us', href: '/contact', icon: Mail },
 ];

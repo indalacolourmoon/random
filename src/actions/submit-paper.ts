@@ -66,14 +66,14 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
 
         const manuscriptFile = formData.get("manuscript") as File;
         const copyrightFile = formData.get("copyright_form") as File;
-        
+
         if (!manuscriptFile || manuscriptFile.size === 0) return { success: false, error: "Manuscript file is mandatory" };
         if (!copyrightFile || copyrightFile.size === 0) return { success: false, error: "Copyright form is mandatory" };
 
         // .docx ONLY Policy
         const docxMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        const isDocx = (f: File) => 
-            f.name.toLowerCase().endsWith(".docx") || 
+        const isDocx = (f: File) =>
+            f.name.toLowerCase().endsWith(".docx") ||
             f.type === docxMime;
 
         if (!isDocx(manuscriptFile) || !isDocx(copyrightFile)) {
@@ -129,18 +129,18 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
             // B. Paper Metadata Generation (Gapless Sequential Locking)
             const currentYear = new Date().getFullYear().toString();
             const seqKey = `submission_sequence_${currentYear}`;
-            
+
             // Ensure sequence entry exists
             await tx.execute(sql`INSERT INTO settings (setting_key, setting_value) VALUES (${seqKey}, '0') ON DUPLICATE KEY UPDATE setting_key = setting_key`);
-            
+
             // Lock and Fetch current sequence
             const [seqResult] = await tx.execute(sql`SELECT setting_value as value FROM settings WHERE setting_key = ${seqKey} FOR UPDATE`);
             const lastSeq = parseInt((seqResult as any).value || "0");
             const newSeq = lastSeq + 1;
-            
+
             // Update sequence
             await tx.update(settings).set({ settingValue: newSeq.toString() }).where(eq(settings.settingKey, seqKey));
-            
+
             const paperId = `IJITEST-${currentYear}-${String(newSeq).padStart(4, "0")}`;
 
             // C. Insert Core Submission
@@ -227,9 +227,9 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
         } catch (uploadErr) {
             // File-system cleanup for orphaned files
             for (const filePath of fileCleanupList) {
-                try { await fs.unlink(filePath); } catch {}
+                try { await fs.unlink(filePath); } catch { }
             }
-            
+
             // DB-cleanup for zombie submission
             await db.delete(submissions).where(eq(submissions.id, result.subId));
 
@@ -245,7 +245,7 @@ export async function submitPaper(formData: FormData): Promise<ActionResponse<{ 
         }
 
         // 4. Notifications
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.org';
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.ijitest.org';
         const loginUrl = `${baseUrl}/login`;
 
         // Author Notification

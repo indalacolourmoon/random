@@ -9,7 +9,7 @@ import {
     volumesIssues, 
     userProfiles
 } from "@/db/schema";
-import { eq, desc, and, sql, ne, inArray } from "drizzle-orm";
+import { eq, desc, and, sql, ne, inArray, asc } from "drizzle-orm";
 import { type PublishedPaperUI, type ActionResponse } from "@/db/types";
 import { unstable_cache } from "next/cache";
 
@@ -29,7 +29,7 @@ export async function getPublishedPapers(): Promise<ActionResponse<PublishedPape
                 .from(publications)
                 .leftJoin(submissions, eq(publications.submissionId, submissions.id))
                 .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-                .orderBy(desc(publications.publishedAt));
+                .orderBy(asc(submissions.paperId));
 
                 if (!rows.length) return { success: true, data: [] };
 
@@ -91,7 +91,8 @@ export async function getLatestIssuePapers(): Promise<ActionResponse<PublishedPa
                 .from(publications)
                 .where(eq(publications.issueId, latestIssue.id))
                 .leftJoin(submissions, eq(publications.submissionId, submissions.id))
-                .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id));
+                .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
+                .orderBy(asc(submissions.paperId));
 
                 if (!rows.length) return { success: true, data: [] };
 
@@ -152,7 +153,7 @@ export async function getArchivePapers(limit = 50, offset = 0): Promise<ActionRe
                 .where(ne(publications.issueId, latestId))
                 .leftJoin(submissions, eq(publications.submissionId, submissions.id))
                 .leftJoin(volumesIssues, eq(publications.issueId, volumesIssues.id))
-                .orderBy(desc(publications.publishedAt))
+                .orderBy(asc(submissions.paperId))
                 .limit(limit)
                 .offset(offset);
 

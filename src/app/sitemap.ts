@@ -4,7 +4,7 @@ import { getSettingsData } from '@/actions/settings';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const settings = await getSettingsData();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ijitest.org';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.ijitest.org';
 
   // 1. Static Routes
   const staticRoutes = [
@@ -33,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const res = await getPublishedPapers();
     const papers = res.success ? res.data ?? [] : [];
-    
+
     const dynamicRoutes = papers.map((paper: any) => ({
       url: `${baseUrl}/${paper.submission_mode === 'current' ? 'current-issue' : 'archives'}/${paper.id}`,
       lastModified: new Date(paper.updated_at || new Date()),
