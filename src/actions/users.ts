@@ -14,7 +14,7 @@ import {
     SafeUserWithProfile,
     ActionResponse,
 } from "@/db/types";
-import { eq, and, sql, inArray, isNotNull } from "drizzle-orm";
+import { eq, and, sql, inArray, isNotNull, not } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { safeDeleteFile } from "@/lib/fs-utils";
@@ -86,6 +86,8 @@ export async function getUsers(role?: "admin" | "editor" | "reviewer" | "author"
 
         if (role) {
             query.where(eq(users.role, role));
+        } else {
+            query.where(not(eq(users.role, 'author')));
         }
 
         const rows = await query;

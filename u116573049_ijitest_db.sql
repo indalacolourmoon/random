@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 17, 2026 at 02:19 PM
+-- Generation Time: Apr 19, 2026 at 06:50 AM
 -- Server version: 12.3.1-MariaDB-log
 -- PHP Version: 7.2.34
 
@@ -133,17 +133,6 @@ CREATE TABLE `payments` (
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `payments`
---
-
-INSERT INTO `payments` (`id`, `submission_id`, `amount`, `currency`, `status`, `provider`, `transaction_id`, `paid_at`, `created_at`) VALUES
-(1, 13, 2000.00, 'INR', 'verified', NULL, 'order_SPaqo2m3n7KLO4', '2026-04-11 03:26:58', '2026-03-10 16:42:52'),
-(2, 15, 0.00, 'INR', 'waived', NULL, NULL, '2026-03-30 09:06:12', '2026-03-30 09:05:40'),
-(3, 16, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:49:31', '2026-04-01 15:22:56'),
-(4, 18, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:50:42', '2026-04-01 15:55:46'),
-(5, 19, 0.00, 'INR', 'waived', NULL, NULL, '2026-04-10 16:51:42', '2026-04-01 16:10:41');
-
 -- --------------------------------------------------------
 
 --
@@ -166,16 +155,16 @@ CREATE TABLE `publications` (
 --
 
 INSERT INTO `publications` (`id`, `submission_id`, `issue_id`, `final_pdf_url`, `start_page`, `end_page`, `doi`, `published_at`) VALUES
-(1, 13, 1, '/uploads/published/IJITEST-2026-001-published.pdf', 1, 7, NULL, '2026-03-15 09:00:00'),
-(2, 15, 1, '/uploads/published/IJITEST-2026-002-published.pdf', 8, 12, NULL, '2026-03-29 09:00:00'),
-(11, 16, 1, '/uploads/published/IJITEST-2026-003-published.pdf', 13, 20, NULL, '2026-03-29 09:20:00'),
-(12, 18, 1, '/uploads/published/IJITEST-2026-004-published.pdf', 21, 26, NULL, '2026-03-30 09:00:00'),
-(13, 19, 1, '/uploads/published/IJITEST-2026-005-published.pdf', 27, 32, NULL, '2026-03-31 09:00:00'),
-(17, 21, 1, '/uploads/published/IJITEST-2026-007-published.pdf', 38, 41, NULL, '2026-03-31 09:40:00'),
-(18, 22, 1, '/uploads/published/IJITEST-2026-008-published.pdf', 42, 45, NULL, '2026-03-31 10:00:00'),
-(19, 23, 1, '/uploads/published/IJITEST-2026-009-published.pdf', 46, 49, NULL, '2026-03-31 10:20:00'),
-(20, 24, 1, '/uploads/published/IJITEST-2026-010-published.pdf', 50, 53, NULL, '2026-03-31 10:40:00'),
-(21, 20, 1, '/uploads/published/IJITEST-2026-006-published.pdf', 33, 37, NULL, '2026-03-31 09:20:00');
+(1, 1, 1, '/uploads/published/IJITEST-2026-001-published.pdf', 1, 7, NULL, '2026-03-28 09:00:00'),
+(2, 2, 1, '/uploads/published/IJITEST-2026-002-published.pdf', 8, 12, NULL, '2026-03-29 10:00:00'),
+(3, 3, 1, '/uploads/published/IJITEST-2026-003-published.pdf', 13, 20, NULL, '2026-03-29 11:00:00'),
+(4, 4, 1, '/uploads/published/IJITEST-2026-004-published.pdf', 21, 26, NULL, '2026-03-30 12:00:00'),
+(5, 5, 1, '/uploads/published/IJITEST-2026-005-published.pdf', 27, 32, NULL, '2026-03-31 13:00:00'),
+(6, 6, 1, '/uploads/published/IJITEST-2026-006-published.pdf', 33, 37, NULL, '2026-03-31 14:00:00'),
+(7, 7, 1, '/uploads/published/IJITEST-2026-007-published.pdf', 38, 41, NULL, '2026-03-31 15:00:00'),
+(8, 8, 1, '/uploads/published/IJITEST-2026-008-published.pdf', 42, 45, NULL, '2026-03-31 16:00:00'),
+(9, 9, 1, '/uploads/published/IJITEST-2026-009-published.pdf', 46, 49, NULL, '2026-03-31 17:00:00'),
+(10, 10, 1, '/uploads/published/IJITEST-2026-010-published.pdf', 50, 53, NULL, '2026-03-31 18:00:00');
 
 -- --------------------------------------------------------
 
@@ -195,17 +184,6 @@ CREATE TABLE `reviews` (
   `submitted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `reviews`
---
-
-INSERT INTO `reviews` (`id`, `assignment_id`, `decision`, `score`, `confidence`, `comments_to_author`, `comments_to_editor`, `created_at`, `submitted_at`) VALUES
-(2, 4, 'accept', NULL, NULL, 'accepted if modify the minor reviews', NULL, '2026-03-10 16:30:17', '2026-03-10 16:30:17'),
-(3, 5, 'accept', NULL, NULL, 'The integration of RIS with hybrid precoding shows promising results...', NULL, '2026-03-28 03:40:45', '2026-03-28 03:40:45'),
-(4, 8, 'accept', 8, 4, 'Paper accepted, possible to add latest references', '', '2026-04-10 16:43:10', '2026-04-10 16:43:10'),
-(5, 7, 'accept', 8, 5, '\"Paper accepted, possible to add latest references\"', '', '2026-04-10 16:44:06', '2026-04-10 16:44:06'),
-(6, 6, 'accept', 10, 4, '\"Paper accepted, possible to add latest references\"', '', '2026-04-10 16:44:57', '2026-04-10 16:44:57');
-
 -- --------------------------------------------------------
 
 --
@@ -224,17 +202,6 @@ CREATE TABLE `review_assignments` (
   `assigned_at` timestamp NULL DEFAULT current_timestamp(),
   `responded_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `review_assignments`
---
-
-INSERT INTO `review_assignments` (`id`, `submission_id`, `reviewer_id`, `version_id`, `assigned_by`, `review_round`, `status`, `deadline`, `assigned_at`, `responded_at`) VALUES
-(4, 13, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 13, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-10 16:30:17', NULL),
-(5, 15, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 15, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', NULL, '2026-03-28 03:40:45', NULL),
-(6, 16, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 16, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:34:06', '2026-04-10 16:44:57'),
-(7, 18, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 18, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:37:41', '2026-04-10 16:44:06'),
-(8, 19, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 19, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 1, 'completed', '2026-04-11', '2026-04-10 16:38:53', '2026-04-10 16:43:10');
 
 -- --------------------------------------------------------
 
@@ -294,16 +261,16 @@ CREATE TABLE `submissions` (
 --
 
 INSERT INTO `submissions` (`id`, `paper_id`, `slug`, `status`, `final_decision`, `decision_at`, `decision_by`, `corresponding_author_id`, `issue_id`, `submitted_at`, `updated_at`, `deleted_at`) VALUES
-(13, 'IJITEST-2026-001', 'digital-revolution-informatics-industry', 'published', NULL, NULL, NULL, 'u13-gulshan-sri-babu-uuid-001', 1, '2026-03-12 09:00:00', '2026-03-12 09:00:00', NULL),
-(15, 'IJITEST-2026-002', 'optimization-ris-integrated-hybrid-precoding', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 09:00:00', '2026-03-26 09:00:00', NULL),
-(16, 'IJITEST-2026-003', 'quantum-enabled-security-framework-6g', 'published', NULL, NULL, NULL, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-26 09:20:00', '2026-03-26 09:20:00', NULL),
-(18, 'IJITEST-2026-004', 'energy-efficient-ternary-logic-cntfet', 'published', NULL, NULL, NULL, 'u18-subbarao-uuid-002', 1, '2026-03-27 09:00:00', '2026-03-27 09:00:00', NULL),
-(19, 'IJITEST-2026-005', 'rnn-cnn-em-gamp-sparse-channel', 'published', NULL, NULL, NULL, 'u19-mahendra-uuid-003', 1, '2026-03-28 09:00:00', '2026-03-28 09:00:00', NULL),
-(20, 'IJITEST-2026-006', NULL, 'published', NULL, NULL, NULL, '4052ef3b-ff34-4852-909c-990306e04bc9', 1, '2026-03-28 09:20:00', '2026-03-28 09:20:00', NULL),
-(21, 'IJITEST-2026-007', NULL, 'published', NULL, NULL, NULL, 'ccaf1a1c-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 09:40:00', '2026-03-28 09:40:00', NULL),
-(22, 'IJITEST-2026-008', NULL, 'published', NULL, NULL, NULL, 'ccb4bbd1-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 10:00:00', '2026-03-28 10:00:00', NULL),
-(23, 'IJITEST-2026-009', NULL, 'published', NULL, NULL, NULL, 'ccba78e7-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 10:20:00', '2026-03-28 10:20:00', NULL),
-(24, 'IJITEST-2026-010', NULL, 'published', NULL, NULL, NULL, 'ccc02680-39c1-11f1-ad3e-c05465fbbdc2', 1, '2026-03-28 10:40:00', '2026-03-28 10:40:00', NULL);
+(1, 'IJITEST-2026-001', 'ijitest2026001', 'published', NULL, NULL, NULL, 'ac34b85e-d7c0-454b-9ef9-4b73e39ee30a', 1, '2026-03-28 09:00:00', '2026-04-19 05:41:03', NULL),
+(2, 'IJITEST-2026-002', 'ijitest2026002', 'published', NULL, NULL, NULL, 'cd2ef493-3626-483a-93c6-8236287bf7a1', 1, '2026-03-29 10:00:00', '2026-04-19 05:41:03', NULL),
+(3, 'IJITEST-2026-003', 'ijitest2026003', 'published', NULL, NULL, NULL, 'cd2ef493-3626-483a-93c6-8236287bf7a1', 1, '2026-03-29 11:00:00', '2026-04-19 05:41:03', NULL),
+(4, 'IJITEST-2026-004', 'ijitest2026004', 'published', NULL, NULL, NULL, 'cd2ef493-3626-483a-93c6-8236287bf7a1', 1, '2026-03-30 12:00:00', '2026-04-19 05:41:03', NULL),
+(5, 'IJITEST-2026-005', 'ijitest2026005', 'published', NULL, NULL, NULL, 'cd2ef493-3626-483a-93c6-8236287bf7a1', 1, '2026-03-31 13:00:00', '2026-04-19 05:41:03', NULL),
+(6, 'IJITEST-2026-006', 'ijitest2026006', 'published', NULL, NULL, NULL, 'ec6f9428-c3e0-4bdf-bb28-07ea86ba2440', 1, '2026-03-31 14:00:00', '2026-04-19 05:41:03', NULL),
+(7, 'IJITEST-2026-007', 'ijitest2026007', 'published', NULL, NULL, NULL, 'ec45d5c4-0ec8-49ff-a9c0-d18ea988bfb2', 1, '2026-03-31 15:00:00', '2026-04-19 05:41:03', NULL),
+(8, 'IJITEST-2026-008', 'ijitest2026008', 'published', NULL, NULL, NULL, 'fa60af47-276f-4c3a-8c34-89aae8ee28dd', 1, '2026-03-31 16:00:00', '2026-04-19 05:41:03', NULL),
+(9, 'IJITEST-2026-009', 'ijitest2026009', 'published', NULL, NULL, NULL, 'a0d1d251-cccd-4a52-93ff-26bcc7ae428a', 1, '2026-03-31 17:00:00', '2026-04-19 05:41:03', NULL),
+(10, 'IJITEST-2026-010', 'ijitest2026010', 'published', NULL, NULL, NULL, 'c411a1e8-1a94-4ba8-bf5c-d3bead1b617b', 1, '2026-03-31 18:00:00', '2026-04-19 05:41:03', NULL);
 
 -- --------------------------------------------------------
 
@@ -328,66 +295,44 @@ CREATE TABLE `submission_authors` (
 --
 
 INSERT INTO `submission_authors` (`id`, `submission_id`, `name`, `email`, `is_corresponding`, `order_index`, `phone`, `designation`, `institution`) VALUES
-(3, 13, 'THORLAPATI GULSHAN SRI BABU', 'gulshansribabu@gmail.com', 1, 0, NULL, NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY'),
-(4, 13, 'Chekatla Swapna Priya', 'swapnachsp@gmail.com', 0, 1, NULL, NULL, 'Vignan\'s Institute of Information Technology (A)'),
-(5, 13, 'Suseela Kocho', 'jackbenison12@gmail.com', 0, 2, NULL, NULL, 'Department of school education, India'),
-(6, 15, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY(A)'),
-(7, 15, 'V.N.S.Vijay Kumar', 'vijaykumarlce@gmail.com', 0, 1, NULL, NULL, 'Vardhaman college of Engineering, Hyderabad'),
-(8, 16, 'Cheekatla Swapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'VIGNANAS INSTITUTE OF INFORMATION TECHNOLOGY'),
-(9, 16, 'thorlapati gulshan sribabu', 'gulshansribabu@gmail.com', 0, 1, NULL, NULL, 'vignan\'s institute of Information technology'),
-(10, 18, 'CH M V SUBBARAO', 'subbaraochappa@gmail.com', 1, 0, NULL, NULL, 'DEPARTMENT OF ECE ,JNTU GV'),
-(11, 19, 'Mahendra', 'narlamahendracai@gpcet.ac.in', 1, 0, NULL, NULL, 'Department of CAI, G. Pullaiah College of Engineering'),
-(22, 16, 'S Naga Mallik Raj', 'mallikraj@ijitest.org', 0, 2, NULL, NULL, 'Vignan\'s Institute of Information Technology (A)'),
-(23, 21, 'S. Sai Durga Jagan Mohan', 'jaganmohan@ijitest.org', 1, 0, NULL, NULL, NULL),
-(24, 21, 'P. Dinesh', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
-(25, 21, 'P. Rama Krishna', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
-(26, 21, 'N. Lakshmi Vara Prasad', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
-(27, 21, 'G. Sagar', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
-(28, 22, 'N. Umesh Chandra', 'umeshchandra15623@gmail.com', 1, 0, NULL, NULL, NULL),
-(29, 22, 'S.HarshaVardhan', 'harshavardhansingani@gmail.com', 0, 1, NULL, NULL, NULL),
-(30, 22, 'K.Naveen', 'kongarapunaveen866@gmail.com', 0, 2, NULL, NULL, NULL),
-(31, 22, 'V.Jayakrishna', 'jayakrishnavantakula@gmail.com', 0, 3, NULL, NULL, NULL),
-(32, 22, 'N.Abhiram', 'neelapuabhiram007@gmail.com', 0, 4, NULL, NULL, NULL),
-(33, 22, 'V.Pradeep Kumar', 'pradeepvommi@gmail.com', 0, 5, NULL, NULL, NULL),
-(34, 23, 'S D. Jagadeesh', 'jagadishdunna2005@gmail.com', 1, 0, NULL, NULL, NULL),
-(35, 23, 'K. Jeevan Kumar', 'jeevankumarkella@gmail.com', 0, 1, NULL, NULL, NULL),
-(36, 23, 'P. Venkata Jagadeesh', 'pallavenkat11@gmail.com', 0, 2, NULL, NULL, NULL),
-(37, 23, 'B. Sai Kumar', 'saikumarbolla31@gmail.com', 0, 3, NULL, NULL, NULL),
-(38, 23, 'T. Karthik', 'telukarthik9@gmail.com', 0, 4, NULL, NULL, NULL),
-(39, 23, 'K.K.R. Parimala', 'radhikaparimala325@gmail.com', 0, 5, NULL, NULL, NULL),
-(40, 24, 'Laharadithya', 'laharadithya@ijitest.org', 1, 0, NULL, NULL, NULL),
-(41, 24, 'K. Chandu', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
-(42, 24, 'Y. Chanikya', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
-(43, 24, 'B. Chaitanya', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
-(44, 24, 'P. Venkataramana', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
-(45, 24, 'K. Deepthi', 'author@ijitest.org', 0, 5, NULL, NULL, NULL),
-(46, 20, 'A. Venkateswara Rao', 'vallu@miracleeducationalsociety.com', 1, 0, NULL, NULL, NULL),
-(47, 20, 'U. Surna', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
-(48, 20, 'T. Suresh', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
-(49, 20, 'P. L. Vamsi', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
-(50, 21, 'S. Sai Durga Jagan Mohan', 'jaganmohan@ijitest.org', 1, 0, NULL, NULL, NULL),
-(51, 21, 'P. Dinesh', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
-(52, 21, 'P. Rama Krishna', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
-(53, 21, 'N. Lakshmi Vara Prasad', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
-(54, 21, 'G. Sagar', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
-(55, 22, 'N. Umesh Chandra', 'umeshchandra15623@gmail.com', 1, 0, NULL, NULL, NULL),
-(56, 22, 'S.HarshaVardhan', 'harshavardhansingani@gmail.com', 0, 1, NULL, NULL, NULL),
-(57, 22, 'K.Naveen', 'kongarapunaveen866@gmail.com', 0, 2, NULL, NULL, NULL),
-(58, 22, 'V.Jayakrishna', 'jayakrishnavantakula@gmail.com', 0, 3, NULL, NULL, NULL),
-(59, 22, 'N.Abhiram', 'neelapuabhiram007@gmail.com', 0, 4, NULL, NULL, NULL),
-(60, 22, 'V.Pradeep Kumar', 'pradeepvommi@gmail.com', 0, 5, NULL, NULL, NULL),
-(61, 23, 'S D. Jagadeesh', 'jagadishdunna2005@gmail.com', 1, 0, NULL, NULL, NULL),
-(62, 23, 'K. Jeevan Kumar', 'jeevankumarkella@gmail.com', 0, 1, NULL, NULL, NULL),
-(63, 23, 'P. Venkata Jagadeesh', 'pallavenkat11@gmail.com', 0, 2, NULL, NULL, NULL),
-(64, 23, 'B. Sai Kumar', 'saikumarbolla31@gmail.com', 0, 3, NULL, NULL, NULL),
-(65, 23, 'T. Karthik', 'telukarthik9@gmail.com', 0, 4, NULL, NULL, NULL),
-(66, 23, 'K.K.R. Parimala', 'radhikaparimala325@gmail.com', 0, 5, NULL, NULL, NULL),
-(67, 24, 'Laharadithya', 'laharadithya@ijitest.org', 1, 0, NULL, NULL, NULL),
-(68, 24, 'K. Chandu', 'author@ijitest.org', 0, 1, NULL, NULL, NULL),
-(69, 24, 'Y. Chanikya', 'author@ijitest.org', 0, 2, NULL, NULL, NULL),
-(70, 24, 'B. Chaitanya', 'author@ijitest.org', 0, 3, NULL, NULL, NULL),
-(71, 24, 'P. Venkataramana', 'author@ijitest.org', 0, 4, NULL, NULL, NULL),
-(72, 24, 'K. Deepthi', 'author@ijitest.org', 0, 5, NULL, NULL, NULL);
+(1, 1, 'Gulshan Sribabu Thorlapati', 'gulshansribabu@gmail.com', 1, 0, NULL, NULL, 'Department of CIVIL, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(2, 1, 'Chekatla Swapna Priya', 'swapnachsp@gmail.com', 0, 1, NULL, NULL, 'Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(3, 1, 'Suseela Kocho', 'jackbenison12@gmail.com', 0, 2, NULL, NULL, 'SGT, Department of school education, India'),
+(4, 2, 'CheekatlaSwapna Priya', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(5, 3, 'Swapna Priya Chikatla', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(6, 3, 'Thorlapati Gulshan Sri Babu', 'gulshansribabu@gmail.com', 0, 1, NULL, NULL, 'Student,Department of CIVIL, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(7, 3, 'S Naga Mallik Raj', 'mallikblue@gmail.com', 0, 2, NULL, NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(8, 4, 'Swapna Priya Chikatla', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(9, 4, 'Mahendra Narla', 'nmahendra@gpcet.ac.in', 0, 1, NULL, NULL, 'Associate Professor,Department of AI&DS, G.Pullaiah College of Engineering and Technology, Kurnool, India'),
+(10, 4, 'PSN Bhashar', 'bhaskarpsn@gmail.com', 0, 2, NULL, NULL, 'Assistant Professor,Department of ECE, SVP Engineering College, Visakhapatnam, India'),
+(11, 5, 'Swapna Priya Chikatla', 'swapnachsp@gmail.com', 1, 0, NULL, NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(12, 5, 'S Naga Mallik Raj', 'mallikblue@gmail.com', 0, 1, NULL, NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(13, 5, 'Thorlapati Gulshan Sri Babu', 'gulshansribabu@gmail.com', 0, 2, NULL, NULL, 'Student,Department of CIVIL, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(14, 5, 'CH. Subba Rao', 'subbaraochappa@gmail.com', 0, 3, NULL, NULL, 'Associate Professor,Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India'),
+(15, 6, 'T. Ravi babu', 'rthorlapati@miracleeducationalsociety.com', 1, 0, NULL, NULL, 'Associate Professor,Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India'),
+(16, 7, 'S. Sai Durga Jagan Mohan', 'missing_email_ijitest-2026-007_32ad464c@ijitest.org', 1, 0, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(17, 7, 'P. Dinesh', 'coauthor_17@ijitest.org', 0, 1, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(18, 7, 'P. Rama Krishna', 'coauthor_18@ijitest.org', 0, 2, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(19, 7, 'N. Lakshmi Vara Prasad', 'coauthor_19@ijitest.org', 0, 3, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(20, 7, 'G. Sagar', 'coauthor_20@ijitest.org', 0, 4, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(21, 8, 'N.UmeshChandra', 'umeshchandra15623@gmail.com', 1, 0, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(22, 8, 'S.HarshaVardhan', 'harshavardhansingani@gmail.com', 0, 1, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(23, 8, 'K.Naveen', 'kongarapunaveen866@gmail.com', 0, 2, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(24, 8, 'V.Jayakrishna', 'jayakrishnavantakula@gmail.com', 0, 3, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(25, 8, 'N.Abhiram', 'neelapuabhiram007@gmail.com', 0, 4, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(26, 8, 'V.Pradeep Kumar', 'pradeepvommi@gmail.com', 0, 5, NULL, NULL, 'Associate Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(27, 9, 'S D. Jagadeesh', 'jagadishdunna2005@gmail.com', 1, 0, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(28, 9, 'K. Jeevan Kumar', 'jeevankumarkella@gmail.com', 0, 1, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(29, 9, 'P. Venkata Jagadeesh', 'pallavenkat11@gmail.com', 0, 2, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(30, 9, 'B. Sai Kumar', 'saikumarbolla31@gmail.com', 0, 3, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(31, 9, 'T. Karthik', 'telukarthik9@gmail.com', 0, 4, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(32, 9, 'K.K.R. Parimala', 'radhikaparimala325@gmail.com', 0, 5, NULL, NULL, 'Assistant Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(33, 10, 'Laharadithya', 'missing_email_ijitest-2026-010_c5545a38@ijitest.org', 1, 0, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(34, 10, 'K. Chandu', 'coauthor_34@ijitest.org', 0, 1, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(35, 10, 'Y. Chanikya', 'coauthor_35@ijitest.org', 0, 2, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(36, 10, 'B. Chaitanya', 'coauthor_36@ijitest.org', 0, 3, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(37, 10, 'P. Venkataramana', 'coauthor_37@ijitest.org', 0, 4, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(38, 10, 'K. Deepthi', 'coauthor_38@ijitest.org', 0, 5, NULL, NULL, 'Associate Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India');
 
 -- --------------------------------------------------------
 
@@ -422,19 +367,16 @@ CREATE TABLE `submission_files` (
 --
 
 INSERT INTO `submission_files` (`id`, `version_id`, `file_type`, `file_url`, `original_name`, `file_size`, `created_at`) VALUES
-(4, 13, 'main_manuscript', '/uploads/submissions/manuscript-13-1774891817005.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
-(5, 15, 'main_manuscript', '/uploads/submissions/1774540380450-x26s7q.docx', 'manuscript.docx', NULL, '2026-04-08 14:24:12'),
-(6, 15, 'pdf_version', '/uploads/submissions/secure-15-1774669245557.pdf', 'secure.pdf', NULL, '2026-04-08 14:24:12'),
-(7, 16, 'main_manuscript', '/uploads/submissions/1774884491840-wm8v5k.docx', 'manuscript.docx', NULL, '2026-04-08 14:24:12'),
-(9, 18, 'main_manuscript', '/uploads/submissions/1775058291152-4dzxo9.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
-(10, 19, 'main_manuscript', '/uploads/submissions/1775059313407-hpa05k.pdf', 'manuscript.pdf', NULL, '2026-04-08 14:24:12'),
-(20, 18, 'pdf_version', '/uploads/submissions/reviewer_copy_18_1775839061896.pdf', 'reviewer_manuscript.pdf', NULL, '2026-04-10 16:37:41'),
-(22, 19, 'feedback', '/uploads/submissions/feedback_1775839390767_4.pdf', '4.pdf', 1488778, '2026-04-10 16:43:10'),
-(23, 18, 'feedback', '/uploads/submissions/feedback_1775839446286_5.pdf', '5.pdf', 965909, '2026-04-10 16:44:06'),
-(24, 16, 'feedback', '/uploads/submissions/feedback_1775839497557_3.pdf', '3.pdf', 1807280, '2026-04-10 16:44:57'),
-(27, 16, 'pdf_version', '/uploads/submissions/auto_final_v1_1775969653918.pdf', 'auto_final_v1_1775969653918.pdf', 1545416, '2026-04-12 04:54:13'),
-(28, 19, 'pdf_version', '/uploads/submissions/final_manuscript_19_v1_1776181148452.pdf', '4.pdf', 1488778, '2026-04-14 15:39:08'),
-(29, 18, 'pdf_version', '/uploads/submissions/final_manuscript_18_v1_1776181402067.pdf', '5.pdf', 965909, '2026-04-14 15:43:22');
+(1, 1, 'pdf_version', '/uploads/published/IJITEST-2026-001-published.pdf', 'IJITEST-2026-001.pdf', NULL, '2026-04-19 05:41:03'),
+(2, 2, 'pdf_version', '/uploads/published/IJITEST-2026-002-published.pdf', 'IJITEST-2026-002.pdf', NULL, '2026-04-19 05:41:03'),
+(3, 3, 'pdf_version', '/uploads/published/IJITEST-2026-003-published.pdf', 'IJITEST-2026-003.pdf', NULL, '2026-04-19 05:41:03'),
+(4, 4, 'pdf_version', '/uploads/published/IJITEST-2026-004-published.pdf', 'IJITEST-2026-004.pdf', NULL, '2026-04-19 05:41:03'),
+(5, 5, 'pdf_version', '/uploads/published/IJITEST-2026-005-published.pdf', 'IJITEST-2026-005.pdf', NULL, '2026-04-19 05:41:03'),
+(6, 6, 'pdf_version', '/uploads/published/IJITEST-2026-006-published.pdf', 'IJITEST-2026-006.pdf', NULL, '2026-04-19 05:41:03'),
+(7, 7, 'pdf_version', '/uploads/published/IJITEST-2026-007-published.pdf', 'IJITEST-2026-007.pdf', NULL, '2026-04-19 05:41:03'),
+(8, 8, 'pdf_version', '/uploads/published/IJITEST-2026-008-published.pdf', 'IJITEST-2026-008.pdf', NULL, '2026-04-19 05:41:03'),
+(9, 9, 'pdf_version', '/uploads/published/IJITEST-2026-009-published.pdf', 'IJITEST-2026-009.pdf', NULL, '2026-04-19 05:41:03'),
+(10, 10, 'pdf_version', '/uploads/published/IJITEST-2026-010-published.pdf', 'IJITEST-2026-010.pdf', NULL, '2026-04-19 05:41:03');
 
 -- --------------------------------------------------------
 
@@ -459,16 +401,16 @@ CREATE TABLE `submission_versions` (
 --
 
 INSERT INTO `submission_versions` (`id`, `submission_id`, `version_number`, `title`, `abstract`, `keywords`, `subject_area`, `changelog`, `created_at`) VALUES
-(13, 13, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm\nshift in industrial development, as cutting-edge devices—such as\nAI-enhanced robots—collaborate harmoniously with human\nlabourers to maximize productivity. This phase emphasizes the\nsignificance of human engagement while emphasizing\nsustainability and resilience. This development based on\ninnovations has led to industry 4.0, the fourth industrial\nrevolution has changed production and production techniques.\nChanges are motivated by the strong progress of automation,\nrobots, Big data, Internet of Things, Machine learning, artificial\nintelligence and virtualization. In addition to the successful\nautomation and technological integration of its predecessor,\nlargely related to production and efficiency stimulation, industry\n5.0 to create both sustainable innovations and focus on people.\nLooking for a long -term balance between technology\ndevelopment and environmental protection and the happiness of\nour society is the main goal. This requires intentional approach\nto innovation, ensuring that our progress increases the living\nstandards of people while benefiting our natural systems to\nsupport us.', 'Industry 4.0, Industry 5.0, Informatics, Automation', NULL, NULL, '2026-04-08 14:24:12'),
-(15, 15, 1, 'Optimization and Performance Evaluation of\nRIS-Integrated Hybrid Precoding in Millimeter Wave\nMassive MIMO', 'The evolution toward sixth-generation (6G) wireless\nsystems requires extremely high data rates, massive device\nconnectivity, very low latency, and improved energy efficiency.\nMillimeter-wave (mmWave) communication is considered a key\nenabler due to its large available bandwidth and ability to\nsupport multi-gigabit transmission. Nevertheless, mmWave\nsignals experience high path loss, vulnerability to blockage, and\nincreased implementation complexity caused by large antenna\narrays and multiple RF chains.To overcome these limitations,\nthis thesis explores the integration of Reconfigurable Intelligent\nSurfaces (RIS) with hybrid analog–digital precoding in\nmmWave Massive MIMO systems. RIS enables intelligent\ncontrol of signal propagation by adjusting the phase of reflected\nwaves, while hybrid precoding reduces hardware cost and power\nconsumption without significantly degrading performance. A\ndetailed system model, mathematical analysis, and optimization\nstrategies for precoders and RIS phase shifts are presented.\nPerformance evaluation based on spectral efficiency, energy\nefficiency, and hardware complexity demonstrates that RIS-\nassisted hybrid architectures provide notable improvements in\ncoverage, achievable rate, and power utilization.', 'Reconfigurable Intelligent Surfaces, mmWave Massive MIMO systems, Precoders and RIS phase shifters', NULL, NULL, '2026-04-08 14:24:12'),
-(16, 16, 1, 'Quantum-Enabled Security Framework for 6G\nCommunications Based on QKD-OFDM Integration', 'Ultra-high data rates, efficient use of the terahertz\nspectrum, and significant connectivity are anticipated as Sixth\nGeneration (6G) wireless communication emerges. However,\ntraditional cryptographic algorithms like RSA and Elliptic\nCurve Cryptography, which are currently employed in wireless\nnetworks, are seriously threatened by the quick development of\nquantum computing. Future 6G systems must incorporate\nquantum-safe security measures to allay this worry. The\nincorporation of Quantum Key Distribution (QKD) into the\nphysical layer of 6G communication networks is investigated in\nthis paper. To facilitate secure key exchange and identify\neavesdropping, QKD makes use of quantum concepts like\nsuperposition, entanglement, and the no-cloning theorem.\nRealistic wireless channel conditions are used to analyze the\nBB84 and E91 protocols. A proposed 6G channel model\nincorporates Nakagami-m fading, additive white Gaussian noise,\nand path loss. Detector noise and channel disturbances are taken\ninto account when modeling the Quantum Bit Error Rate\n(QBER). In an OFDM framework, MATLAB simulations\nevaluate the secure key rate performance with respect to signal-\nto-noise ratio, transmission distance, and noise probability. The\nfindings highlight the potential of QKD for secure 6G\ncommunications by showing that secure key generation is\npossible when the QBER stays below the theoretical threshold.\nIndex Terms –5G and 6G wireless communications, Quantum\nKey Distribution, Fading Channels.', '5G and 6G wireless communications, Quantum Key Distribution, Network Security', NULL, NULL, '2026-04-08 14:24:12'),
-(18, 18, 1, 'Energy-Efficient Ternary Logic Processor Using\nCNTFETs for Advanced Nanotechnology\nApplications', 'The increasing demand for energy-efficient computing has driven research into novel logic architectures beyond traditional binary logic. This paper presents the design and implementation of an energy-efficient ternary logic processor using Carbon Nanotube Field-Effect Transistors (CNTFETs). The findings highlight the potential of CNTFET-based ternary computing as a promising alternative for next-generation low-power processors.', 'Ternary Logic Processor, CNTFET, Low-Power Computing', NULL, NULL, '2026-04-08 14:24:12'),
-(19, 19, 1, 'RNN and CNN–Enhanced EM-GAMP for Sparse Channel Estimation', 'Quantum Compressed Sensing (QCS) is an efficient framework that exploits signal sparsity to reconstruct quantum states and quantum-inspired communication signals. This paper introduces an RNN and CNN-enhanced EM-GAMP algorithm for sparse channel estimation in 6G wireless systems, demonstrating significant performance improvements over conventional methods.', 'Quantum Compressed Sensing, OMP-based methods, Signal Processing', NULL, NULL, '2026-04-08 14:24:12'),
-(22, 21, 1, 'Fabrication of Multipurpose Agriculture Machine', 'Agriculture plays a vital role in economic development, and modern technology integration is essential for improving productivity. This paper presents the fabrication of a multipurpose solar-powered agricultural machine capable of performing three essential farming operations: spraying, seeding, and plowing.', 'Agriculture Machine, Solar Power, Multipurpose, Spraying, Seeding, Plowing, DC Motor, Renewable Energy', NULL, NULL, '2026-04-16 18:26:35'),
-(23, 22, 1, 'Fabrication of Automatic Tire Inflating System', 'Proper tire pressure is essential for vehicle safety, fuel efficiency, and tire longevity. This paper presents the fabrication of an Automatic Tire Inflating System that maintains optimal pressure in vehicle tires without manual intervention.', 'Automatic Tire Inflation, Pressure Sensor, DC Motor, Vehicle Safety', NULL, NULL, '2026-04-16 18:26:35'),
-(24, 23, 1, 'Fabrication of Solar Grass Cutter with Bluetooth Control', 'This paper presents the fabrication of a solar-powered grass cutter with Bluetooth-based remote control. The system utilizes solar energy to power a DC motor for cutting grass, reducing reliance on fossil fuels and providing a cost-effective solution for lawn maintenance.', 'Solar Energy, Grass Cutter, Bluetooth Control, DC Motor', NULL, NULL, '2026-04-16 18:26:35'),
-(25, 24, 1, 'Fabrication of 90 Degree Steering System', 'Conventional steering systems are limited by their large turning radius. This paper presents the fabrication of a 90 Degree Steering System that allows all four wheels to rotate up to 90 degrees, enabling lateral (sideways) movement and zero-radius turning.', '90 Degree Steering, Lateral Movement, Zero-Radius Turning, Bevel Gears', NULL, NULL, '2026-04-16 18:26:35'),
-(26, 20, 1, 'Quantum Communication for 5G-6G Qubit-Driven Massive MIMO-OFDM Performance Analysis', 'Communication frameworks that are extremely effective, intelligent, and secure are required due to the rapid shift from 5G to 6G networks. Through a performance analysis of qubit-driven Massive MIMO-OFDM, this paper investigates the integration of quantum communication concepts into conventional wireless systems.', 'Quantum Communication, Qubits and Binary Bits, Massive MIMO-OFDM, 5G and 6G Networks, Bit Error Rate, Channel Estimation', NULL, NULL, '2026-04-16 18:35:18');
+(1, 1, 1, 'Digital Revolution: The Role of Informatics in Industry 4.0 and 5.0', 'The emergence of Industry 5.0 predicts a paradigm shift in industrial development, as cutting-edge devicessuch as AI-enhanced robotscollaborate harmoniously with human labourers to maximize productivity. This phase emphasizes the significance of human engagement while emphasizing sustainability and resilience. This development based on innovations has led to industry 4.0, the fourth industrial revolution has changed production and production techniques. Changes are motivated by the strong progress of automation, robots, Big data, Internet of Things, Machine learning, artificial intelligence and virtualization. In addition to the successful automation and technological integration of its predecessor, largely related to production and efficiency stimulation, industry 5.0 to create both sustainable innovations and focus on people. Looking for a long -term balance between technology development and environmental protection and the happiness of our society is the main goal. This requires intentional approach to innovation, ensuring that our progress increases the living standards of people while benefiting our natural systems to support us.', '[\"Industry 4.0\", \"Industry 5.0\"]', 'Engineering', NULL, '2026-03-28 09:00:00'),
+(2, 2, 1, 'Optimization and Performance Evaluation of RIS-Integrated Hybrid Precoding in Millimeter Wave Massive MIMO', 'The evolution toward sixth-generation (6G) wireless systems requires extremely high data rates, massive device connectivity, very low latency, and improved energy efficiency. Millimeter-wave (mmWave) communication is considered a key enabler due to its large available bandwidth and ability to support multi-gigabit transmission. Nevertheless, mmWave signals experience high path loss, vulnerability to blockage, and increased implementation complexity caused by large antenna arrays and multiple RF chains.To overcome these limitations, this thesis explores the integration of Reconfigurable Intelligent Surfaces (RIS) with hybrid analogdigital precoding in mmWave Massive MIMO systems. RIS enables intelligent control of signal propagation by adjusting the phase of reflected waves, while hybrid precoding reduces hardware cost and power consumption without significantly degrading performance. A detailed system model, mathematical analysis, and optimization strategies for precoders and RIS phase shifts are presented. Performance evaluation based on spectral efficiency, energy efficiency, and hardware complexity demonstrates that RIS- assisted hybrid architectures provide notable improvements in coverage, achievable rate, and power utilization.', '[\"Reconfigurable\", \"Intelligent Surfaces\", \"mmWave Massive MIMO systems\", \"Precoders\", \"RIS phase shifters\"]', 'Engineering', NULL, '2026-03-29 10:00:00'),
+(3, 3, 1, 'Quantum-Enabled Security Framework for 6G Communications Based on QKD-OFDM Integration', 'Ultra-high data rates, efficient use of the terahertz spectrum, and significant connectivity are anticipated as Sixth Generation (6G) wireless communication emerges. However, traditional cryptographic algorithms like RSA and Elliptic Curve Cryptography, which are currently employed in wireless networks, are seriously threatened by the quick development of quantum computing. Future 6G systems must incorporate quantum-safe security measures to allay this worry. The incorporation of Quantum Key Distribution (QKD) into the physical layer of 6G communication networks is investigated in this paper. To facilitate secure key exchange and identify eavesdropping, QKD makes use of quantum concepts like superposition, entanglement, and the no-cloning theorem. Realistic wireless channel conditions are used to analyze the BB84 and E91 protocols. A proposed 6G channel model incorporates Nakagami-m fading, additive white Gaussian noise, and path loss. Detector noise and channel disturbances are taken into account when modeling the Quantum Bit Error Rate (QBER). In an OFDM framework, MATLAB simulations evaluate the secure key rate performance with respect to signal- to-noise ratio, transmission distance, and noise probability. The findings highlight the potential of QKD for secure 6G communications by showing that secure key generation is possible when the QBER stays below the theoretical threshold. Index Terms 5G and 6G wireless communications, Quantum Key Distribution, Fading Channels.', '[\"Cryptographic algorithms\", \"Quantum Key Distribution\", \"quantum computing\", \"Fading Channels\"]', 'Engineering', NULL, '2026-03-29 11:00:00'),
+(4, 4, 1, 'RNN and CNNEnhanced EM-GAMP for Sparse Channel Estimation via Quantum Compressed Sensing in Massive MIMO-OFDM', 'Quantum Compressed Sensing (QCS) is an efficient framework that exploits signal sparsity to reconstruct quantum states and quantum-inspired communication signals using fewer measurements than conventional approaches. It combines compressed sensing theory with quantum information processing to reduce sampling complexity and computational cost in high- dimensional systems. Advanced estimation techniques such as OMP-based methods, deep learning-assisted recovery, and quantum-inspired neural models improve reconstruction accuracy under noisy conditions. These approaches utilize sparsity in quantum states, wireless channels, and system parameters while lowering the burden of quantum measurements. QCS is particularly useful in emerging applications like next-generation wireless networks, quantum sensing, and optical communication where measurement resources are limited. Compared to classical compressed sensing, QCS methods offer better scalability and stronger resilience to estimation errors. They also enable modeling of quantum features such as superposition and correlated system behavior. Performance evaluation is typically carried out using metrics like BER versus SNR, MMSE, and recovery accuracy. Overall, QCS supports efficient signal acquisition and reliable estimation in large-scale quantum-aware systems.', '[\"Quantum Compressed Sensing\", \"OMP-based methods\", \"sparse recovery techniques\", \"compressed sensing\"]', 'Engineering', NULL, '2026-03-30 12:00:00'),
+(5, 5, 1, 'Energy-Efficient Ternary Logic Processor Using CNTFETs for Advanced Nanotechnology Applications', 'The increasing demand for energy-efficient computing has driven research into novel logic architectures beyond traditional binary logic. This paper presents the design and implementation of an energy-efficient ternary logic processor using Carbon Nanotube Field-Effect Transistors (CNTFETs) for advanced nanotechnology applications. Ternary logic, which operates with three discrete states (0, 1, 2), offers higher computational density, reduced transistor count, and lower power consumption compared to conventional binary architectures. CNTFETs, with their superior electrical properties such as high carrier mobility, low sub-threshold swing, and excellent scalability, serve as an ideal candidate for implementing ternary logic circuits. The proposed ternary processor integrates ternary logic gates, arithmetic units, multiplexers, memory units, and control circuits, all optimized for low-power operation. Simulation results demonstrate significant improvements in energy efficiency, area reduction, and computational throughput compared to conventional CMOS-based binary processors. Additionally, the processor\'s architecture is tailored for emerging applications in artificial intelligence, cryptography, and IoT devices, where power efficiency and performance are critical. The findings of this study highlight the potential of CNTFET-based ternary computing as a promising alternative for next-generation low- power processors in nanotechnology-driven applications.', '[\"Ternary Logic Processor\", \"CNTFET\", \"Low-Power Computing\", \"Nanotechnology\", \"Energy-Efficient Architecture\"]', 'Engineering', NULL, '2026-03-31 13:00:00'),
+(6, 6, 1, 'Quantum Communication for 5G-6G Qubit-Driven Massive MIMO-OFDM Performance Analysis', 'Communication frameworks that are extremely effective, intelligent, and secure are required due to the rapid shift from 5G to 6G networks. Through a performance analysis of qubit-driven Massive MIMO-OFDM, this paper investigates the integration of quantum communication concepts into conventional wireless systems. It provides a detailed comparison of quantum bit (qubit) representations and traditional binary bit processing. The study evaluates key performance measures across different channel models, such as Rayleigh and Nakagami-m fading, including Bit Error Rate (BER), spectral efficiency, Peak-to-Average Power Ratio (PAPR), and computational complexity. We demonstrate the potential for better robustness, reduced BER, and increased reliability in difficult wireless situations by incorporating qubit-based modulation, quantum channel estimation, and quantum error correction techniques into the OFDM and Massive MIMO framework. MATLAB simulation results show that qubit-based systems outperform classical binary systems, particularly in scenarios with high user density and mobility, making them a viable choice for upcoming 6G applications. Important information about the benefits and trade-offs of switching from classical to quantum-enhanced wireless communication systems is provided by the comparative study', '[\"Quantum Communication\", \"Qubits and Binary Bits\", \"Massive MIMO-OFDM\", \" 5G and 6G Networks\", \"Bit Error Rate\", \"Channel Estimation\"]', 'Engineering', NULL, '2026-03-31 14:00:00'),
+(7, 7, 1, 'Fabrication of Multipurpose Agriculture Machine', 'Agriculture plays a vital role in economic development, and modern technology integration is essential for improving productivity. This paper presents the fabrication of a multipurpose agricultural machine that performs spraying, seeding, and plowing operations using solar power as the primary energy source. The system reduces manual labor, minimizes fuel consumption, and promotes eco-friendly farming. The machine consists of a solar panel, battery storage, DC motors, and mechanical assemblies for three agricultural tasks: uniform pesticide spraying, controlled seed placement at proper depth and spacing, and soil plowing for aeration. Testing on a 100 sq.m test plot demonstrates 90% spraying uniformity, 88% seed placement accuracy at 15cm spacing, plowing depth of 10cm in medium soil, and 3 hours continuous operation on solar charge, achieving 70% labor reduction and 55% cost savings compared to manual farming methods', '[\"Agriculture Machine\", \"Solar Power\", \"Multipurpose\", \"Spraying\", \"Seeding\", \"Plowing\", \"DC Motor\", \"Renewable Energy\"]', 'Engineering', NULL, '2026-03-31 15:00:00'),
+(8, 8, 1, 'Fabrication of Automatic Tire Inflating System', 'Proper tire pressure is essential for vehicle safety, fuel efficiency, and tire longevity, but manual checking and inflating is often neglected. This paper presents the fabrication of an Automatic Tire Inflating System that monitors and regulates tire pressure without manual intervention. The system uses pressure sensors, an Arduino microcontroller, and a 12V DC air compressor to continuously detect tire air pressure and automatically activate inflation when pressure falls below the preset limit. An LCD display shows real-time pressure readings, while LED indicators and a buzzer provide alerts for under- inflation and over-inflation conditions. The system automatically deactivates the compressor when optimal pressure is reached. Testing demonstrates  0.5 PSI measurement accuracy, automatic inflation response within 3 seconds of pressure drop detection, and inflation rate of 2 PSI per minute, achieving the target pressure of 32 PSI within 5 minutes from a 22 PSI under- inflated condition. The system enhances vehicle safety, improves fuel efficiency by 35%, and extends tire life by up to 20%.', '[\"Automatic Tire Inflation\", \"Pressure Sensor\", \"Microcontroller\", \"Air Compressor\", \"Vehicle Safety\", \"Fuel Efficiency\"]', 'Engineering', NULL, '2026-03-31 16:00:00'),
+(9, 9, 1, 'Fabrication of Solar Grass Cutter with Bluetooth Control', 'This paper presents the fabrication of a solar- powered grass cutter with Bluetooth-based mobile phone control, combining renewable energy with wireless automation for modern gardening and agriculture. The machine operates using solar power stored in a rechargeable battery, driving cutting motors and a Bluetooth-controlled movement system. Users control forward, backward, left, and right movement through a mobile application, reducing manual labour and improving safety. The system consists of a solar panel (20W), 12V lead-acid battery, DC motors for movement and cutting, HC-05 Bluetooth module, L298N motor driver, Arduino Uno controller, and a robust chassis. Testing demonstrates continuous operation for 2.5 hours on a full solar charge, cutting efficiency of 85% on grass up to 15cm height, Bluetooth control range of 10 meters, and 60% reduction in operational cost compared to petrol-driven alternatives, making it eco-friendly and suitable for lawns, gardens, and playgrounds', '[\"Solar Energy\", \"Grass Cutter\", \"Bluetooth Control\", \"DC Motor\", \"Renewable Energy\", \"Automation\", \"Mobile Application\"]', 'Engineering', NULL, '2026-03-31 17:00:00'),
+(10, 10, 1, 'Fabrication of 90 Degree Steering System', 'Conventional steering systems are limited by their large turning radius, making vehicle maneuvering difficult in congested urban areas. This paper presents the fabrication of a 90 Degree Steering System that allows all four wheels to rotate up to 90 degrees, enabling lateral (sideways) movement of the vehicle. The system uses electric motors, rack and pinion mechanism, bevel gears, sprockets, and chain drive arrangements. The prototype features four DC motors for wheel motion and an additional motor arrangement for 90-degree wheel rotation. Powered by a rechargeable 12V battery and controlled through an electronic control unit, the system demonstrates successful sideways parking capability, zero-radius turning, and diagonal movement. Testing shows the turning radius reduces from 5.2m (conventional) to effectively 0m (in- place rotation), lateral parking time reduces by 65%, and the system operates reliably across 200 test cycles.', '[\"90 Degree Steering\", \"Lateral Movement\", \"Rack\", \"Pinion\", \"Bevel Gear\", \"Four-Wheel Steering\", \"Parking Mechanism\"]', 'Engineering', NULL, '2026-03-31 18:00:00');
 
 -- --------------------------------------------------------
 
@@ -495,28 +437,40 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `is_active`, `is_email_verified`, `email_verified_at`, `created_at`, `updated_at`, `deleted_at`, `has_seen_promotion`) VALUES
-('4052ef3b-ff34-4852-909c-990306e04bc9', 'vallu@miracleeducationalsociety.com', NULL, 'author', 1, 0, NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44', NULL, 0),
-('79daefad-31c1-11f1-ad3e-c05465fbbdc2', 'editor@ijitest.org', '$2b$10$HpElpKNYCXaqdUpivIxWA.CLDniLlVW/GIb7VyiDv4Syl3WsKsdqy', 'admin', 1, 0, NULL, '2026-02-04 12:30:42', '2026-04-06 18:44:07', NULL, 1),
-('79db5a7a-31c1-11f1-ad3e-c05465fbbdc2', 'indalamohankumar@gmail.com', '$2b$10$2nF2wRdIXIfGGFeFYJHYtOhuyufINNFC/pvZr/bAftSh6l4mql3H2', 'reviewer', 1, 0, NULL, '2026-02-06 14:08:13', '2026-04-07 17:29:28', NULL, 0),
+('02d01172-bb6f-4227-b980-f4abe1bd64ff', 'radhikaparimala325@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('29c83ca4-8361-4315-aa52-1628b3c38e22', 'kongarapunaveen866@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('41a2a42d-a5ce-4540-a8b2-ed1cbca451f6', 'pradeepvommi@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('4ea6669a-41b9-4f80-9be4-829a156f9089', 'nmahendra@gpcet.ac.in', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('5afb6ea1-45f9-4d45-b023-4e3e6c1fb025', 'harshavardhansingani@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('5d1f1b23-01bf-422b-9a83-a84d09249a85', 'jayakrishnavantakula@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('5e46659a-9c4d-4740-811d-ce905ef103d0', 'bhaskarpsn@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
 ('79dbcba4-31c1-11f1-ad3e-c05465fbbdc2', 'indalamohankumar21@gmail.com', '$2b$10$m6iHhngwesUoMWr/iPAuaepnWyTSiWv7ubOwAnVl0jwdzHdiICDAa', 'editor', 1, 0, NULL, '2026-02-06 14:24:33', '2026-04-06 14:04:06', NULL, 0),
 ('79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 'razh1976@gmail.com', '$2b$10$82mvRvTC4qGrcZWaIxe37eAvSGyfLNu45aKuiogg29q1NRLGZgMRa', 'reviewer', 1, 0, NULL, '2026-02-14 15:49:00', '2026-04-06 14:04:06', NULL, 0),
 ('79dc7b1c-31c1-11f1-ad3e-c05465fbbdc2', 'somasekhar.ece@anits.edu.in', '$2b$10$p83k/rGRp24YN44Uao3xFeLoYFHfEZna9pY8sg5qdq2jShzvXRK/W', 'reviewer', 1, 0, NULL, '2026-02-15 12:22:35', '2026-04-11 03:23:44', NULL, 0),
 ('79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 'manohar@gvpcdpgc.edu.in', '$2b$10$AD6WPbFIDVEoOoPZUCZAfeHqZ4YoQjexBjQOO6.3bDReU30H20AFK', 'reviewer', 1, 0, NULL, '2026-02-19 16:12:14', '2026-04-06 14:04:06', NULL, 0),
 ('79dcf791-31c1-11f1-ad3e-c05465fbbdc2', 'venkatesh15793@gmail.com', '$2b$10$vCuOl9r0XinmX3pezxSBqOLGzBD3P5UgMh/D1XZWyDdtnisNaDmtK', 'reviewer', 1, 0, NULL, '2026-02-19 16:12:20', '2026-04-06 14:04:06', NULL, 0),
-('79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 'swapnachsp@gmail.com', '$2b$10$S3VJhjb7uats5M8.eKctHeoiu2fIDsZfvimEDmMTOY8UFMoiFh12m', 'editor', 1, 0, NULL, '2026-03-03 14:06:00', '2026-04-06 14:04:06', NULL, 0),
 ('79dd80d7-31c1-11f1-ad3e-c05465fbbdc2', 'skaredla@gitam.edu', NULL, 'reviewer', 1, 0, NULL, '2026-03-03 14:08:13', '2026-04-11 03:23:59', NULL, 0),
-('79ddcf7f-31c1-11f1-ad3e-c05465fbbdc2', 'jackbenison12@gmail.com', NULL, 'reviewer', 1, 0, NULL, '2026-03-03 14:09:25', '2026-04-11 03:24:19', NULL, 0),
 ('79de0a1f-31c1-11f1-ad3e-c05465fbbdc2', 'norsuzila@salam.uitm.edu.my', '$2b$10$SoJp3xko/HImNINIVY2RjO9Vk17ERTTcijrIXECZ.f1/2EtiEwZfm', 'editor', 1, 0, NULL, '2026-03-03 14:29:56', '2026-04-06 14:04:06', NULL, 0),
 ('79de63c3-31c1-11f1-ad3e-c05465fbbdc2', 'razh1977@gmail.com', NULL, 'editor', 1, 0, NULL, '2026-03-03 15:34:37', '2026-04-06 14:04:06', NULL, 0),
 ('79df667a-31c1-11f1-ad3e-c05465fbbdc2', 'trinadhphd33@gmail.com', NULL, 'editor', 1, 0, NULL, '2026-03-05 15:56:46', '2026-04-06 14:04:06', NULL, 0),
 ('79dfcee0-31c1-11f1-ad3e-c05465fbbdc2', 'mr.challa33@gmail.com', NULL, 'reviewer', 1, 0, NULL, '2026-03-05 15:56:53', '2026-04-06 14:04:06', NULL, 0),
-('a6692808-5464-4ac5-af21-e27dc56a5a8f', 'mohan@colourmoon.com', NULL, 'author', 1, 0, NULL, '2026-04-07 13:38:29', '2026-04-07 13:38:29', NULL, 0),
-('ccaf1a1c-39c1-11f1-ad3e-c05465fbbdc2', 'jaganmohan@ijitest.org', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
-('ccb4bbd1-39c1-11f1-ad3e-c05465fbbdc2', 'umeshchandra15623@gmail.com', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
-('ccba78e7-39c1-11f1-ad3e-c05465fbbdc2', 'jagadishdunna2005@gmail.com', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
-('ccc02680-39c1-11f1-ad3e-c05465fbbdc2', 'laharadithya@ijitest.org', NULL, 'author', 1, 0, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35', NULL, 0),
-('u13-gulshan-sri-babu-uuid-001', 'gulshansribabu@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'author', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12', NULL, 0),
-('u18-subbarao-uuid-002', 'subbaraochappa@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'reviewer', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-11 03:25:36', NULL, 0),
+('82b7987d-f90d-4a19-b1d3-1947671914db', 'telukarthik9@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('866d93bc-b280-4bc0-a776-ce70477630df', 'jeevankumarkella@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('87b55eae-e296-4a65-a82f-3c503beadf7e', 'editor@ijitest.org', '$2b$10$HpElpKNYCXaqdUpivIxWA.CLDniLlVW/GIb7VyiDv4Syl3WsKsdqy', 'admin', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 06:38:53', NULL, 1),
+('9196f358-d1ce-448b-a854-4cc641684f97', 'mallikblue@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('94a51dbe-acc8-4df8-a3c6-03ecc15287a0', 'subbaraochappa@gmail.com', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'reviewer', 1, 1, NULL, '2026-04-19 05:41:03', '2026-04-19 06:38:53', NULL, 0),
+('a0d1d251-cccd-4a52-93ff-26bcc7ae428a', 'jagadishdunna2005@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('ac34b85e-d7c0-454b-9ef9-4b73e39ee30a', 'gulshansribabu@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('af963fdb-af8a-4687-b843-dc604df4ff1c', 'jackbenison12@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'reviewer', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 06:38:53', NULL, 0),
+('bce1657c-32a6-492d-9df5-a03dcb465726', 'indalamohankumar@gmail.com', '$2b$10$2nF2wRdIXIfGGFeFYJHYtOhuyufINNFC/pvZr/bAftSh6l4mql3H2', 'reviewer', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 06:38:53', NULL, 0),
+('c411a1e8-1a94-4ba8-bf5c-d3bead1b617b', 'missing_email_ijitest-2026-010_c5545a38@ijitest.org', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('cd2ef493-3626-483a-93c6-8236287bf7a1', 'swapnachsp@gmail.com', '$2b$10$S3VJhjb7uats5M8.eKctHeoiu2fIDsZfvimEDmMTOY8UFMoiFh12m', 'editor', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 06:38:53', NULL, 0),
+('e3052d0b-2a66-462a-8541-bda5c7c09f6d', 'pallavenkat11@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('ec45d5c4-0ec8-49ff-a9c0-d18ea988bfb2', 'missing_email_ijitest-2026-007_32ad464c@ijitest.org', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('ec6f9428-c3e0-4bdf-bb28-07ea86ba2440', 'rthorlapati@miracleeducationalsociety.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('f7905eac-6c28-4718-a00f-3fe9849bc465', 'saikumarbolla31@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('f83fee8d-5304-4b40-806d-59531ed01db5', 'neelapuabhiram007@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
+('fa60af47-276f-4c3a-8c34-89aae8ee28dd', 'umeshchandra15623@gmail.com', '$2a$10$7RmsVl.z6.v6jW9Vd1vU8.OsqYf4A5U5u5u5u5u5u5u5u5u5u5u', 'author', 1, 0, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03', NULL, 0),
 ('u19-mahendra-uuid-003', 'narlamahendracai@gpcet.ac.in', '$2a$12$M2tKWAune7p18LlnZgnfkecIDlaQvQ6SkhDYrbMiX.9fOAPFpqYVy', 'editor', 1, 1, NULL, '2026-04-08 14:24:12', '2026-04-11 03:25:47', NULL, 0);
 
 -- --------------------------------------------------------
@@ -572,29 +526,30 @@ CREATE TABLE `user_profiles` (
 --
 
 INSERT INTO `user_profiles` (`id`, `user_id`, `full_name`, `designation`, `institute`, `phone`, `orcid_id`, `nationality`, `bio`, `photo_url`, `created_at`, `updated_at`) VALUES
-(1, '79daefad-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. Ravi Babu T', 'Associate Professor', 'MES Group of Institution', '+91 8919643590', NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(2, '79db5a7a-31c1-11f1-ad3e-c05465fbbdc2', 'Mohan Kumar Indala', 'professor', 'vignan', '7780123277', NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-07 13:07:37'),
-(3, '79dbcba4-31c1-11f1-ad3e-c05465fbbdc2', 'Indala Mohankumar', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(4, '79dc1011-31c1-11f1-ad3e-c05465fbbdc2', 'T R babu', 'Associate Professor', 'Miracle Educational Society Group of Institutions', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1771082901394-IMG20230527071713.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(5, '79dc7b1c-31c1-11f1-ad3e-c05465fbbdc2', 'Dr.B.Somasekhar', 'Professor', 'Anil Neerukonda Institute of Technology & Sciences', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1771156198892-Dr._Borugadda_Soma_Sekhar_100443_Professor__ECE_Department.png', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(6, '79dcbb44-31c1-11f1-ad3e-c05465fbbdc2', 'Dr Ch Manohar Kumar', 'Associate Professor', 'gayatri Vidya Parishad College for Degree and PG Courses(A)', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1771489588377-Mr.-Ch.-Manohar-Kumar.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(7, '79dcf791-31c1-11f1-ad3e-c05465fbbdc2', 'Dr Appalabathula Venkatesh', 'Assistant Professor', 'Anil Neerukonda Institute of Technology and Sciences', NULL, NULL, 'India', 'APPALABATHULA VENKATESH (Professional Member, IEEE) received a Bachelor\'s in Engineering in Electrical and Electronics Engineering from Lendi Institute of Technology and Sciences in 2014 and a Master\'s in Engineering in Control Systems in 2018, from Anil Neerukonda Institute of Technology and Sciences, Andhra Pradesh, India, and a Ph.D. in the Area of Hybrid Electric Vehicles from the National Institute of Engineering, Mysuru, Karnataka, India, in 2023. \r\n\r\nHe has over five years of teaching experience and is currently an Assistant Professor in the Department of Electrical and Electronics Engineering at Anil Neerukonda Institute of Technology and Sciences, India. He also served as a Post-Doctoral Research Intern in the Department of Electrical and Electronics Engineering, School of Engineering and Sciences, SRM University, Amaravati, India.\r\n\r\nHe has published His research interests include electric and hybrid electric vehicles, fuel cell-based vehicle systems, intelligent control design for power electronic converters, heuristic optimization, bidirectional DC–DC converters, grid-integrated hybrid renewable systems, and AI/ML-based control strategies. \r\n\r\nHe currently serves as an IEEE VTS Young Professionals (YP) Ambassador and Lead Entrepreneurship Ambassador of the IEEE Vizag Bay Section (2024–2025). He is also a member of the IEEE Region 10 Adhoc Committee on Entrepreneurship and Innovation (ACEI), Innovation Ambassador.', '/uploads/profiles/undefined-1774919094662-Screenshot-2026-02-19-124056.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(8, '79dd4a83-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. CH. Swapna Priya ', NULL, 'Dept of Computer Science Engineering, Vigyan Institute of Technology, India', NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(9, '79dd80d7-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. K. Srinivas', NULL, 'Dept of Management, MES Group of Institutions, India', NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(10, '79ddcf7f-31c1-11f1-ad3e-c05465fbbdc2', 'Dr. T.  babu', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(11, '79de0a1f-31c1-11f1-ad3e-c05465fbbdc2', 'Prof.Ir.Gs.Ts. Dr. Norsuzila Ya\'acob', NULL, 'Faculty of Electrical Engineering University of Teknologi MARA,Shah Alam, Malaysia', NULL, NULL, 'Malaysia', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(12, '79de63c3-31c1-11f1-ad3e-c05465fbbdc2', 'T R', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(13, '79df667a-31c1-11f1-ad3e-c05465fbbdc2', 'Dr.Trinadha Rao challa', 'Associate Professor', 'Jntugv University ', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1772620698103-Trinadh-Rao-Challa.jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(14, '79dfcee0-31c1-11f1-ad3e-c05465fbbdc2', 'Dr.Trinadha Rao challa', 'Associate Professor', 'Jntugv University ', NULL, NULL, 'India', NULL, '/uploads/reviewer-apps/1772620431806-Trinadh-Rao-Challa-(1).jpg', '2026-04-06 14:04:06', '2026-04-06 14:04:06'),
-(15, 'a6692808-5464-4ac5-af21-e27dc56a5a8f', 'mohan', 'B-tech UG', 'Vignan  Institute of Information Technology', '7780123277', NULL, 'India', NULL, NULL, '2026-04-07 13:38:29', '2026-04-07 13:38:29'),
-(16, 'u13-gulshan-sri-babu-uuid-001', 'THORLAPATI GULSHAN SRI BABU', NULL, 'VIGNAN\'S INSTITUTE OF INFORMATION TECHNOLOGY', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
-(17, 'u18-subbarao-uuid-002', 'CH M V SUBBARAO', NULL, 'DEPARTMENT OF ECE, JNTU GV', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
-(18, 'u19-mahendra-uuid-003', 'Mahendra', NULL, 'Department of CAI, G. Pullaiah College of Engineering and Technology', NULL, NULL, 'India', NULL, NULL, '2026-04-08 14:24:12', '2026-04-08 14:24:12'),
-(22, '4052ef3b-ff34-4852-909c-990306e04bc9', 'A. Venkateswara Rao', 'Associate Professor', 'Dept of ECE', '9494586985', NULL, 'India', NULL, NULL, '2026-04-11 04:02:44', '2026-04-11 04:02:44'),
-(23, 'ccaf1a1c-39c1-11f1-ad3e-c05465fbbdc2', 'S. Sai Durga Jagan Mohan', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35'),
-(24, 'ccb4bbd1-39c1-11f1-ad3e-c05465fbbdc2', 'N. Umesh Chandra', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35'),
-(25, 'ccba78e7-39c1-11f1-ad3e-c05465fbbdc2', 'S D. Jagadeesh', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35'),
-(26, 'ccc02680-39c1-11f1-ad3e-c05465fbbdc2', 'Laharadithya', NULL, NULL, NULL, NULL, 'India', NULL, NULL, '2026-04-16 18:26:35', '2026-04-16 18:26:35');
+(1, '5e46659a-9c4d-4740-811d-ce905ef103d0', 'PSN Bhashar', NULL, 'Assistant Professor,Department of ECE, SVP Engineering College, Visakhapatnam, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(2, '87b55eae-e296-4a65-a82f-3c503beadf7e', 'IJITEST Editor', NULL, 'IJITEST Editorial Board', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(3, 'ac34b85e-d7c0-454b-9ef9-4b73e39ee30a', 'Gulshan Sribabu Thorlapati', NULL, 'Department of CIVIL, Vignans Institute of Information Technology (A), Visakhapatnam, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(4, '5afb6ea1-45f9-4d45-b023-4e3e6c1fb025', 'S.HarshaVardhan', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(5, 'bce1657c-32a6-492d-9df5-a03dcb465726', 'Mohan Kumar', NULL, 'IJITEST Admin', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(6, 'af963fdb-af8a-4687-b843-dc604df4ff1c', 'Suseela Kocho', NULL, 'SGT, Department of school education, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(7, 'a0d1d251-cccd-4a52-93ff-26bcc7ae428a', 'S D. Jagadeesh', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(8, '5d1f1b23-01bf-422b-9a83-a84d09249a85', 'V.Jayakrishna', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(9, '866d93bc-b280-4bc0-a776-ce70477630df', 'K. Jeevan Kumar', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(10, '29c83ca4-8361-4315-aa52-1628b3c38e22', 'K.Naveen', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(11, '9196f358-d1ce-448b-a854-4cc641684f97', 'S Naga Mallik Raj', NULL, 'Associate Professor,Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(12, 'ec45d5c4-0ec8-49ff-a9c0-d18ea988bfb2', 'S. Sai Durga Jagan Mohan', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(13, 'c411a1e8-1a94-4ba8-bf5c-d3bead1b617b', 'Laharadithya', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(14, 'f83fee8d-5304-4b40-806d-59531ed01db5', 'N.Abhiram', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(15, '4ea6669a-41b9-4f80-9be4-829a156f9089', 'Mahendra Narla', NULL, 'Associate Professor,Department of AI&DS, G.Pullaiah College of Engineering and Technology, Kurnool, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(16, 'e3052d0b-2a66-462a-8541-bda5c7c09f6d', 'P. Venkata Jagadeesh', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(17, '41a2a42d-a5ce-4540-a8b2-ed1cbca451f6', 'V.Pradeep Kumar', NULL, 'Associate Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(18, '02d01172-bb6f-4227-b980-f4abe1bd64ff', 'K.K.R. Parimala', NULL, 'Assistant Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(19, 'ec6f9428-c3e0-4bdf-bb28-07ea86ba2440', 'T. Ravi babu', NULL, 'Associate Professor,Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(20, 'f7905eac-6c28-4718-a00f-3fe9849bc465', 'B. Sai Kumar', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(21, '94a51dbe-acc8-4df8-a3c6-03ecc15287a0', 'CH. Subba Rao', NULL, 'Associate Professor,Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(22, 'cd2ef493-3626-483a-93c6-8236287bf7a1', 'Chekatla Swapna Priya', NULL, 'Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(23, '82b7987d-f90d-4a19-b1d3-1947671914db', 'T. Karthik', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03'),
+(24, 'fa60af47-276f-4c3a-8c34-89aae8ee28dd', 'N.UmeshChandra', NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India', NULL, NULL, 'India', NULL, NULL, '2026-04-19 05:41:03', '2026-04-19 05:41:03');
 
 -- --------------------------------------------------------
 
@@ -617,8 +572,8 @@ CREATE TABLE `volumes_issues` (
 --
 
 INSERT INTO `volumes_issues` (`id`, `volume_number`, `issue_number`, `year`, `month_range`, `status`, `created_at`) VALUES
-(1, 1, 1, 2026, 'March', 'published', '2026-04-08 14:24:12'),
-(2, 1, 2, 2026, 'April', 'published', '2026-04-14 17:36:48');
+(1, 1, 1, 2026, 'March', 'published', '2026-04-19 05:41:03'),
+(2, 1, 2, 2026, 'April', 'published', '2026-04-19 05:41:03');
 
 -- --------------------------------------------------------
 
@@ -860,49 +815,49 @@ ALTER TABLE `notifications`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `publications`
 --
 ALTER TABLE `publications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `review_assignments`
 --
 ALTER TABLE `review_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `submissions`
 --
 ALTER TABLE `submissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `submission_files`
 --
 ALTER TABLE `submission_files`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `submission_versions`
 --
 ALTER TABLE `submission_versions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `user_invitations`
@@ -914,13 +869,13 @@ ALTER TABLE `user_invitations`
 -- AUTO_INCREMENT for table `user_profiles`
 --
 ALTER TABLE `user_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `volumes_issues`
 --
 ALTER TABLE `volumes_issues`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables

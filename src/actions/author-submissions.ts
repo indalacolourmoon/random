@@ -403,16 +403,25 @@ export async function runCleanupInactiveAuthors(): Promise<ActionResponse<{ dele
         for (const aId of authorIds) {
             if (!aId) continue;
             
-            // Check if this author has ANY active/published papers (not rejected or in revision window)
-            const activePapers = await db.select({ id: submissions.id })
+            // 1. Verify this user is strictly an 'author' role to protect staff accounts
+            const userRecord = await db.select({ role: users.role })
+                .from(users)
+                .where(eq(users.id, aId))
+                .limit(1);
+            
+            if (userRecord[0]?.role !== 'author') continue;
+            
+            // 2. Safety Check: Check if this author has ANY published or active papers
+            // We MUST NOT delete authors who have successfully published or have ongoing work.
+            const activeOrPublished = await db.select({ id: submissions.id })
                 .from(submissions)
                 .where(and(
-                    sql`${submissions.correspondingAuthorId} = ${aId}`,
+                    eq(submissions.correspondingAuthorId, aId),
                     notInArray(submissions.status, ['rejected', 'revision_requested'])
                 ))
                 .limit(1);
 
-            if (activePapers.length === 0) {
+            if (activeOrPublished.length === 0) {
                 // This author is purely inactive or rejected. Delete them.
                 // We'll use a transaction for each user cleanup
                 await db.transaction(async (tx) => {
