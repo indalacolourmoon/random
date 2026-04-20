@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 20, 2026 at 02:11 AM
+-- Generation Time: Apr 20, 2026 at 04:46 AM
 -- Server version: 12.3.1-MariaDB-log
 -- PHP Version: 7.2.34
 
@@ -332,7 +332,17 @@ INSERT INTO `submission_authors` (`id`, `submission_id`, `name`, `email`, `is_co
 (35, 10, 'Y. Chanikya', 'coauthor_35@ijitest.org', 0, 2, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
 (36, 10, 'B. Chaitanya', 'coauthor_36@ijitest.org', 0, 3, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
 (37, 10, 'P. Venkataramana', 'coauthor_37@ijitest.org', 0, 4, NULL, NULL, 'Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
-(38, 10, 'K. Deepthi', 'coauthor_38@ijitest.org', 0, 5, NULL, NULL, 'Associate Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India');
+(38, 10, 'K. Deepthi', 'coauthor_38@ijitest.org', 0, 5, NULL, NULL, 'Associate Professor,Department of Mechanical Engineering,Avanthi Institute of Engineering and Technology, Vizianagaram, A.P., India'),
+(39, 2, 'S Naga Mallik Raj', 'mallikblue@gmail.com', 0, 1, NULL, NULL, 'Associate Professor, Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(40, 2, 'Gulshan Sri Babu Thorlapati', 'gulshansribabu@gmail.com', 0, 2, NULL, NULL, 'Student, Department of CIVIL, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(41, 2, 'G. Madhavi', 'gmadhavi@gmail.com', 0, 3, NULL, NULL, 'Assistant Professor, Department of BS&H, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(42, 6, 'A. Venkateswara Rao', 'vallu@miracleeducationalsociety.com', 0, 1, NULL, NULL, 'Associate Professor, Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India'),
+(43, 6, 'CH. Subba Rao', 'schappa@miracleeducationalsociety.com', 0, 2, NULL, NULL, 'Assistant Professor, Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India'),
+(44, 2, 'S Naga Mallik Raj', 'mallikblue@gmail.com', 0, 1, NULL, NULL, 'Associate Professor, Department of CSE, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(45, 2, 'Gulshan Sri Babu Thorlapati', 'gulshansribabu@gmail.com', 0, 2, NULL, NULL, 'Student, Department of CIVIL, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(46, 2, 'G. Madhavi', 'gmadhavi@gmail.com', 0, 3, NULL, NULL, 'Assistant Professor, Department of BS&H, Vignans Institute of Information Technology (A), Visakhapatnam, India'),
+(47, 6, 'A. Venkateswara Rao', 'vallu@miracleeducationalsociety.com', 0, 1, NULL, NULL, 'Associate Professor, Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India'),
+(48, 6, 'CH. Subba Rao', 'schappa@miracleeducationalsociety.com', 0, 2, NULL, NULL, 'Assistant Professor, Department of ECE, Miracle Educational Society Group of Institutions(A), Vizianagaram, India');
 
 -- --------------------------------------------------------
 
@@ -845,7 +855,7 @@ ALTER TABLE `submissions`
 -- AUTO_INCREMENT for table `submission_authors`
 --
 ALTER TABLE `submission_authors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `submission_files`

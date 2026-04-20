@@ -24,7 +24,7 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
         <div className="container-responsive -mt-10">
             {isRetracted && (
                 <div className="mb-12 bg-red-50 border-2 border-red-200 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-red-900/5 animate-pulse">
-                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center flex-shrink-0 rotate-3">
+                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center shrink-0 rotate-3">
                         <FileText className="w-8 h-8 text-white" />
                     </div>
                     <div className="flex-1 text-center md:text-left">
@@ -61,7 +61,7 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
                                     </span>
                                 )}
                                 <span className="bg-primary/5 text-primary text-md px-4 py-2 rounded-full  border border-gray-200">
-                                    Published: {new Date(paper.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    Published: {new Date(paper.published_at || paper.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </span>
                             </div>
 
@@ -80,7 +80,7 @@ export default function PaperDetailClient({ paper, id, mode = 'archive' }: Paper
                                             return coAuthors.map((author: any, idx: number) => (
                                                 <div key={idx} className="flex items-center gap-2">
                                                     <span className="text-gray-900 font-bold">,</span>
-                                                    <span className=" font-normal font-black leading-tight">{author.name}</span>
+                                                    <span className=" font-normal leading-tight">{author.name}</span>
                                                 </div>
                                             ));
                                         } catch (e) {

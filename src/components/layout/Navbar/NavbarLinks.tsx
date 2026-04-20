@@ -79,9 +79,9 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 8, scale: 0.98 }}
                                 transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="absolute top-[calc(100%-2px)] left-[-20px] w-72 2xl:w-[400px] bg-white/95 backdrop-blur-2xl border border-primary/5 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] py-5 2xl:py-10 z-50 overflow-hidden"
+                                className="absolute top-[calc(100%-2px)] left-[-20px] w-72 2xl:w-[400px] bg-white/95 backdrop-blur-2xl border border-primary/5 rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] py-5 2xl:py-10 z-50 overflow-hidden"
                             >
-                                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-secondary via-secondary/50 to-transparent" />
+                                <div className="absolute top-0 left-0 w-full h-[2px] bg-linear-to-r from-secondary via-secondary/50 to-transparent" />
                                 <ul className="space-y-1 list-none p-0">
                                     {item.children.map((child) => {
                                         const isChildActive = pathname === child.href;
@@ -92,10 +92,10 @@ export function NavbarLinks({ isScrolled }: NavbarLinksProps) {
                                                     className={`block px-8 py-3.5 2xl:px-12 2xl:py-6 tracking-widest transition-all relative group/child ${isChildActive ? 'text-primary' : 'text-black hover:text-primary'}`}
                                                 >
                                                     <span className="relative z-10 flex items-center gap-3">
-                                                        <div className={`w-1.5 h-1.5 2xl:w-2.5 2xl:h-2.5 rounded-full transition-all duration-300 ${isChildActive ? 'bg-secondary scale-125' : 'bg-secondary/0 group-hover/child:bg-secondary'}`} />
+                                                        <div className={`w-1.5 h-1.5 2xl:w-2.5  2xl:h-2.5 rounded-full transition-all duration-300 ${isChildActive ? 'bg-secondary scale-125' : 'bg-secondary/0 group-hover/child:bg-secondary'}`} />
                                                         {child.name}
                                                     </span>
-                                                    <div className={`absolute inset-0 bg-primary/[0.03] transition-transform duration-500 ${isChildActive ? 'translate-x-0' : 'translate-x-[-100%] group-hover/child:translate-x-0'}`} />
+                                                    <div className={`absolute inset-0 bg-primary/3 transition-transform duration-500 ${isChildActive ? 'translate-x-0' : '-translate-x-full group-hover/child:translate-x-0'}`} />
                                                 </Link>
                                             </li>
                                         );

@@ -28,7 +28,7 @@ export const staticEditorialBoardMembers: BoardMember[] = [
     },
     {
         full_name: "Dr Trinadha Rao Challa",
-        designation: "Dept of Mechanical engineering",
+        designation: "Dept of Master of Business Administration",
         institute: "MES Group of Institutions, India",
         role: "editor"
     },

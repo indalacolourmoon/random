@@ -53,7 +53,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
                                         <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase m-0">{method.title}</p>
                                         <a
                                             href={method.href}
-                                            className="text-sm xl:text-base font-semibold text-primary hover:underline transition-all block break-words"
+                                            className="text-sm xl:text-base font-semibold text-primary hover:underline transition-all block wrap-break-word"
                                         >
                                             {method.value}
                                         </a>
@@ -91,7 +91,8 @@ export default function ContactClient({ settings }: ContactClientProps) {
                                     <MapPin className="w-5 h-5" />
                                 </div>
                                 <div className="space-y-1">
-                                    <h3 className="text-sm font-semibold text-foreground m-0">{publisherName}</h3>
+                                    <h3 className='text-sm font-semibold text-foreground m-0'>Dr. T. Ravi babu,</h3>
+                                    <h3 className="text-sm font-semibold text-foreground m-0">{publisherName},</h3>
                                     <p className="text-xs text-muted-foreground m-0 leading-relaxed">{officeAddress}</p>
                                 </div>
                             </div>

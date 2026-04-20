@@ -31,7 +31,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                 aria-labelledby="aim-scope-heading"
             >
                 <div className="flex items-center gap-5">
-                    <div className="p-4 bg-primary/5 rounded-[2rem] text-primary border border-primary/10 shadow-vip" aria-hidden="true">
+                    <div className="p-4 bg-primary/5 rounded-4xl text-primary border border-primary/10 shadow-vip" aria-hidden="true">
                         <BookOpen className="w-7 h-7" />
                     </div>
                     <h2>Call for Papers</h2>
@@ -68,7 +68,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                             >
                                 <div className="flex items-center gap-4 text-left">
                                     <div className="w-2 h-2 rounded-full bg-secondary group-hover:scale-150 transition-transform group-hover:bg-primary" aria-hidden="true" />
-                                    <span className="text-primary/90 group-hover:text-primary transition-colors cursor-pointer group-hover:text-red-600">{item}</span>
+                                    <span className="text-primary/90 group-hover:text-primary transition-colors cursor-pointer">{item}</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-primary/20 group-hover:text-secondary group-hover:translate-x-1 transition-all" aria-hidden="true" />
                             </motion.li>
@@ -76,7 +76,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                     </motion.ul>
 
                     <div className="grid grid-cols-1 gap-4">
-                        <article className="p-6 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-[2rem] shadow-vip hover:shadow-vip-hover hover:border-secondary/20 hover:border-2 cursor-pointer transition-all duration-300 group">
+                        <article className="p-6 bg-linear-to-br from-primary/5 to-transparent border border-primary/10 rounded-4xl shadow-vip hover:shadow-vip-hover hover:border-secondary/20 hover:border-2 cursor-pointer transition-all duration-300 group">
                             <h3 className="text-primary mb-3 flex items-center gap-2">
                                 <span className="w-2 h-2 bg-secondary rounded-full" aria-hidden="true" />
                                 Mission Priority
@@ -86,7 +86,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                             </p>
                         </article>
 
-                        <article className="p-6 bg-gradient-to-br from-secondary/5 to-transparent border border-secondary/10 rounded-[2rem] shadow-vip hover:shadow-vip-hover hover:border-secondary/20 hover:border-2 cursor-pointer transition-all duration-300 group">
+                        <article className="p-6 bg-linear-to-br from-secondary/5 to-transparent border border-secondary/10 rounded-4xl shadow-vip hover:shadow-vip-hover hover:border-secondary/20 hover:border-2 cursor-pointer transition-all duration-300 group">
                             <p className="opacity-70 leading-relaxed">
                                 We particularly welcome interdisciplinary work combining engineering with management, sustainability, and data-driven innovation, especially with direct industrial or societal impact.
                             </p>
@@ -101,7 +101,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                 <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-accent opacity-20 rounded-full blur-[80px] animate-blob pointer-events-none" style={{ '--delay': '2s' } as React.CSSProperties} />
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
-                    <div className="w-28 h-28 bg-white/10 backdrop-blur-md rounded-[2rem] flex items-center justify-center shrink-0 border border-white/20 group-hover/proc:rotate-6 group-hover/proc:animate-bounce transition-all duration-500" aria-hidden="true">
+                    <div className="w-28 h-28 bg-white/10 backdrop-blur-md rounded-4xl flex items-center justify-center shrink-0 border border-white/20 group-hover/proc:rotate-6 group-hover/proc:animate-bounce transition-all duration-500" aria-hidden="true">
                         <History className="w-14 h-14 text-secondary" />
                     </div>
                     <div className="space-y-6">
