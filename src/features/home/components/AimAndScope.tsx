@@ -109,7 +109,7 @@ function AimAndScope({ journalShortName }: { journalShortName?: string }) {
                         <p className="text-white opacity-80 m-0">
                             Accepted papers will be published online, upon receiving the final version from the authors in the recent upcoming issue. Our streamlined workflow minimizes time-to-publication while maintaining elite peer-review standards.
                         </p>
-                        <div className="flex items-center gap-3 text-secondary opacity-60">
+                        <div className="flex items-center gap-3 text-secondary ">
                             <span className="w-8 h-[2px] bg-secondary" aria-hidden="true" />
                             Excellence in Motion
                         </div>

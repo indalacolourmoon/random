@@ -158,10 +158,10 @@ export default function AboutClient({ settings }: AboutClientProps) {
                             <p className="text-xs text-white/50">Foundation for Innovation & Global Excellence</p>
                         </div>
                         <div className="text-sm text-white/80 space-y-4 max-w-2xl border-l-[3px] border-white/10 pl-8">
-                            <p>
+                            <p className="text-white/80">
                                 {publisherName} is a mission-driven organization dedicated to bridging the gap between theoretical research and industrial application on a global scale.
                             </p>
-                            <p>
+                            <p className="text-white/80">
                                 Support for {journalShortName} ensures a stable, high-impact platform for researchers, backed by professional editorial handling and world-class indexing infrastructure.
                             </p>
                         </div>
