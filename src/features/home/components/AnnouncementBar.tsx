@@ -21,7 +21,7 @@ export default function AnnouncementBar() {
         <div className="bg-primary overflow-hidden relative group/bar border-b border-white/10">
             {/* Animated Background Pulse */}
             <div className="absolute inset-0 bg-linear-to-r from-primary via-primary-dark to-primary opacity-50 animate-shimmer pointer-events-none" />
-            
+
             <div className="container-responsive relative z-10 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-center sm:text-left transition-all duration-500">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-secondary border border-white/20 animate-pulse">

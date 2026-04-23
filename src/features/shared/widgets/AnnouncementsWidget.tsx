@@ -1,6 +1,7 @@
 "use client";
 
-import { Newspaper, Loader2 } from 'lucide-react';
+import { Newspaper, Loader2, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { memo, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,11 +55,12 @@ function AnnouncementsWidget() {
                             </Badge>
                             <div className="space-y-2">
                                 <p className="text-slate-700 m-0">
-                                    Volume {currentStatus.volume}, Issue {currentStatus.issue} ({currentStatus.date}) is now published.
+                                    Volume {currentStatus.volume}, Issue {currentStatus.issue} ({currentStatus.date}) is now open for submissions.
                                 </p>
-                                <a href="/archives" className="text-secondary flex items-center gap-1 hover:text-primary transition-colors">
-                                    Open Articles
-                                </a>
+                                <Link href="/submit" className="text-secondary flex items-center gap-1 hover:text-primary transition-colors group/link no-underline">
+                                    Submit Manuscript
+                                    <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                                </Link>
                             </div>
                         </div>
                     )}
